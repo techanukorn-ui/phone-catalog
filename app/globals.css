@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: initial;
+  --font-body: initial;
+  --font-mono: initial;
+}
+
+html,
+body {
+  background-color: #f1f0ec;
+  color: #17181a;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+::selection {
+  background-color: #0e7c6b;
+  color: #ffffff;
+}
+
+/* เส้นปรุแบบป้ายห้อยของ ตราสอบสภาพเครื่อง */
+.tag-perforation {
+  position: relative;
+  border-top: 1px dashed #dad7cf;
+}
+.tag-perforation::before,
+.tag-perforation::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #f1f0ec;
+  border: 1px solid #dad7cf;
+}
+.tag-perforation::before {
+  left: -6px;
+}
+.tag-perforation::after {
+  right: -6px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.snap-x-mandatory {
+  scroll-snap-type: x mandatory;
+}
+.snap-center {
+  scroll-snap-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
