@@ -11,6 +11,7 @@ export default function ProductList() {
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   async function loadProducts() {
     setLoading(true)
@@ -22,6 +23,20 @@ export default function ProductList() {
   useEffect(() => {
     loadProducts()
   }, [])
+
+  async function handleToggleSold(product: Product) {
+    const nextStatus = product.status === 'ขายแล้ว' ? 'พร้อมขาย' : 'ขายแล้ว'
+    setTogglingId(product.id)
+    try {
+      const { error } = await supabase.from('products').update({ status: nextStatus }).eq('id', product.id)
+      if (error) throw error
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, status: nextStatus } : p)))
+    } catch (err) {
+      window.alert('เปลี่ยนสถานะไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+    } finally {
+      setTogglingId(null)
+    }
+  }
 
   async function handleDelete(product: Product) {
     const confirmed = window.confirm(`ลบ "${product.model_name}" (${product.product_code}) ออกจากสต็อกใช่หรือไม่?`)
@@ -94,11 +109,22 @@ export default function ProductList() {
                     แก้ไข
                   </button>
                   <button
+                    onClick={() => handleToggleSold(product)}
+                    disabled={togglingId === product.id}
+                    className="rounded-tag border border-line px-3 py-1.5 font-mono text-xs text-ink/70 disabled:opacity-50"
+                  >
+                    {togglingId === product.id
+                      ? 'กำลังบันทึก…'
+                      : product.status === 'ขายแล้ว'
+                        ? 'คืนเป็นพร้อมขาย'
+                        : 'ขายแล้ว'}
+                  </button>
+                  <button
                     onClick={() => handleDelete(product)}
                     disabled={deletingId === product.id}
                     className="rounded-tag border border-danger px-3 py-1.5 font-mono text-xs text-danger disabled:opacity-50"
                   >
-                    {deletingId === product.id ? 'กำลังลบ…' : 'ขายแล้ว / ลบ'}
+                    {deletingId === product.id ? 'กำลังลบ…' : 'ลบ'}
                   </button>
                 </div>
               </div>
