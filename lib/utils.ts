@@ -4,7 +4,9 @@ import type { ProductCategory } from './types'
 const CODE_PREFIX: Record<ProductCategory, string> = {
   iPhone: 'IP',
   iPad: 'PD',
-  Mac: 'MC',
+  MACBOOK: 'MC',
+  'APPLE PENCIL': 'AP',
+  'APPLE WATCH': 'AW',
   อื่นๆ: 'OT',
 }
 

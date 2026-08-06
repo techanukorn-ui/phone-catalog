@@ -32,7 +32,7 @@ on conflict (id) do nothing;
 create table if not exists products (
   id uuid primary key default gen_random_uuid(),
   product_code text unique not null,
-  category text not null default 'iPhone' check (category in ('iPhone','iPad','Mac','อื่นๆ')),
+  category text not null default 'iPhone' check (category in ('iPhone','iPad','MACBOOK','APPLE PENCIL','APPLE WATCH','อื่นๆ')),
   model_name text not null,
   capacity text,
   color text,
@@ -67,6 +67,12 @@ alter table products add column if not exists listed_at date;
 update products set listed_at = created_at::date where listed_at is null;
 alter table products alter column listed_at set default current_date;
 alter table products alter column listed_at set not null;
+
+-- เปลี่ยนหมวดหมู่ "Mac" เป็น "MACBOOK" และเพิ่ม "APPLE PENCIL", "APPLE WATCH"
+update products set category = 'MACBOOK' where category = 'Mac';
+alter table products drop constraint if exists products_category_check;
+alter table products add constraint products_category_check
+  check (category in ('iPhone','iPad','MACBOOK','APPLE PENCIL','APPLE WATCH','อื่นๆ'));
 
 -- ข้อมูลต้นทุน/กำไร/ปันผล กรอกตอนกดปุ่ม "ขายแล้ว"
 alter table products add column if not exists sold_at date;
