@@ -22,7 +22,7 @@ export default function Header({ settings }: { settings: StoreSettings | null })
             {storeName}
           </p>
           <p className="text-[11px] font-mono uppercase tracking-wide text-ink/50">
-            สต็อกมือถือ · แท็บเล็ตมือสอง
+            รับซื้อ ฝาก ขาย
           </p>
           {phones.length > 0 && (
             <p className="mt-1 flex flex-wrap items-center justify-center gap-x-2 font-mono text-xs text-ink/70">
