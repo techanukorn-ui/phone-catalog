@@ -11,7 +11,7 @@ const TABS = ['ทั้งหมด', ...CATEGORIES]
 
 export default function FilterBar({ activeCategory, onCategoryChange, search, onSearchChange }: Props) {
   return (
-    <div className="sticky top-[68px] z-20 border-b border-line bg-paper/95 backdrop-blur">
+    <div className="sticky top-[160px] z-20 border-b border-line bg-paper/95 backdrop-blur">
       <div className="mx-auto max-w-3xl px-4 py-2.5">
         <div className="no-scrollbar mb-2 flex gap-2 overflow-x-auto [touch-action:pan-x]">
           {TABS.map((tab) => {
