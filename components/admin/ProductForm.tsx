@@ -37,7 +37,7 @@ function todayStr(): string {
 
 function toFieldState(p?: Product): FieldState {
   return {
-    category: p?.category ?? 'IPHONE',
+    category: p?.category ?? 'IPAD',
     product_code: p?.product_code ?? '',
     model_name: p?.model_name ?? '',
     capacity: p?.capacity ?? '',
