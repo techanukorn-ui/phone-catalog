@@ -21,6 +21,14 @@ export interface Product {
   gallery_images: string[]
   status: ProductStatus
   listed_at: string
+  cost_device: number | null
+  cost_other: number | null
+  total_cost: number | null
+  sale_price: number | null
+  net_profit: number | null
+  dividend_wallet: number | null
+  dividend_bow: number | null
+  dividend_magic: number | null
   created_at: string
 }
 

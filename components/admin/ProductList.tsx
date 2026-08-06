@@ -5,11 +5,13 @@ import { supabase } from '@/lib/supabaseClient'
 import type { Product } from '@/lib/types'
 import { deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
+import MarkSoldForm from './MarkSoldForm'
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [sellingId, setSellingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
@@ -24,13 +26,12 @@ export default function ProductList() {
     loadProducts()
   }, [])
 
-  async function handleToggleSold(product: Product) {
-    const nextStatus = product.status === 'ขายแล้ว' ? 'พร้อมขาย' : 'ขายแล้ว'
+  async function handleRevertToAvailable(product: Product) {
     setTogglingId(product.id)
     try {
-      const { error } = await supabase.from('products').update({ status: nextStatus }).eq('id', product.id)
+      const { error } = await supabase.from('products').update({ status: 'พร้อมขาย' }).eq('id', product.id)
       if (error) throw error
-      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, status: nextStatus } : p)))
+      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, status: 'พร้อมขาย' } : p)))
     } catch (err) {
       window.alert('เปลี่ยนสถานะไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
     } finally {
@@ -72,6 +73,7 @@ export default function ProductList() {
     <div className="space-y-3">
       {products.map((product) => {
         const isEditing = editingId === product.id
+        const isSelling = sellingId === product.id
         return (
           <div key={product.id} className="rounded-card border border-line bg-panel">
             {isEditing ? (
@@ -86,6 +88,15 @@ export default function ProductList() {
                   }}
                 />
               </div>
+            ) : isSelling ? (
+              <MarkSoldForm
+                product={product}
+                onCancel={() => setSellingId(null)}
+                onSaved={() => {
+                  setSellingId(null)
+                  loadProducts()
+                }}
+              />
             ) : (
               <div className="flex items-center gap-3 p-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -109,7 +120,9 @@ export default function ProductList() {
                     แก้ไข
                   </button>
                   <button
-                    onClick={() => handleToggleSold(product)}
+                    onClick={() =>
+                      product.status === 'ขายแล้ว' ? handleRevertToAvailable(product) : setSellingId(product.id)
+                    }
                     disabled={togglingId === product.id}
                     className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark disabled:opacity-50"
                   >

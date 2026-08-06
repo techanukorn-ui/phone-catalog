@@ -47,6 +47,14 @@ create table if not exists products (
   gallery_images text[] not null default '{}',
   status text not null default 'พร้อมขาย' check (status in ('พร้อมขาย','ขายแล้ว')),
   listed_at date not null default current_date,
+  cost_device numeric,
+  cost_other numeric,
+  total_cost numeric generated always as (coalesce(cost_device, 0) + coalesce(cost_other, 0)) stored,
+  sale_price numeric,
+  net_profit numeric generated always as (sale_price - (coalesce(cost_device, 0) + coalesce(cost_other, 0))) stored,
+  dividend_wallet numeric,
+  dividend_bow numeric,
+  dividend_magic numeric,
   created_at timestamptz not null default now()
 );
 
@@ -57,6 +65,16 @@ alter table products add column if not exists listed_at date;
 update products set listed_at = created_at::date where listed_at is null;
 alter table products alter column listed_at set default current_date;
 alter table products alter column listed_at set not null;
+
+-- ข้อมูลต้นทุน/กำไร/ปันผล กรอกตอนกดปุ่ม "ขายแล้ว"
+alter table products add column if not exists cost_device numeric;
+alter table products add column if not exists cost_other numeric;
+alter table products add column if not exists total_cost numeric generated always as (coalesce(cost_device, 0) + coalesce(cost_other, 0)) stored;
+alter table products add column if not exists sale_price numeric;
+alter table products add column if not exists net_profit numeric generated always as (sale_price - (coalesce(cost_device, 0) + coalesce(cost_other, 0))) stored;
+alter table products add column if not exists dividend_wallet numeric;
+alter table products add column if not exists dividend_bow numeric;
+alter table products add column if not exists dividend_magic numeric;
 
 create index if not exists products_category_idx on products (category);
 create index if not exists products_created_at_idx on products (created_at desc);
