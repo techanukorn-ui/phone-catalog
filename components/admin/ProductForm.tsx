@@ -14,6 +14,7 @@ type Props = {
 
 type FieldState = {
   category: ProductCategory
+  product_code: string
   model_name: string
   capacity: string
   price: string
@@ -28,6 +29,7 @@ type FieldState = {
 function toFieldState(p?: Product): FieldState {
   return {
     category: p?.category ?? 'iPhone',
+    product_code: p?.product_code ?? '',
     model_name: p?.model_name ?? '',
     capacity: p?.capacity ?? '',
     price: p?.price != null ? String(p.price) : '',
@@ -126,26 +128,39 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       }
 
       if (mode === 'add') {
-        let attempt = 0
-        let lastError: any = null
-        while (attempt < 5) {
-          const product_code = generateProductCode(fields.category)
+        const manualCode = fields.product_code.trim().toUpperCase()
+        if (manualCode) {
           const { error: insertError } = await supabase
             .from('products')
-            .insert([{ ...payload, product_code }])
-          if (!insertError) {
-            lastError = null
-            break
+            .insert([{ ...payload, product_code: manualCode }])
+          if (insertError) {
+            if (insertError.code === '23505') {
+              throw new Error(`รหัสสินค้า "${manualCode}" ถูกใช้ไปแล้ว กรุณาใช้รหัสอื่น`)
+            }
+            throw insertError
           }
-          // 23505 = unique_violation → รหัสซ้ำ ลองใหม่
-          if (insertError.code !== '23505') {
+        } else {
+          let attempt = 0
+          let lastError: any = null
+          while (attempt < 5) {
+            const product_code = generateProductCode(fields.category)
+            const { error: insertError } = await supabase
+              .from('products')
+              .insert([{ ...payload, product_code }])
+            if (!insertError) {
+              lastError = null
+              break
+            }
+            // 23505 = unique_violation → รหัสซ้ำ ลองใหม่
+            if (insertError.code !== '23505') {
+              lastError = insertError
+              break
+            }
             lastError = insertError
-            break
+            attempt++
           }
-          lastError = insertError
-          attempt++
+          if (lastError) throw lastError
         }
-        if (lastError) throw lastError
       } else if (initialProduct) {
         const { error: updateError } = await supabase
           .from('products')
@@ -207,6 +222,20 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           </select>
         </label>
       </div>
+
+      {mode === 'add' && (
+        <label className="block">
+          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
+            รหัสสินค้า (เว้นว่างเพื่อสุ่มอัตโนมัติ)
+          </span>
+          <input
+            value={fields.product_code}
+            onChange={(e) => updateField('product_code', e.target.value)}
+            placeholder="เช่น IP-7F3K9A"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 font-mono text-sm uppercase"
+          />
+        </label>
+      )}
 
       <label className="block">
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ชื่อรุ่น *</span>
