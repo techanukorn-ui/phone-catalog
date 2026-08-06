@@ -27,13 +27,23 @@ function sanitizeFileName(name: string): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
 }
 
+/** Storage key รองรับแค่อักขระ ASCII ปลอดภัย ตัดภาษาไทย/สัญลักษณ์อื่นออกก่อนใช้เป็นชื่อโฟลเดอร์ */
+function sanitizeFolder(folder: string): string {
+  const safe = folder
+    .replace(/[^a-zA-Z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return safe || 'other'
+}
+
 /** อัปโหลดไฟล์รูปขึ้น Supabase Storage แล้วคืนค่า public URL */
 export async function uploadImage(
   bucket: 'product-images' | 'store-assets',
   file: File,
   folder?: string
 ): Promise<string> {
-  const path = folder ? `${folder}/${sanitizeFileName(file.name)}` : sanitizeFileName(file.name)
+  const path = folder
+    ? `${sanitizeFolder(folder)}/${sanitizeFileName(file.name)}`
+    : sanitizeFileName(file.name)
   const { error } = await supabase.storage.from(bucket).upload(path, file, {
     cacheControl: '3600',
     upsert: false,
