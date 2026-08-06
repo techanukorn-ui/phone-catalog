@@ -70,11 +70,14 @@ alter table products alter column listed_at set not null;
 
 -- เปลี่ยนหมวดหมู่ "Mac" เป็น "MACBOOK", "iPhone"/"iPad" เป็นตัวพิมพ์ใหญ่ทั้งหมด
 -- และเพิ่ม "APPLE PENCIL", "APPLE WATCH"
+-- (ต้องถอด constraint เดิมออกก่อน ไม่งั้น update ค่าใหม่จะชนกับ constraint เก่า)
+alter table products drop constraint if exists products_category_check;
+
 update products set category = 'MACBOOK' where category = 'Mac';
 update products set category = 'IPHONE' where category = 'iPhone';
 update products set category = 'IPAD' where category = 'iPad';
+
 alter table products alter column category set default 'IPHONE';
-alter table products drop constraint if exists products_category_check;
 alter table products add constraint products_category_check
   check (category in ('IPHONE','IPAD','MACBOOK','APPLE PENCIL','APPLE WATCH','อื่นๆ'));
 
