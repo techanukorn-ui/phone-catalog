@@ -12,6 +12,8 @@ html,
 body {
   background-color: #f1f0ec;
   color: #17181a;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
