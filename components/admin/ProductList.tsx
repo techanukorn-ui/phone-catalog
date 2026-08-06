@@ -119,19 +119,30 @@ export default function ProductList() {
                   >
                     แก้ไข
                   </button>
-                  <button
-                    onClick={() =>
-                      product.status === 'ขายแล้ว' ? handleRevertToAvailable(product) : setSellingId(product.id)
-                    }
-                    disabled={togglingId === product.id}
-                    className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark disabled:opacity-50"
-                  >
-                    {togglingId === product.id
-                      ? 'กำลังบันทึก…'
-                      : product.status === 'ขายแล้ว'
-                        ? 'คืนเป็นพร้อมขาย'
-                        : 'ขายแล้ว'}
-                  </button>
+                  {product.status === 'ขายแล้ว' ? (
+                    <>
+                      <button
+                        onClick={() => setSellingId(product.id)}
+                        className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark"
+                      >
+                        แก้ไขข้อมูลขาย
+                      </button>
+                      <button
+                        onClick={() => handleRevertToAvailable(product)}
+                        disabled={togglingId === product.id}
+                        className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark disabled:opacity-50"
+                      >
+                        {togglingId === product.id ? 'กำลังบันทึก…' : 'คืนเป็นพร้อมขาย'}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setSellingId(product.id)}
+                      className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark"
+                    >
+                      ขายแล้ว
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(product)}
                     disabled={deletingId === product.id}
