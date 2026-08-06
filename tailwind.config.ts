@@ -21,6 +21,11 @@ const config: Config = {
         },
         success: '#2F9E5B',
         danger: '#C4432E',
+        info: {
+          DEFAULT: '#3F6FBF',
+          dark: '#2C4F91',
+          light: '#E6ECFA',
+        },
       },
       fontFamily: {
         display: ['var(--font-display)'],

@@ -8,11 +8,11 @@ import ReportView from '@/components/admin/ReportView'
 
 type Tab = 'settings' | 'add' | 'stock' | 'report'
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'stock', label: 'สต็อกสินค้า' },
-  { key: 'add', label: 'เพิ่มสินค้า' },
-  { key: 'report', label: 'รายงาน' },
-  { key: 'settings', label: 'ข้อมูลร้านค้า' },
+const TABS: { key: Tab; label: string; active: string; inactive: string }[] = [
+  { key: 'stock', label: 'สต็อกสินค้า', active: 'border-teal bg-teal text-white', inactive: 'border-teal text-teal-dark bg-panel' },
+  { key: 'add', label: 'เพิ่มสินค้า', active: 'border-success bg-success text-white', inactive: 'border-success text-success bg-panel' },
+  { key: 'report', label: 'รายงาน', active: 'border-amber-dark bg-amber-dark text-white', inactive: 'border-amber-dark text-amber-dark bg-panel' },
+  { key: 'settings', label: 'ข้อมูลร้านค้า', active: 'border-info-dark bg-info-dark text-white', inactive: 'border-info-dark text-info-dark bg-panel' },
 ]
 
 export default function AdminManagePage() {
@@ -37,7 +37,7 @@ export default function AdminManagePage() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex-1 rounded-tag border px-3 py-2 font-mono text-xs uppercase tracking-wide ${
-                tab === t.key ? 'border-teal bg-teal text-white' : 'border-line bg-panel text-ink/70'
+                tab === t.key ? t.active : t.inactive
               }`}
             >
               {t.label}
