@@ -2,8 +2,8 @@ import { supabase } from './supabaseClient'
 import type { ProductCategory } from './types'
 
 const CODE_PREFIX: Record<ProductCategory, string> = {
-  iPhone: 'IP',
-  iPad: 'PD',
+  IPHONE: 'IP',
+  IPAD: 'PD',
   MACBOOK: 'MC',
   'APPLE PENCIL': 'AP',
   'APPLE WATCH': 'AW',
