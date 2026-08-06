@@ -17,6 +17,7 @@ type FieldState = {
   product_code: string
   model_name: string
   capacity: string
+  color: string
   price: string
   battery_percent: string
   condition_percent: string
@@ -32,6 +33,7 @@ function toFieldState(p?: Product): FieldState {
     product_code: p?.product_code ?? '',
     model_name: p?.model_name ?? '',
     capacity: p?.capacity ?? '',
+    color: p?.color ?? '',
     price: p?.price != null ? String(p.price) : '',
     battery_percent: p?.battery_percent != null ? String(p.battery_percent) : '',
     condition_percent: p?.condition_percent != null ? String(p.condition_percent) : '',
@@ -116,6 +118,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         category: fields.category,
         model_name: fields.model_name.trim(),
         capacity: fields.capacity.trim() || null,
+        color: fields.color.trim() || null,
         price: Number(fields.price),
         battery_percent: fields.battery_percent ? Number(fields.battery_percent) : null,
         condition_percent: fields.condition_percent ? Number(fields.condition_percent) : null,
@@ -258,16 +261,26 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           />
         </label>
         <label className="block">
-          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ราคา (บาท) *</span>
+          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">สี</span>
           <input
-            value={fields.price}
-            onChange={(e) => updateField('price', e.target.value)}
-            inputMode="numeric"
-            placeholder="เช่น 21900"
+            value={fields.color}
+            onChange={(e) => updateField('color', e.target.value)}
+            placeholder="เช่น Titanium Blue"
             className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
           />
         </label>
       </div>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ราคา (บาท) *</span>
+        <input
+          value={fields.price}
+          onChange={(e) => updateField('price', e.target.value)}
+          inputMode="numeric"
+          placeholder="เช่น 21900"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+        />
+      </label>
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">

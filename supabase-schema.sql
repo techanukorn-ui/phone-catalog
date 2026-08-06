@@ -35,6 +35,7 @@ create table if not exists products (
   category text not null default 'iPhone' check (category in ('iPhone','iPad','Mac','อื่นๆ')),
   model_name text not null,
   capacity text,
+  color text,
   price numeric not null default 0,
   battery_percent int check (battery_percent between 0 and 100),
   condition_percent int check (condition_percent between 0 and 100),
@@ -46,6 +47,9 @@ create table if not exists products (
   status text not null default 'พร้อมขาย' check (status in ('พร้อมขาย','ขายแล้ว')),
   created_at timestamptz not null default now()
 );
+
+-- สำหรับฐานข้อมูลที่สร้างตารางไว้ก่อนแล้ว (รันซ้ำได้ ไม่มีผลถ้าคอลัมน์มีอยู่แล้ว)
+alter table products add column if not exists color text;
 
 create index if not exists products_category_idx on products (category);
 create index if not exists products_created_at_idx on products (created_at desc);

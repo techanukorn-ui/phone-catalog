@@ -78,6 +78,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
               <p className="break-words font-display text-xl font-semibold text-ink">
                 {product.model_name}
                 {product.capacity ? <span className="text-ink/60"> · {product.capacity}</span> : null}
+                {product.color ? <span className="text-ink/60"> · {product.color}</span> : null}
               </p>
               <p className="mt-0.5 break-words font-mono text-xs uppercase tracking-wide text-ink/50">
                 {product.category}

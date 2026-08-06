@@ -9,6 +9,7 @@ export interface Product {
   category: ProductCategory
   model_name: string
   capacity: string | null
+  color: string | null
   price: number
   battery_percent: number | null
   condition_percent: number | null
@@ -25,6 +26,7 @@ export type ProductFormValues = {
   category: ProductCategory
   model_name: string
   capacity: string
+  color: string
   price: string
   battery_percent: string
   condition_percent: string
