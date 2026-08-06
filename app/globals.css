@@ -20,7 +20,7 @@ body {
 
 html.allow-x-pan,
 body.allow-x-pan {
-  touch-action: pan-x pan-y;
+  touch-action: pan-x pan-y pinch-zoom;
   overscroll-behavior-x: auto;
 }
 
