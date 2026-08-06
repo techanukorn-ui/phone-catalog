@@ -104,14 +104,14 @@ export default function ProductList() {
                 <div className="flex shrink-0 flex-col gap-1.5">
                   <button
                     onClick={() => setEditingId(product.id)}
-                    className="rounded-tag border border-line px-3 py-1.5 font-mono text-xs text-ink/70"
+                    className="rounded-tag border border-amber-dark px-3 py-1.5 font-mono text-xs text-amber-dark"
                   >
                     แก้ไข
                   </button>
                   <button
                     onClick={() => handleToggleSold(product)}
                     disabled={togglingId === product.id}
-                    className="rounded-tag border border-line px-3 py-1.5 font-mono text-xs text-ink/70 disabled:opacity-50"
+                    className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark disabled:opacity-50"
                   >
                     {togglingId === product.id
                       ? 'กำลังบันทึก…'
