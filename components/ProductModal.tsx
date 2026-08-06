@@ -32,7 +32,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
           <div
             ref={scrollerRef}
             onScroll={handleScroll}
-            className="no-scrollbar snap-x-mandatory flex aspect-square w-full overflow-x-auto"
+            className="no-scrollbar snap-x-mandatory flex aspect-square w-full overflow-x-auto overscroll-x-contain"
           >
             {images.map((src, i) => (
               // eslint-disable-next-line @next/next/no-img-element
@@ -71,12 +71,12 @@ export default function ProductModal({ product, onClose }: { product: Product; o
 
         <div className="tag-perforation overflow-y-auto p-4">
           <div className="mb-3 flex items-start justify-between gap-3">
-            <div>
-              <p className="font-display text-xl font-semibold text-ink">
+            <div className="min-w-0">
+              <p className="break-words font-display text-xl font-semibold text-ink">
                 {product.model_name}
                 {product.capacity ? <span className="text-ink/60"> · {product.capacity}</span> : null}
               </p>
-              <p className="mt-0.5 font-mono text-xs uppercase tracking-wide text-ink/50">
+              <p className="mt-0.5 break-words font-mono text-xs uppercase tracking-wide text-ink/50">
                 {product.category}
               </p>
             </div>
@@ -112,13 +112,13 @@ export default function ProductModal({ product, onClose }: { product: Product; o
             {product.accessories && (
               <div>
                 <dt className="font-mono text-[11px] uppercase tracking-wide text-ink/50">อุปกรณ์ที่มีให้</dt>
-                <dd className="whitespace-pre-line text-ink">{product.accessories}</dd>
+                <dd className="whitespace-pre-line break-words text-ink">{product.accessories}</dd>
               </div>
             )}
             {product.defects && (
               <div>
                 <dt className="font-mono text-[11px] uppercase tracking-wide text-ink/50">ตำหนิ / รายละเอียดสภาพ</dt>
-                <dd className="whitespace-pre-line text-ink">{product.defects}</dd>
+                <dd className="whitespace-pre-line break-words text-ink">{product.defects}</dd>
               </div>
             )}
           </dl>
