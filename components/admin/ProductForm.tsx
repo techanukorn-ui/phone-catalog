@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { CATEGORIES, type Product, type ProductCategory, type ProductStatus } from '@/lib/types'
 import { deleteImageByUrl, deleteImagesByUrls, generateProductCode, uploadImage } from '@/lib/utils'
@@ -63,6 +63,15 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
   const [newGalleryFiles, setNewGalleryFiles] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    document.documentElement.classList.add('allow-x-pan')
+    document.body.classList.add('allow-x-pan')
+    return () => {
+      document.documentElement.classList.remove('allow-x-pan')
+      document.body.classList.remove('allow-x-pan')
+    }
+  }, [])
 
   function updateField<K extends keyof FieldState>(key: K, value: FieldState[K]) {
     setFields((f) => ({ ...f, [key]: value }))
