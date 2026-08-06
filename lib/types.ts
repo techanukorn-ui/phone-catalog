@@ -20,6 +20,7 @@ export interface Product {
   cover_image_url: string
   gallery_images: string[]
   status: ProductStatus
+  listed_at: string
   created_at: string
 }
 
@@ -36,6 +37,7 @@ export type ProductFormValues = {
   accessories: string
   defects: string
   status: ProductStatus
+  listed_at: string
 }
 
 export interface StoreSettings {

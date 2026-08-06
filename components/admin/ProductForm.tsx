@@ -26,6 +26,13 @@ type FieldState = {
   accessories: string
   defects: string
   status: ProductStatus
+  listed_at: string
+}
+
+function todayStr(): string {
+  const d = new Date()
+  const tzOffsetMs = d.getTimezoneOffset() * 60000
+  return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 10)
 }
 
 function toFieldState(p?: Product): FieldState {
@@ -42,6 +49,7 @@ function toFieldState(p?: Product): FieldState {
     warranty_until: p?.warranty_until ?? '',
     accessories: p?.accessories ?? '',
     defects: p?.defects ?? '',
+    listed_at: p?.listed_at ?? todayStr(),
     status: p?.status ?? 'พร้อมขาย',
   }
 }
@@ -129,6 +137,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         accessories: fields.accessories.trim() || null,
         defects: fields.defects.trim() || null,
         status: fields.status,
+        listed_at: fields.listed_at || todayStr(),
         cover_image_url: coverUrl,
         gallery_images: finalGallery,
       }
@@ -242,6 +251,16 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           />
         </label>
       )}
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">วันที่ลงสินค้า</span>
+        <input
+          type="date"
+          value={fields.listed_at}
+          onChange={(e) => updateField('listed_at', e.target.value)}
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+        />
+      </label>
 
       <label className="block">
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ชื่อรุ่น *</span>

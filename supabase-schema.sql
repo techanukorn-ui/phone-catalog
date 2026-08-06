@@ -46,12 +46,17 @@ create table if not exists products (
   cover_image_url text not null,
   gallery_images text[] not null default '{}',
   status text not null default 'พร้อมขาย' check (status in ('พร้อมขาย','ขายแล้ว')),
+  listed_at date not null default current_date,
   created_at timestamptz not null default now()
 );
 
 -- สำหรับฐานข้อมูลที่สร้างตารางไว้ก่อนแล้ว (รันซ้ำได้ ไม่มีผลถ้าคอลัมน์มีอยู่แล้ว)
 alter table products add column if not exists color text;
 alter table products add column if not exists charge_cycles int check (charge_cycles >= 0);
+alter table products add column if not exists listed_at date;
+update products set listed_at = created_at::date where listed_at is null;
+alter table products alter column listed_at set default current_date;
+alter table products alter column listed_at set not null;
 
 create index if not exists products_category_idx on products (category);
 create index if not exists products_created_at_idx on products (created_at desc);
