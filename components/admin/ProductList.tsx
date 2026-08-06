@@ -69,9 +69,12 @@ export default function ProductList() {
     return <p className="py-8 text-center font-mono text-sm text-ink/50">ยังไม่มีสินค้าในสต็อก</p>
   }
 
+  const activeId = editingId ?? sellingId
+
   return (
     <div className="space-y-3">
       {products.map((product) => {
+        if (activeId && activeId !== product.id) return null
         const isEditing = editingId === product.id
         const isSelling = sellingId === product.id
         return (
