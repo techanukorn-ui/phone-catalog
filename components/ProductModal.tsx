@@ -32,7 +32,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
           <div
             ref={scrollerRef}
             onScroll={handleScroll}
-            className="no-scrollbar snap-x-mandatory flex aspect-square w-full overflow-x-auto overscroll-x-contain"
+            className="no-scrollbar snap-x-mandatory flex aspect-square w-full overflow-x-auto overscroll-x-contain [touch-action:pan-x]"
           >
             {images.map((src, i) => (
               // eslint-disable-next-line @next/next/no-img-element
