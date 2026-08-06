@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
 import type { Product } from '@/lib/types'
 import { deleteImageByUrl, deleteImagesByUrls } from '@/lib/utils'
@@ -132,6 +133,46 @@ export default function ReportView() {
     { total_cost: 0, sale_price: 0, net_profit: 0, dividend_wallet: 0, dividend_bow: 0, dividend_magic: 0 }
   )
 
+  function handleExportExcel() {
+    const headers = [
+      'รหัสสินค้า',
+      'ชื่อรุ่น',
+      'ต้นทุนรวม',
+      'ราคาขายจริง',
+      'กำไรสุทธิ',
+      'ปันผลวอลเล่',
+      'ปันผลโบว์',
+      'ปันผลเมจิ',
+      'วันที่ขาย',
+    ]
+    const dataRows = filtered.map((p) => [
+      p.product_code,
+      p.model_name,
+      p.total_cost ?? 0,
+      p.sale_price ?? 0,
+      p.net_profit ?? 0,
+      p.dividend_wallet ?? 0,
+      p.dividend_bow ?? 0,
+      p.dividend_magic ?? 0,
+      p.sold_at ?? '',
+    ])
+    const totalRow = [
+      'รวม',
+      '',
+      totals.total_cost,
+      totals.sale_price,
+      totals.net_profit,
+      totals.dividend_wallet,
+      totals.dividend_bow,
+      totals.dividend_magic,
+      '',
+    ]
+    const sheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows, totalRow])
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, sheet, 'รายงาน')
+    XLSX.writeFile(workbook, `รายงาน-${selectedMonth.key}.xlsx`)
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
@@ -147,6 +188,16 @@ export default function ReportView() {
           </button>
         ))}
       </div>
+
+      {!loading && !error && filtered.length > 0 && (
+        <button
+          type="button"
+          onClick={handleExportExcel}
+          className="w-full rounded-tag bg-teal px-4 py-2.5 font-mono text-sm font-semibold text-white"
+        >
+          ดาวน์โหลด Excel (.xlsx) — {selectedMonth.label}
+        </button>
+      )}
 
       {loading && <p className="py-8 text-center font-mono text-sm text-ink/50">กำลังโหลดรายงาน…</p>}
 
