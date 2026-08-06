@@ -21,6 +21,7 @@ export interface Product {
   gallery_images: string[]
   status: ProductStatus
   listed_at: string
+  sold_at: string | null
   cost_device: number | null
   cost_other: number | null
   total_cost: number | null

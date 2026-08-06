@@ -15,7 +15,14 @@ function parseNum(v: string): number {
   return Number.isFinite(n) ? n : 0
 }
 
+function todayStr(): string {
+  const d = new Date()
+  const tzOffsetMs = d.getTimezoneOffset() * 60000
+  return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 10)
+}
+
 export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
+  const [soldAt, setSoldAt] = useState(product.sold_at ?? todayStr())
   const [costDevice, setCostDevice] = useState(product.cost_device != null ? String(product.cost_device) : '')
   const [costOther, setCostOther] = useState(product.cost_other != null ? String(product.cost_other) : '')
   const [salePrice, setSalePrice] = useState(product.sale_price != null ? String(product.sale_price) : '')
@@ -37,6 +44,10 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
     e.preventDefault()
     setError(null)
 
+    if (!soldAt) {
+      setError('กรุณาเลือกวันที่ขาย')
+      return
+    }
     if (!salePrice || Number.isNaN(Number(salePrice))) {
       setError('กรุณากรอกราคาขายจริงเป็นตัวเลข')
       return
@@ -54,6 +65,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
         .from('products')
         .update({
           status: 'ขายแล้ว',
+          sold_at: soldAt,
           cost_device: costDevice ? parseNum(costDevice) : null,
           cost_other: costOther ? parseNum(costOther) : null,
           sale_price: parseNum(salePrice),
@@ -76,6 +88,16 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
       <p className="font-display text-sm font-semibold text-ink">
         บันทึกการขาย — {product.model_name} ({product.product_code})
       </p>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">วันที่ขาย *</span>
+        <input
+          type="date"
+          value={soldAt}
+          onChange={(e) => setSoldAt(e.target.value)}
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+        />
+      </label>
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">

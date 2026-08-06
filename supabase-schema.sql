@@ -47,6 +47,7 @@ create table if not exists products (
   gallery_images text[] not null default '{}',
   status text not null default 'พร้อมขาย' check (status in ('พร้อมขาย','ขายแล้ว')),
   listed_at date not null default current_date,
+  sold_at date,
   cost_device numeric,
   cost_other numeric,
   total_cost numeric generated always as (coalesce(cost_device, 0) + coalesce(cost_other, 0)) stored,
@@ -67,6 +68,7 @@ alter table products alter column listed_at set default current_date;
 alter table products alter column listed_at set not null;
 
 -- ข้อมูลต้นทุน/กำไร/ปันผล กรอกตอนกดปุ่ม "ขายแล้ว"
+alter table products add column if not exists sold_at date;
 alter table products add column if not exists cost_device numeric;
 alter table products add column if not exists cost_other numeric;
 alter table products add column if not exists total_cost numeric generated always as (coalesce(cost_device, 0) + coalesce(cost_other, 0)) stored;
