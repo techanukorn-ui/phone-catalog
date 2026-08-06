@@ -107,6 +107,12 @@ export default function ProductModal({ product, onClose }: { product: Product; o
           </div>
 
           <dl className="space-y-3 text-sm">
+            {product.charge_cycles != null && (
+              <div>
+                <dt className="font-mono text-[11px] uppercase tracking-wide text-ink/50">รอบชาร์จ</dt>
+                <dd className="text-ink">{product.charge_cycles} รอบ</dd>
+              </div>
+            )}
             {product.warranty_until && (
               <div>
                 <dt className="font-mono text-[11px] uppercase tracking-wide text-ink/50">ประกันศูนย์เหลือถึง</dt>

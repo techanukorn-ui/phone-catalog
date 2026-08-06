@@ -13,6 +13,7 @@ export interface Product {
   price: number
   battery_percent: number | null
   condition_percent: number | null
+  charge_cycles: number | null
   warranty_until: string | null
   accessories: string | null
   defects: string | null
@@ -30,6 +31,7 @@ export type ProductFormValues = {
   price: string
   battery_percent: string
   condition_percent: string
+  charge_cycles: string
   warranty_until: string
   accessories: string
   defects: string

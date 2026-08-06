@@ -39,6 +39,7 @@ create table if not exists products (
   price numeric not null default 0,
   battery_percent int check (battery_percent between 0 and 100),
   condition_percent int check (condition_percent between 0 and 100),
+  charge_cycles int check (charge_cycles >= 0),
   warranty_until text,
   accessories text,
   defects text,
@@ -50,6 +51,7 @@ create table if not exists products (
 
 -- สำหรับฐานข้อมูลที่สร้างตารางไว้ก่อนแล้ว (รันซ้ำได้ ไม่มีผลถ้าคอลัมน์มีอยู่แล้ว)
 alter table products add column if not exists color text;
+alter table products add column if not exists charge_cycles int check (charge_cycles >= 0);
 
 create index if not exists products_category_idx on products (category);
 create index if not exists products_created_at_idx on products (created_at desc);
