@@ -23,10 +23,13 @@ export default function ProductModal({ product, onClose }: { product: Product; o
   const sold = product.status === 'ขายแล้ว'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 sm:items-center" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center overscroll-none bg-ink/60 [touch-action:pan-y] sm:items-center"
+      onClick={onClose}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-card bg-panel sm:rounded-card"
+        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden overscroll-none rounded-t-card bg-panel [touch-action:pan-y] sm:rounded-card"
       >
         <div className="relative shrink-0">
           <div
