@@ -21,7 +21,7 @@ export default function Header({ settings }: { settings: StoreSettings | null })
           <p className="break-words font-display text-lg font-semibold leading-tight text-ink">
             {storeName}
           </p>
-          <p className="text-sm font-mono uppercase tracking-wide text-ink/50">
+          <p className="text-base font-mono font-bold uppercase tracking-wide text-teal">
             รับซื้อ ฝาก ขาย สินค้า Apple มือ 2 ทุกชนิด
           </p>
           {phones.length > 0 && (
