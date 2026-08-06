@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { Product, StoreSettings } from '@/lib/types'
 import Header from '@/components/Header'
-import FilterBar from '@/components/FilterBar'
+import FilterBar, { type SortOption } from '@/components/FilterBar'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
 
@@ -14,6 +14,7 @@ export default function StorefrontPage() {
   const [loading, setLoading] = useState(true)
   const [category, setCategory] = useState('ทั้งหมด')
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<SortOption>('newest')
   const [selected, setSelected] = useState<Product | null>(null)
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function StorefrontPage() {
   }, [])
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
+    const result = products.filter((p) => {
       const matchesCategory = category === 'ทั้งหมด' || p.category === category
       const q = search.trim().toLowerCase()
       const matchesSearch =
@@ -51,7 +52,13 @@ export default function StorefrontPage() {
         p.product_code.toLowerCase().includes(q)
       return matchesCategory && matchesSearch
     })
-  }, [products, category, search])
+    if (sort === 'price-asc') {
+      result.sort((a, b) => a.price - b.price)
+    } else if (sort === 'price-desc') {
+      result.sort((a, b) => b.price - a.price)
+    }
+    return result
+  }, [products, category, search, sort])
 
   return (
     <main className="min-h-screen bg-paper pb-10">
@@ -61,6 +68,8 @@ export default function StorefrontPage() {
         onCategoryChange={setCategory}
         search={search}
         onSearchChange={setSearch}
+        sort={sort}
+        onSortChange={setSort}
       />
 
       <div className="mx-auto max-w-3xl px-4 pt-4">

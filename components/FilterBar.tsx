@@ -1,15 +1,32 @@
 import { CATEGORIES } from '@/lib/types'
 
+export type SortOption = 'newest' | 'price-asc' | 'price-desc'
+
 type Props = {
   activeCategory: string
   onCategoryChange: (category: string) => void
   search: string
   onSearchChange: (value: string) => void
+  sort: SortOption
+  onSortChange: (value: SortOption) => void
 }
 
 const TABS = ['ทั้งหมด', ...CATEGORIES]
 
-export default function FilterBar({ activeCategory, onCategoryChange, search, onSearchChange }: Props) {
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'ล่าสุด' },
+  { value: 'price-asc', label: 'ราคา: ถูก → แพง' },
+  { value: 'price-desc', label: 'ราคา: แพง → ถูก' },
+]
+
+export default function FilterBar({
+  activeCategory,
+  onCategoryChange,
+  search,
+  onSearchChange,
+  sort,
+  onSortChange,
+}: Props) {
   return (
     <div className="sticky top-[196px] z-20 border-b border-line bg-paper/95 backdrop-blur">
       <div className="mx-auto max-w-3xl px-4 py-2.5">
@@ -31,15 +48,26 @@ export default function FilterBar({ activeCategory, onCategoryChange, search, on
             )
           })}
         </div>
-        <div className="relative">
+        <div className="flex gap-2">
           <input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             type="text"
             inputMode="search"
             placeholder="ค้นหารุ่น เช่น iPhone 13 Pro"
-            className="w-full rounded-tag border border-line bg-panel px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal"
+            className="min-w-0 flex-1 rounded-tag border border-line bg-panel px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal"
           />
+          <select
+            value={sort}
+            onChange={(e) => onSortChange(e.target.value as SortOption)}
+            className="shrink-0 rounded-tag border border-line bg-panel px-2 py-2 text-xs text-ink focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
