@@ -21,11 +21,11 @@ export default function Header({ settings }: { settings: StoreSettings | null })
           <p className="break-words font-display text-lg font-semibold leading-tight text-ink">
             {storeName}
           </p>
-          <p className="text-[11px] font-mono uppercase tracking-wide text-ink/50">
+          <p className="text-sm font-mono uppercase tracking-wide text-ink/50">
             รับซื้อ ฝาก ขาย สินค้า Apple มือ 2 ทุกชนิด
           </p>
           {phones.length > 0 && (
-            <p className="mt-1 flex flex-wrap items-center justify-center gap-x-2 font-mono text-xs text-ink/70">
+            <p className="mt-1 flex flex-wrap items-center justify-center gap-x-2 font-mono text-base text-ink/70">
               {phones.map((phone, i) => (
                 <span key={phone} className="flex items-center gap-x-2">
                   {i > 0 && <span className="text-ink/30">·</span>}
