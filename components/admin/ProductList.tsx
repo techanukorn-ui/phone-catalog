@@ -71,94 +71,115 @@ export default function ProductList() {
 
   const activeId = editingId ?? sellingId
 
-  return (
-    <div className="space-y-3">
-      {products.map((product) => {
-        if (activeId && activeId !== product.id) return null
-        const isEditing = editingId === product.id
-        const isSelling = sellingId === product.id
-        return (
-          <div key={product.id} className="rounded-card border border-line bg-panel">
-            {isEditing ? (
-              <div className="p-3">
-                <ProductForm
-                  mode="edit"
-                  initialProduct={product}
-                  onCancel={() => setEditingId(null)}
-                  onSaved={() => {
-                    setEditingId(null)
-                    loadProducts()
-                  }}
-                />
-              </div>
-            ) : isSelling ? (
-              <MarkSoldForm
-                product={product}
-                onCancel={() => setSellingId(null)}
-                onSaved={() => {
-                  setSellingId(null)
-                  loadProducts()
-                }}
-              />
-            ) : (
-              <div className="flex items-center gap-3 p-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={product.cover_image_url}
-                  alt={product.model_name}
-                  className="h-14 w-14 shrink-0 rounded-tag border border-line object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-sm font-semibold text-ink">{product.model_name}</p>
-                  <p className="font-mono text-xs text-ink/50">
-                    {product.product_code} · {product.status}
-                  </p>
-                  <p className="font-mono text-sm font-semibold text-amber-dark">{formatPrice(product.price)}</p>
-                </div>
-                <div className="flex shrink-0 flex-col gap-1.5">
-                  <button
-                    onClick={() => setEditingId(product.id)}
-                    className="rounded-tag border border-amber-dark px-3 py-1.5 font-mono text-xs text-amber-dark"
-                  >
-                    แก้ไข
-                  </button>
-                  {product.status === 'ขายแล้ว' ? (
-                    <>
-                      <button
-                        onClick={() => setSellingId(product.id)}
-                        className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark"
-                      >
-                        แก้ไขข้อมูลขาย
-                      </button>
-                      <button
-                        onClick={() => handleRevertToAvailable(product)}
-                        disabled={togglingId === product.id}
-                        className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark disabled:opacity-50"
-                      >
-                        {togglingId === product.id ? 'กำลังบันทึก…' : 'คืนเป็นพร้อมขาย'}
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => setSellingId(product.id)}
-                      className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark"
-                    >
-                      ขายแล้ว
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(product)}
-                    disabled={deletingId === product.id}
-                    className="rounded-tag border border-danger px-3 py-1.5 font-mono text-xs text-danger disabled:opacity-50"
-                  >
-                    {deletingId === product.id ? 'กำลังลบ…' : 'ลบ'}
-                  </button>
-                </div>
-              </div>
-            )}
+  function renderProductRow(product: Product) {
+    if (activeId && activeId !== product.id) return null
+    const isEditing = editingId === product.id
+    const isSelling = sellingId === product.id
+    return (
+      <div key={product.id} className="rounded-card border border-line bg-panel">
+        {isEditing ? (
+          <div className="p-3">
+            <ProductForm
+              mode="edit"
+              initialProduct={product}
+              onCancel={() => setEditingId(null)}
+              onSaved={() => {
+                setEditingId(null)
+                loadProducts()
+              }}
+            />
           </div>
-        )
-      })}
+        ) : isSelling ? (
+          <MarkSoldForm
+            product={product}
+            onCancel={() => setSellingId(null)}
+            onSaved={() => {
+              setSellingId(null)
+              loadProducts()
+            }}
+          />
+        ) : (
+          <div className="flex items-center gap-3 p-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={product.cover_image_url}
+              alt={product.model_name}
+              className="h-14 w-14 shrink-0 rounded-tag border border-line object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-display text-sm font-semibold text-ink">{product.model_name}</p>
+              <p className="font-mono text-xs text-ink/50">
+                {product.product_code} · {product.status}
+              </p>
+              <p className="font-mono text-sm font-semibold text-amber-dark">{formatPrice(product.price)}</p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-1.5">
+              <button
+                onClick={() => setEditingId(product.id)}
+                className="rounded-tag border border-amber-dark px-3 py-1.5 font-mono text-xs text-amber-dark"
+              >
+                แก้ไข
+              </button>
+              {product.status === 'ขายแล้ว' ? (
+                <>
+                  <button
+                    onClick={() => setSellingId(product.id)}
+                    className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark"
+                  >
+                    แก้ไขข้อมูลขาย
+                  </button>
+                  <button
+                    onClick={() => handleRevertToAvailable(product)}
+                    disabled={togglingId === product.id}
+                    className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark disabled:opacity-50"
+                  >
+                    {togglingId === product.id ? 'กำลังบันทึก…' : 'คืนเป็นพร้อมขาย'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setSellingId(product.id)}
+                  className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark"
+                >
+                  ขายแล้ว
+                </button>
+              )}
+              <button
+                onClick={() => handleDelete(product)}
+                disabled={deletingId === product.id}
+                className="rounded-tag border border-danger px-3 py-1.5 font-mono text-xs text-danger disabled:opacity-50"
+              >
+                {deletingId === product.id ? 'กำลังลบ…' : 'ลบ'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const available = products.filter((p) => p.status === 'พร้อมขาย')
+  const sold = products.filter((p) => p.status === 'ขายแล้ว')
+  const visibleAvailable = activeId ? available.filter((p) => p.id === activeId) : available
+  const visibleSold = activeId ? sold.filter((p) => p.id === activeId) : sold
+
+  return (
+    <div className="space-y-5">
+      {visibleAvailable.length > 0 && (
+        <div className="space-y-2">
+          <p className="font-mono text-xs uppercase tracking-wide text-ink/50">
+            สินค้าพร้อมขาย ({available.length})
+          </p>
+          <div className="space-y-3">{visibleAvailable.map(renderProductRow)}</div>
+        </div>
+      )}
+
+      {visibleSold.length > 0 && (
+        <div className="space-y-2">
+          <p className="font-mono text-xs uppercase tracking-wide text-ink/50">สินค้าขายแล้ว ({sold.length})</p>
+          <div className="space-y-3">{visibleSold.map(renderProductRow)}</div>
+        </div>
+      )}
     </div>
   )
 }
