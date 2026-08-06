@@ -14,7 +14,7 @@ type Props = {
 const TABS = ['ทั้งหมด', ...CATEGORIES]
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'newest', label: 'ล่าสุด' },
+  { value: 'newest', label: 'แนะนำ' },
   { value: 'price-asc', label: 'ราคา: ถูก → แพง' },
   { value: 'price-desc', label: 'ราคา: แพง → ถูก' },
 ]

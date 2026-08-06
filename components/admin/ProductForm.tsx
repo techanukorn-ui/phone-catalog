@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { CATEGORIES, type Product, type ProductCategory, type ProductStatus } from '@/lib/types'
-import { deleteImageByUrl, deleteImagesByUrls, generateProductCode, uploadImage } from '@/lib/utils'
+import { deleteImageByUrl, deleteImagesByUrls, generateProductCode, getNextSortOrder, uploadImage } from '@/lib/utils'
 
 type Props = {
   mode: 'add' | 'edit'
@@ -152,11 +152,12 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       }
 
       if (mode === 'add') {
+        const sort_order = await getNextSortOrder()
         const manualCode = fields.product_code.trim().toUpperCase()
         if (manualCode) {
           const { error: insertError } = await supabase
             .from('products')
-            .insert([{ ...payload, product_code: manualCode }])
+            .insert([{ ...payload, product_code: manualCode, sort_order }])
           if (insertError) {
             if (insertError.code === '23505') {
               throw new Error(`รหัสสินค้า "${manualCode}" ถูกใช้ไปแล้ว กรุณาใช้รหัสอื่น`)
@@ -170,7 +171,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
             const product_code = generateProductCode(fields.category)
             const { error: insertError } = await supabase
               .from('products')
-              .insert([{ ...payload, product_code }])
+              .insert([{ ...payload, product_code, sort_order }])
             if (!insertError) {
               lastError = null
               break

@@ -20,6 +20,17 @@ export function generateProductCode(category: ProductCategory): string {
   return `${CODE_PREFIX[category]}-${random}`
 }
 
+/** ค่า sort_order สำหรับสินค้าใหม่ ให้ขึ้นแสดงบนสุดเสมอ (เหมือนพฤติกรรมเดิมของ "ล่าสุด") */
+export async function getNextSortOrder(): Promise<number> {
+  const { data } = await supabase
+    .from('products')
+    .select('sort_order')
+    .order('sort_order', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  return (data?.sort_order ?? 0) - 1
+}
+
 export function formatPrice(price: number): string {
   return `${new Intl.NumberFormat('th-TH').format(price)} บาท`
 }

@@ -14,6 +14,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   const [sellingId, setSellingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [reorderingId, setReorderingId] = useState<string | null>(null)
 
   async function loadProducts() {
     setLoading(true)
@@ -21,7 +22,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
       .from('products')
       .select('*')
       .eq('status', status)
-      .order('created_at', { ascending: false })
+      .order('sort_order', { ascending: true })
     setProducts((data as Product[]) ?? [])
     setLoading(false)
   }
@@ -42,6 +43,33 @@ export default function ProductList({ status }: { status: ProductStatus }) {
       window.alert('เปลี่ยนสถานะไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
     } finally {
       setTogglingId(null)
+    }
+  }
+
+  async function handleMove(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction
+    if (targetIndex < 0 || targetIndex >= products.length) return
+    const current = products[index]
+    const target = products[targetIndex]
+
+    setReorderingId(current.id)
+    try {
+      const [{ error: err1 }, { error: err2 }] = await Promise.all([
+        supabase.from('products').update({ sort_order: target.sort_order }).eq('id', current.id),
+        supabase.from('products').update({ sort_order: current.sort_order }).eq('id', target.id),
+      ])
+      if (err1 || err2) throw err1 || err2
+
+      setProducts((prev) => {
+        const next = [...prev]
+        next[index] = { ...target, sort_order: current.sort_order }
+        next[targetIndex] = { ...current, sort_order: target.sort_order }
+        return next
+      })
+    } catch (err) {
+      window.alert('เปลี่ยนลำดับไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+    } finally {
+      setReorderingId(null)
     }
   }
 
@@ -110,6 +138,28 @@ export default function ProductList({ status }: { status: ProductStatus }) {
           />
         ) : (
           <div className="flex items-center gap-3 p-3">
+            {status === 'พร้อมขาย' && (
+              <div className="flex shrink-0 flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleMove(products.findIndex((p) => p.id === product.id), -1)}
+                  disabled={reorderingId !== null || products.findIndex((p) => p.id === product.id) === 0}
+                  className="flex h-6 w-6 items-center justify-center rounded-tag border border-line text-ink/60 disabled:opacity-30"
+                  aria-label="เลื่อนขึ้น"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleMove(products.findIndex((p) => p.id === product.id), 1)}
+                  disabled={reorderingId !== null || products.findIndex((p) => p.id === product.id) === products.length - 1}
+                  className="flex h-6 w-6 items-center justify-center rounded-tag border border-line text-ink/60 disabled:opacity-30"
+                  aria-label="เลื่อนลง"
+                >
+                  ▼
+                </button>
+              </div>
+            )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={product.cover_image_url}

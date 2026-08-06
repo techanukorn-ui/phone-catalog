@@ -27,7 +27,7 @@ export default function StorefrontPage() {
           .from('products')
           .select('*')
           .eq('status', 'พร้อมขาย')
-          .order('created_at', { ascending: false }),
+          .order('sort_order', { ascending: true }),
         supabase.from('store_settings').select('*').eq('id', 1).maybeSingle(),
       ])
       if (!active) return

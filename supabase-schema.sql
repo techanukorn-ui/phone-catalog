@@ -96,6 +96,19 @@ alter table products add column if not exists dividend_boat numeric;
 create index if not exists products_category_idx on products (category);
 create index if not exists products_created_at_idx on products (created_at desc);
 
+-- ลำดับการแสดงผลที่ร้านค้ากำหนดเอง (ใช้ทั้งหลังบ้านและหน้าร้าน)
+-- ค่าน้อย = แสดงก่อน ของเดิมที่ยังไม่เคยตั้งจะได้ลำดับตามวันที่สร้างล่าสุดก่อน (คงหน้าตาเดิมไว้)
+alter table products add column if not exists sort_order integer;
+update products set sort_order = sub.rn
+from (
+  select id, row_number() over (order by created_at desc) as rn
+  from products
+) sub
+where products.id = sub.id and products.sort_order is null;
+alter table products alter column sort_order set default 0;
+alter table products alter column sort_order set not null;
+create index if not exists products_sort_order_idx on products (sort_order);
+
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------
