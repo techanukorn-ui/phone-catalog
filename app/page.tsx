@@ -22,7 +22,11 @@ export default function StorefrontPage() {
     async function load() {
       setLoading(true)
       const [{ data: productsData }, { data: settingsData }] = await Promise.all([
-        supabase.from('products').select('*').order('created_at', { ascending: false }),
+        supabase
+          .from('products')
+          .select('*')
+          .eq('status', 'พร้อมขาย')
+          .order('created_at', { ascending: false }),
         supabase.from('store_settings').select('*').eq('id', 1).maybeSingle(),
       ])
       if (!active) return
