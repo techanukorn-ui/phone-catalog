@@ -31,14 +31,22 @@ export default function ProductCard({ product, onSelect }: { product: Product; o
 
       <div className="tag-perforation flex flex-1 flex-col gap-2 p-3">
         <div>
-          <p className="font-display text-sm font-semibold leading-snug text-ink">
+          <p className="break-words font-display text-sm font-semibold leading-snug text-ink">
             {product.model_name}
             {product.capacity ? <span className="text-ink/60"> · {product.capacity}</span> : null}
+            {product.color ? <span className="text-ink/60"> · {product.color}</span> : null}
           </p>
         </div>
 
         {product.battery_percent != null && (
           <ConditionDial value={product.battery_percent} label="แบต" size={38} colorClassName="text-teal" />
+        )}
+
+        {(product.charge_cycles != null || product.warranty_until) && (
+          <div className="space-y-0.5 font-mono text-[11px] text-ink/60">
+            {product.charge_cycles != null && <p>รอบชาร์จ {product.charge_cycles} รอบ</p>}
+            {product.warranty_until && <p className="break-words">ประกันถึง {product.warranty_until}</p>}
+          </div>
         )}
 
         <p className="mt-auto font-mono text-lg font-semibold text-amber-dark">
