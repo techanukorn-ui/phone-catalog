@@ -4,12 +4,14 @@ import { useState } from 'react'
 import StoreSettingsForm from '@/components/admin/StoreSettingsForm'
 import ProductForm from '@/components/admin/ProductForm'
 import ProductList from '@/components/admin/ProductList'
+import ReportView from '@/components/admin/ReportView'
 
-type Tab = 'settings' | 'add' | 'stock'
+type Tab = 'settings' | 'add' | 'stock' | 'report'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'stock', label: 'สต็อกสินค้า' },
   { key: 'add', label: 'เพิ่มสินค้า' },
+  { key: 'report', label: 'รายงาน' },
   { key: 'settings', label: 'ข้อมูลร้านค้า' },
 ]
 
@@ -29,7 +31,7 @@ export default function AdminManagePage() {
       </header>
 
       <div className="sticky top-[60px] z-20 border-b border-line bg-paper/95 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl gap-2 px-4 py-2.5">
+        <div className="mx-auto flex max-w-2xl flex-wrap gap-2 px-4 py-2.5">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -57,6 +59,8 @@ export default function AdminManagePage() {
         )}
 
         {tab === 'stock' && <ProductList key={refreshKey} />}
+
+        {tab === 'report' && <ReportView />}
       </div>
     </main>
   )
