@@ -2,8 +2,8 @@ export type ProductCategory = 'IPHONE' | 'IPAD' | 'MACBOOK' | 'APPLE PENCIL' | '
 export type ProductStatus = 'พร้อมขาย' | 'ขายแล้ว'
 
 export const CATEGORIES: ProductCategory[] = [
-  'IPHONE',
   'IPAD',
+  'IPHONE',
   'MACBOOK',
   'APPLE PENCIL',
   'APPLE WATCH',
