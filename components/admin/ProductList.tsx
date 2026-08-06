@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import type { Product } from '@/lib/types'
+import type { Product, ProductStatus } from '@/lib/types'
 import { deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
 import MarkSoldForm from './MarkSoldForm'
 
-export default function ProductList() {
+export default function ProductList({ status }: { status: ProductStatus }) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -17,21 +17,27 @@ export default function ProductList() {
 
   async function loadProducts() {
     setLoading(true)
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false })
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .eq('status', status)
+      .order('created_at', { ascending: false })
     setProducts((data as Product[]) ?? [])
     setLoading(false)
   }
 
   useEffect(() => {
     loadProducts()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status])
 
   async function handleRevertToAvailable(product: Product) {
     setTogglingId(product.id)
     try {
       const { error } = await supabase.from('products').update({ status: 'พร้อมขาย' }).eq('id', product.id)
       if (error) throw error
-      setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, status: 'พร้อมขาย' } : p)))
+      // ย้ายไปอยู่แท็บ "สต็อกสินค้าพร้อมขาย" แล้ว ไม่ใช่ของแท็บนี้อีกต่อไป
+      setProducts((prev) => prev.filter((p) => p.id !== product.id))
     } catch (err) {
       window.alert('เปลี่ยนสถานะไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
     } finally {
@@ -66,7 +72,11 @@ export default function ProductList() {
   }
 
   if (products.length === 0) {
-    return <p className="py-8 text-center font-mono text-sm text-ink/50">ยังไม่มีสินค้าในสต็อก</p>
+    return (
+      <p className="py-8 text-center font-mono text-sm text-ink/50">
+        {status === 'พร้อมขาย' ? 'ยังไม่มีสินค้าพร้อมขาย' : 'ยังไม่มีสินค้าที่ขายแล้ว'}
+      </p>
+    )
   }
 
   const activeId = editingId ?? sellingId
@@ -158,28 +168,7 @@ export default function ProductList() {
     )
   }
 
-  const available = products.filter((p) => p.status === 'พร้อมขาย')
-  const sold = products.filter((p) => p.status === 'ขายแล้ว')
-  const visibleAvailable = activeId ? available.filter((p) => p.id === activeId) : available
-  const visibleSold = activeId ? sold.filter((p) => p.id === activeId) : sold
+  const visible = activeId ? products.filter((p) => p.id === activeId) : products
 
-  return (
-    <div className="space-y-5">
-      {visibleAvailable.length > 0 && (
-        <div className="space-y-2">
-          <p className="font-mono text-xs uppercase tracking-wide text-ink/50">
-            สินค้าพร้อมขาย ({available.length})
-          </p>
-          <div className="space-y-3">{visibleAvailable.map(renderProductRow)}</div>
-        </div>
-      )}
-
-      {visibleSold.length > 0 && (
-        <div className="space-y-2">
-          <p className="font-mono text-xs uppercase tracking-wide text-ink/50">สินค้าขายแล้ว ({sold.length})</p>
-          <div className="space-y-3">{visibleSold.map(renderProductRow)}</div>
-        </div>
-      )}
-    </div>
-  )
+  return <div className="space-y-3">{visible.map(renderProductRow)}</div>
 }

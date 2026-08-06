@@ -6,17 +6,43 @@ import ProductForm from '@/components/admin/ProductForm'
 import ProductList from '@/components/admin/ProductList'
 import ReportView from '@/components/admin/ReportView'
 
-type Tab = 'settings' | 'add' | 'stock' | 'report'
+type Tab = 'settings' | 'add' | 'stock-available' | 'stock-sold' | 'report'
 
 const TABS: { key: Tab; label: string; active: string; inactive: string }[] = [
-  { key: 'stock', label: 'สต็อกสินค้า', active: 'border-teal bg-teal text-white', inactive: 'border-teal text-teal-dark bg-panel' },
-  { key: 'add', label: 'เพิ่มสินค้า', active: 'border-success bg-success text-white', inactive: 'border-success text-success bg-panel' },
-  { key: 'report', label: 'รายงาน', active: 'border-amber-dark bg-amber-dark text-white', inactive: 'border-amber-dark text-amber-dark bg-panel' },
-  { key: 'settings', label: 'ข้อมูลร้านค้า', active: 'border-info-dark bg-info-dark text-white', inactive: 'border-info-dark text-info-dark bg-panel' },
+  {
+    key: 'stock-available',
+    label: 'สต็อกสินค้าพร้อมขาย',
+    active: 'border-teal bg-teal text-white',
+    inactive: 'border-teal text-teal-dark bg-panel',
+  },
+  {
+    key: 'stock-sold',
+    label: 'สินค้าขายแล้ว',
+    active: 'border-ink bg-ink text-white',
+    inactive: 'border-ink text-ink bg-panel',
+  },
+  {
+    key: 'add',
+    label: 'เพิ่มสินค้า',
+    active: 'border-success bg-success text-white',
+    inactive: 'border-success text-success bg-panel',
+  },
+  {
+    key: 'report',
+    label: 'รายงาน',
+    active: 'border-amber-dark bg-amber-dark text-white',
+    inactive: 'border-amber-dark text-amber-dark bg-panel',
+  },
+  {
+    key: 'settings',
+    label: 'ข้อมูลร้านค้า',
+    active: 'border-info-dark bg-info-dark text-white',
+    inactive: 'border-info-dark text-info-dark bg-panel',
+  },
 ]
 
 export default function AdminManagePage() {
-  const [tab, setTab] = useState<Tab>('stock')
+  const [tab, setTab] = useState<Tab>('stock-available')
   const [refreshKey, setRefreshKey] = useState(0)
 
   return (
@@ -58,7 +84,9 @@ export default function AdminManagePage() {
           />
         )}
 
-        {tab === 'stock' && <ProductList key={refreshKey} />}
+        {tab === 'stock-available' && <ProductList key={refreshKey} status="พร้อมขาย" />}
+
+        {tab === 'stock-sold' && <ProductList key={refreshKey} status="ขายแล้ว" />}
 
         {tab === 'report' && <ReportView />}
       </div>
