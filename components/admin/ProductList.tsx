@@ -1,11 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { supabase } from '@/lib/supabaseClient'
 import type { Product, ProductStatus } from '@/lib/types'
 import { deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
 import MarkSoldForm from './MarkSoldForm'
+import SortableProductRow from './SortableProductRow'
 
 export default function ProductList({ status }: { status: ProductStatus }) {
   const [products, setProducts] = useState<Product[]>([])
@@ -14,7 +17,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   const [sellingId, setSellingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
-  const [reorderingId, setReorderingId] = useState<string | null>(null)
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   async function loadProducts() {
     setLoading(true)
@@ -46,30 +49,29 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     }
   }
 
-  async function handleMove(index: number, direction: -1 | 1) {
-    const targetIndex = index + direction
-    if (targetIndex < 0 || targetIndex >= products.length) return
-    const current = products[index]
-    const target = products[targetIndex]
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-    setReorderingId(current.id)
-    try {
-      const [{ error: err1 }, { error: err2 }] = await Promise.all([
-        supabase.from('products').update({ sort_order: target.sort_order }).eq('id', current.id),
-        supabase.from('products').update({ sort_order: current.sort_order }).eq('id', target.id),
-      ])
-      if (err1 || err2) throw err1 || err2
+    const oldIndex = products.findIndex((p) => p.id === active.id)
+    const newIndex = products.findIndex((p) => p.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
 
-      setProducts((prev) => {
-        const next = [...prev]
-        next[index] = { ...target, sort_order: current.sort_order }
-        next[targetIndex] = { ...current, sort_order: target.sort_order }
-        return next
-      })
-    } catch (err) {
+    // คงชุดค่า sort_order เดิมไว้ทั้งหมด แค่สลับว่าใครได้ค่าไหนตามลำดับใหม่
+    // (ไม่แตะสินค้าที่อยู่นอกรายการนี้ เช่น ในแท็บสินค้าขายแล้ว)
+    const sortOrders = products.map((p) => p.sort_order)
+    const reordered = arrayMove(products, oldIndex, newIndex)
+    const next = reordered.map((p, i) => ({ ...p, sort_order: sortOrders[i] }))
+    const changed = next.filter((p) => products.find((pp) => pp.id === p.id)?.sort_order !== p.sort_order)
+
+    setProducts(next)
+
+    const results = await Promise.all(
+      changed.map((p) => supabase.from('products').update({ sort_order: p.sort_order }).eq('id', p.id))
+    )
+    if (results.some((r) => r.error)) {
       window.alert('เปลี่ยนลำดับไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
-    } finally {
-      setReorderingId(null)
+      loadProducts()
     }
   }
 
@@ -138,28 +140,6 @@ export default function ProductList({ status }: { status: ProductStatus }) {
           />
         ) : (
           <div className="flex items-center gap-3 p-3">
-            {status === 'พร้อมขาย' && (
-              <div className="flex shrink-0 flex-col gap-1">
-                <button
-                  type="button"
-                  onClick={() => handleMove(products.findIndex((p) => p.id === product.id), -1)}
-                  disabled={reorderingId !== null || products.findIndex((p) => p.id === product.id) === 0}
-                  className="flex h-6 w-6 items-center justify-center rounded-tag border border-line text-ink/60 disabled:opacity-30"
-                  aria-label="เลื่อนขึ้น"
-                >
-                  ▲
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleMove(products.findIndex((p) => p.id === product.id), 1)}
-                  disabled={reorderingId !== null || products.findIndex((p) => p.id === product.id) === products.length - 1}
-                  className="flex h-6 w-6 items-center justify-center rounded-tag border border-line text-ink/60 disabled:opacity-30"
-                  aria-label="เลื่อนลง"
-                >
-                  ▼
-                </button>
-              </div>
-            )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={product.cover_image_url}
@@ -219,6 +199,22 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   }
 
   const visible = activeId ? products.filter((p) => p.id === activeId) : products
+
+  if (status === 'พร้อมขาย' && !activeId) {
+    return (
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={visible.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-2">
+            {visible.map((product) => (
+              <SortableProductRow key={product.id} product={product}>
+                {renderProductRow(product)}
+              </SortableProductRow>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+    )
+  }
 
   return <div className="space-y-3">{visible.map(renderProductRow)}</div>
 }
