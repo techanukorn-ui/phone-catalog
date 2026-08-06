@@ -29,14 +29,15 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
   const [divWallet, setDivWallet] = useState(product.dividend_wallet != null ? String(product.dividend_wallet) : '')
   const [divBow, setDivBow] = useState(product.dividend_bow != null ? String(product.dividend_bow) : '')
   const [divMagic, setDivMagic] = useState(product.dividend_magic != null ? String(product.dividend_magic) : '')
+  const [divBoat, setDivBoat] = useState(product.dividend_boat != null ? String(product.dividend_boat) : '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const totalCost = useMemo(() => parseNum(costDevice) + parseNum(costOther), [costDevice, costOther])
   const netProfit = useMemo(() => parseNum(salePrice) - totalCost, [salePrice, totalCost])
   const dividendSum = useMemo(
-    () => parseNum(divWallet) + parseNum(divBow) + parseNum(divMagic),
-    [divWallet, divBow, divMagic]
+    () => parseNum(divWallet) + parseNum(divBow) + parseNum(divMagic) + parseNum(divBoat),
+    [divWallet, divBow, divMagic, divBoat]
   )
   const dividendMatches = Math.abs(dividendSum - netProfit) < 0.01
 
@@ -72,6 +73,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           dividend_wallet: divWallet ? parseNum(divWallet) : null,
           dividend_bow: divBow ? parseNum(divBow) : null,
           dividend_magic: divMagic ? parseNum(divMagic) : null,
+          dividend_boat: divBoat ? parseNum(divBoat) : null,
         })
         .eq('id', product.id)
       if (updateError) throw updateError
@@ -147,7 +149,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <label className="block">
           <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">ปันผลวอลเล่</span>
           <input
@@ -173,6 +175,16 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           <input
             value={divMagic}
             onChange={(e) => setDivMagic(e.target.value)}
+            inputMode="numeric"
+            placeholder="0"
+            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">ปันผลโบ๊ท</span>
+          <input
+            value={divBoat}
+            onChange={(e) => setDivBoat(e.target.value)}
             inputMode="numeric"
             placeholder="0"
             className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-sm"

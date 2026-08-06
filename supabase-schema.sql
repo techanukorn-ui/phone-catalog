@@ -56,6 +56,7 @@ create table if not exists products (
   dividend_wallet numeric,
   dividend_bow numeric,
   dividend_magic numeric,
+  dividend_boat numeric,
   created_at timestamptz not null default now()
 );
 
@@ -77,6 +78,7 @@ alter table products add column if not exists net_profit numeric generated alway
 alter table products add column if not exists dividend_wallet numeric;
 alter table products add column if not exists dividend_bow numeric;
 alter table products add column if not exists dividend_magic numeric;
+alter table products add column if not exists dividend_boat numeric;
 
 create index if not exists products_category_idx on products (category);
 create index if not exists products_created_at_idx on products (created_at desc);
