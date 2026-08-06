@@ -8,6 +8,8 @@ import { deleteImageByUrl, uploadImage } from '@/lib/utils'
 export default function StoreSettingsForm() {
   const [settings, setSettings] = useState<StoreSettings | null>(null)
   const [storeName, setStoreName] = useState('')
+  const [phone1, setPhone1] = useState('')
+  const [phone2, setPhone2] = useState('')
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -21,6 +23,8 @@ export default function StoreSettingsForm() {
       const s = data as StoreSettings | null
       setSettings(s)
       setStoreName(s?.store_name ?? '')
+      setPhone1(s?.phone1 ?? '')
+      setPhone2(s?.phone2 ?? '')
       setLogoPreview(s?.logo_url ?? null)
       setLoading(false)
     }
@@ -49,7 +53,13 @@ export default function StoreSettingsForm() {
 
       const { data, error: upsertError } = await supabase
         .from('store_settings')
-        .upsert({ id: 1, store_name: storeName.trim() || 'ร้านมือถือมือสอง', logo_url: logoUrl })
+        .upsert({
+          id: 1,
+          store_name: storeName.trim() || 'ร้านมือถือมือสอง',
+          logo_url: logoUrl,
+          phone1: phone1.trim() || null,
+          phone2: phone2.trim() || null,
+        })
         .select()
         .single()
       if (upsertError) throw upsertError
@@ -79,6 +89,29 @@ export default function StoreSettingsForm() {
           className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
         />
       </label>
+
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block">
+          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">เบอร์โทร 1</span>
+          <input
+            value={phone1}
+            onChange={(e) => setPhone1(e.target.value)}
+            inputMode="tel"
+            placeholder="เช่น 081-234-5678"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">เบอร์โทร 2</span>
+          <input
+            value={phone2}
+            onChange={(e) => setPhone2(e.target.value)}
+            inputMode="tel"
+            placeholder="เช่น 089-876-5432"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          />
+        </label>
+      </div>
 
       <div>
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">โลโก้ร้านค้า</span>

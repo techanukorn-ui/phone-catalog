@@ -38,5 +38,7 @@ export interface StoreSettings {
   id: number
   store_name: string
   logo_url: string | null
+  phone1: string | null
+  phone2: string | null
   updated_at: string
 }

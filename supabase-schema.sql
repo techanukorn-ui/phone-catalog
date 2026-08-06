@@ -12,9 +12,15 @@ create table if not exists store_settings (
   id int primary key default 1,
   store_name text not null default 'ร้านมือถือมือสอง',
   logo_url text,
+  phone1 text,
+  phone2 text,
   updated_at timestamptz not null default now(),
   constraint store_settings_single_row check (id = 1)
 );
+
+-- สำหรับฐานข้อมูลที่สร้างตารางไว้ก่อนแล้ว (รันซ้ำได้ ไม่มีผลถ้าคอลัมน์มีอยู่แล้ว)
+alter table store_settings add column if not exists phone1 text;
+alter table store_settings add column if not exists phone2 text;
 
 insert into store_settings (id, store_name)
 values (1, 'ร้านมือถือมือสอง')

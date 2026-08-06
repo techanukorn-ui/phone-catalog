@@ -2,6 +2,7 @@ import type { StoreSettings } from '@/lib/types'
 
 export default function Header({ settings }: { settings: StoreSettings | null }) {
   const storeName = settings?.store_name || 'ร้านมือถือมือสอง'
+  const phones = [settings?.phone1, settings?.phone2].filter((p): p is string => !!p?.trim())
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/95 backdrop-blur">
@@ -23,6 +24,18 @@ export default function Header({ settings }: { settings: StoreSettings | null })
           <p className="text-[11px] font-mono uppercase tracking-wide text-ink/50">
             สต็อกมือถือ · แท็บเล็ตมือสอง
           </p>
+          {phones.length > 0 && (
+            <p className="mt-1 flex flex-wrap items-center justify-center gap-x-2 font-mono text-xs text-ink/70">
+              {phones.map((phone, i) => (
+                <span key={phone} className="flex items-center gap-x-2">
+                  {i > 0 && <span className="text-ink/30">·</span>}
+                  <a href={`tel:${phone}`} className="hover:text-teal">
+                    {phone}
+                  </a>
+                </span>
+              ))}
+            </p>
+          )}
         </div>
       </div>
     </header>
