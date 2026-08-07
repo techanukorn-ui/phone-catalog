@@ -239,6 +239,28 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     return <div className="space-y-3">{visible.map(renderProductRow)}</div>
   }
 
+  if (status !== 'พร้อมขาย') {
+    // สินค้าขายแล้วคือข้อมูลปิดจบแล้ว ไม่ต้องจัดลำดับ แค่แยกหมวดให้ดูง่ายขึ้น
+    return (
+      <div>
+        {categoryOrder.map((category) => {
+          const items = products.filter((p) => p.category === category)
+          if (items.length === 0) return null
+          return (
+            <div key={category} className="mt-4 first:mt-0">
+              <div className="mb-1.5 flex items-center gap-2">
+                <p className="font-mono text-xs font-semibold uppercase tracking-wide text-ink/60">{category}</p>
+                <span className="font-mono text-[10px] text-ink/40">({items.length})</span>
+                <div className="h-px flex-1 bg-line" />
+              </div>
+              <div className="space-y-3">{items.map(renderProductRow)}</div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
       <SortableContext items={categoryOrder} strategy={verticalListSortingStrategy}>
