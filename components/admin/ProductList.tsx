@@ -249,29 +249,8 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     return <div className="space-y-3">{visible.map(renderProductRow)}</div>
   }
 
-  if (status !== 'พร้อมขาย') {
-    // สินค้าขายแล้วคือข้อมูลปิดจบแล้ว ไม่ต้องจัดลำดับ แค่แยกหมวดให้ดูง่ายขึ้น
-    return (
-      <div>
-        {categoryOrder.map((category) => {
-          const items = products
-            .filter((p) => p.category === category)
-            .sort((a, b) => a.category_sort_order - b.category_sort_order)
-          if (items.length === 0) return null
-          return (
-            <div key={category} className="mt-4 first:mt-0">
-              <div className="mb-1.5 flex items-center gap-2">
-                <p className="font-mono text-xs font-semibold uppercase tracking-wide text-ink/60">{category}</p>
-                <span className="font-mono text-[10px] text-ink/40">({items.length})</span>
-                <div className="h-px flex-1 bg-line" />
-              </div>
-              <div className="space-y-3">{items.map(renderProductRow)}</div>
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
+  // สินค้าขายแล้วคือข้อมูลปิดจบแล้ว ไม่ต้องจัดลำดับ แค่กรองดูทีละหมวดให้ง่ายขึ้น
+  const canReorder = status === 'พร้อมขาย'
 
   const displayed =
     activeTab === 'ทั้งหมด'
@@ -283,23 +262,40 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   return (
     <div>
       <div className="no-scrollbar mb-3 flex gap-2 overflow-x-auto [touch-action:pan-x]">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
-          <SortableContext items={categoryOrder} strategy={horizontalListSortingStrategy}>
-            {categoryOrder.map((category) => (
-              <SortableCategoryPill
-                key={category}
-                category={category}
-                active={activeTab === category}
-                onSelect={() => setActiveTab(category)}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
+        {canReorder ? (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
+            <SortableContext items={categoryOrder} strategy={horizontalListSortingStrategy}>
+              {categoryOrder.map((category) => (
+                <SortableCategoryPill
+                  key={category}
+                  category={category}
+                  active={activeTab === category}
+                  onSelect={() => setActiveTab(category)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        ) : (
+          categoryOrder.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setActiveTab(category)}
+              className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
+                activeTab === category
+                  ? 'border-teal bg-teal text-white'
+                  : 'border-line bg-panel text-ink/70 active:bg-line/40'
+              }`}
+            >
+              {category}
+            </button>
+          ))
+        )}
       </div>
 
       {displayed.length === 0 ? (
         <p className="py-8 text-center font-mono text-sm text-ink/50">ไม่มีสินค้าในหมวดนี้</p>
-      ) : (
+      ) : canReorder ? (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -315,6 +311,8 @@ export default function ProductList({ status }: { status: ProductStatus }) {
             </div>
           </SortableContext>
         </DndContext>
+      ) : (
+        <div className="space-y-3">{displayed.map(renderProductRow)}</div>
       )}
     </div>
   )
