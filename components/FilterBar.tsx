@@ -32,7 +32,7 @@ export default function FilterBar({
   return (
     <div className="sticky top-[196px] z-20 border-b border-line bg-paper/95 backdrop-blur">
       <div className="mx-auto max-w-3xl px-4 py-2.5">
-        <div className="no-scrollbar mb-2 flex gap-2 overflow-x-auto [touch-action:pan-x]">
+        <div className="pill-row mb-2">
           {tabs.map((tab) => {
             const active = tab === activeCategory
             return (

@@ -69,7 +69,7 @@ export default function StagnantStockReport() {
       {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>}
 
       {!loading && !error && (
-        <div className="no-scrollbar flex gap-2 overflow-x-auto [touch-action:pan-x]">
+        <div className="pill-row">
           {categoryOrder.map((category) => (
             <button
               key={category}

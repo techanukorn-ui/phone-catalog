@@ -20,7 +20,7 @@ export default function ReportSection() {
 
   return (
     <div className="space-y-3">
-      <div className="no-scrollbar flex gap-2 overflow-x-auto [touch-action:pan-x]">
+      <div className="pill-row">
         {REPORT_TABS.map((t) => {
           const active = tab === t.key
           const colorClass = t.danger

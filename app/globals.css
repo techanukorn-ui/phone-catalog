@@ -64,6 +64,27 @@ body {
   scrollbar-width: none;
 }
 
+/* แถวปุ่ม/แท็บแบบเลื่อนแนวนอน — บนมือถือเลื่อนด้วยนิ้วได้ (ซ่อน scrollbar)
+   แต่บนเดสก์ท็อป (เมาส์ ไม่มีนิ้วลาก) ไม่มีทางเลื่อนดูของที่โดนตัดออกไปได้
+   เลยให้ตัดกลับไปห่อบรรทัดแทนเมื่อจอกว้างพอ (>= 640px) แก้ปัญหาปุ่มโดนตัดมองไม่เห็น */
+.pill-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  touch-action: pan-x;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.pill-row::-webkit-scrollbar {
+  display: none;
+}
+@media (min-width: 640px) {
+  .pill-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
 .snap-x-mandatory {
   scroll-snap-type: x mandatory;
 }

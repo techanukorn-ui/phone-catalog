@@ -141,7 +141,7 @@ export default function ReportView() {
         ))}
       </div>
 
-      <div className="no-scrollbar flex gap-2 overflow-x-auto [touch-action:pan-x]">
+      <div className="pill-row">
         {(['ทั้งหมด', ...OWNERS] as OwnerFilter[]).map((o) => (
           <button
             key={o}

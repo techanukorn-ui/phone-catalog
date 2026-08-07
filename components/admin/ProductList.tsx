@@ -266,7 +266,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
 
   return (
     <div>
-      <div className="no-scrollbar mb-3 flex gap-2 overflow-x-auto [touch-action:pan-x]">
+      <div className="pill-row mb-3">
         {canReorder ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
             <SortableContext items={categoryOrder} strategy={horizontalListSortingStrategy}>
