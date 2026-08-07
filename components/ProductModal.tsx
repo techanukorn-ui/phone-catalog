@@ -97,14 +97,11 @@ export default function ProductModal({ product, onClose }: { product: Product; o
             {formatPrice(product.price)}
           </p>
 
-          <div className="mb-4 flex gap-4 rounded-tag border border-line bg-paper p-3">
-            {product.battery_percent != null && (
+          {product.battery_percent != null && (
+            <div className="mb-4 flex gap-4 rounded-tag border border-line bg-paper p-3">
               <ConditionDial value={product.battery_percent} label="แบตเตอรี่" size={52} colorClassName="text-teal" />
-            )}
-            {product.condition_percent != null && (
-              <ConditionDial value={product.condition_percent} label="สภาพเครื่อง" size={52} colorClassName="text-amber-dark" />
-            )}
-          </div>
+            </div>
+          )}
 
           <dl className="space-y-3 text-sm">
             {product.charge_cycles != null && (

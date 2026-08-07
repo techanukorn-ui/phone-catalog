@@ -27,7 +27,6 @@ type FieldState = {
   color: string
   price: string
   battery_percent: string
-  condition_percent: string
   charge_cycles: string
   warranty_until: string
   accessories: string
@@ -51,7 +50,6 @@ function toFieldState(p?: Product): FieldState {
     color: p?.color ?? '',
     price: p?.price != null ? String(p.price) : '',
     battery_percent: p?.battery_percent != null ? String(p.battery_percent) : '',
-    condition_percent: p?.condition_percent != null ? String(p.condition_percent) : '',
     charge_cycles: p?.charge_cycles != null ? String(p.charge_cycles) : '',
     warranty_until: p?.warranty_until ?? '',
     accessories: p?.accessories ?? '',
@@ -147,7 +145,6 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         color: fields.color.trim() || null,
         price: Number(fields.price),
         battery_percent: fields.battery_percent ? Number(fields.battery_percent) : null,
-        condition_percent: fields.condition_percent ? Number(fields.condition_percent) : null,
         charge_cycles: fields.charge_cycles ? Number(fields.charge_cycles) : null,
         warranty_until: fields.warranty_until.trim() || null,
         accessories: fields.accessories.trim() || null,
@@ -327,28 +324,16 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         />
       </label>
 
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block">
-          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">แบตเตอรี่ %</span>
-          <input
-            value={fields.battery_percent}
-            onChange={(e) => updateField('battery_percent', e.target.value)}
-            inputMode="numeric"
-            placeholder="0-100"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">สภาพเครื่อง %</span>
-          <input
-            value={fields.condition_percent}
-            onChange={(e) => updateField('condition_percent', e.target.value)}
-            inputMode="numeric"
-            placeholder="0-100"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
-          />
-        </label>
-      </div>
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">แบตเตอรี่ %</span>
+        <input
+          value={fields.battery_percent}
+          onChange={(e) => updateField('battery_percent', e.target.value)}
+          inputMode="numeric"
+          placeholder="0-100"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+        />
+      </label>
 
       <label className="block">
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">รอบชาร์จ</span>
