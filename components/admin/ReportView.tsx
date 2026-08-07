@@ -3,9 +3,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
-import type { Product } from '@/lib/types'
+import { OWNERS } from '@/lib/types'
+import type { Product, ProductOwner } from '@/lib/types'
 import { buildLastMonths, toDateInputStr } from '@/lib/utils'
 import SalesComparisonChart from './SalesComparisonChart'
+
+type OwnerFilter = 'ทั้งหมด' | ProductOwner
 
 function fmt(n: number | null): string {
   if (n == null) return '-'
@@ -15,6 +18,7 @@ function fmt(n: number | null): string {
 export default function ReportView() {
   const months = useMemo(() => buildLastMonths(3), [])
   const [selectedKey, setSelectedKey] = useState(months[0].key)
+  const [activeOwner, setActiveOwner] = useState<OwnerFilter>('ทั้งหมด')
   const [rows, setRows] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,8 +47,10 @@ export default function ReportView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const ownerFilteredRows = activeOwner === 'ทั้งหมด' ? rows : rows.filter((p) => p.owner === activeOwner)
+
   const selectedMonth = months.find((m) => m.key === selectedKey)!
-  const filtered = rows.filter((p) => {
+  const filtered = ownerFilteredRows.filter((p) => {
     if (!p.sold_at) return false
     const d = new Date(p.sold_at)
     return d >= selectedMonth.start && d < selectedMonth.end
@@ -76,6 +82,7 @@ export default function ReportView() {
     const headers = [
       'รหัสสินค้า',
       'ชื่อรุ่น',
+      'เจ้าของทุน',
       'ต้นทุนรวม',
       'ราคาขายจริง',
       'กำไรสุทธิ',
@@ -88,6 +95,7 @@ export default function ReportView() {
     const dataRows = filtered.map((p) => [
       p.product_code,
       p.model_name,
+      p.owner ?? 'ไม่ระบุ',
       p.total_cost ?? 0,
       p.sale_price ?? 0,
       p.net_profit ?? 0,
@@ -99,6 +107,7 @@ export default function ReportView() {
     ])
     const totalRow = [
       'รวม',
+      '',
       '',
       totals.total_cost,
       totals.sale_price,
@@ -112,7 +121,8 @@ export default function ReportView() {
     const sheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows, totalRow])
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, sheet, 'รายงาน')
-    XLSX.writeFile(workbook, `รายงาน-${selectedMonth.key}.xlsx`)
+    const ownerSuffix = activeOwner !== 'ทั้งหมด' ? `-${activeOwner}` : ''
+    XLSX.writeFile(workbook, `รายงาน-${selectedMonth.key}${ownerSuffix}.xlsx`)
   }
 
   return (
@@ -127,6 +137,22 @@ export default function ReportView() {
             }`}
           >
             {m.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="no-scrollbar flex gap-2 overflow-x-auto [touch-action:pan-x]">
+        {(['ทั้งหมด', ...OWNERS] as OwnerFilter[]).map((o) => (
+          <button
+            key={o}
+            onClick={() => setActiveOwner(o)}
+            className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
+              activeOwner === o
+                ? 'border-teal bg-teal text-white'
+                : 'border-line bg-panel text-ink/70 active:bg-line/40'
+            }`}
+          >
+            {o}
           </button>
         ))}
       </div>
@@ -146,6 +172,7 @@ export default function ReportView() {
               <tr className="border-b border-line bg-paper text-left text-ink/60">
                 <th className="whitespace-nowrap px-3 py-2">รหัสสินค้า</th>
                 <th className="whitespace-nowrap px-3 py-2">ชื่อรุ่น</th>
+                {activeOwner === 'ทั้งหมด' && <th className="whitespace-nowrap px-3 py-2">เจ้าของทุน</th>}
                 <th className="whitespace-nowrap px-3 py-2 text-right">ต้นทุนรวม</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">ราคาขายจริง</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">กำไรสุทธิ</th>
@@ -161,6 +188,9 @@ export default function ReportView() {
                 <tr key={p.id} className="border-b border-line last:border-b-0">
                   <td className="whitespace-nowrap px-3 py-2 text-ink">{p.product_code}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-ink">{p.model_name}</td>
+                  {activeOwner === 'ทั้งหมด' && (
+                    <td className="whitespace-nowrap px-3 py-2 text-ink/70">{p.owner ?? 'ไม่ระบุ'}</td>
+                  )}
                   <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(p.total_cost)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(p.sale_price)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-teal-dark">
@@ -176,7 +206,7 @@ export default function ReportView() {
             </tbody>
             <tfoot>
               <tr className="border-t border-line bg-paper font-semibold">
-                <td className="whitespace-nowrap px-3 py-2 text-ink" colSpan={2}>
+                <td className="whitespace-nowrap px-3 py-2 text-ink" colSpan={activeOwner === 'ทั้งหมด' ? 3 : 2}>
                   รวม
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(totals.total_cost)}</td>
@@ -203,7 +233,13 @@ export default function ReportView() {
         </button>
       )}
 
-      {!loading && !error && <SalesComparisonChart rows={rows} months={months} />}
+      {!loading && !error && (
+        <SalesComparisonChart
+          rows={ownerFilteredRows}
+          months={months}
+          titleSuffix={activeOwner !== 'ทั้งหมด' ? activeOwner : undefined}
+        />
+      )}
     </div>
   )
 }

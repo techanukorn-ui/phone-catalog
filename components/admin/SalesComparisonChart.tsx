@@ -7,6 +7,7 @@ import { formatPrice, type MonthOption } from '@/lib/utils'
 type Props = {
   rows: Product[]
   months: MonthOption[] // newest-first, as produced by buildLastMonths
+  titleSuffix?: string
 }
 
 const SALE_COLOR = '#0D9488' // ยอดขาย
@@ -61,7 +62,7 @@ function barPath(x: number, y: number, w: number, h: number, roundTop: boolean):
 
 type Hovered = { idx: number; series: 'sale' | 'profit' }
 
-export default function SalesComparisonChart({ rows, months }: Props) {
+export default function SalesComparisonChart({ rows, months, titleSuffix }: Props) {
   const [hovered, setHovered] = useState<Hovered | null>(null)
 
   const chartMonths = [...months].reverse() // เรียงเก่า→ใหม่ อ่านซ้ายไปขวาเหมือนไทม์ไลน์
@@ -104,7 +105,9 @@ export default function SalesComparisonChart({ rows, months }: Props) {
   return (
     <div className="rounded-card border border-line bg-panel p-4">
       <div className="mb-1 flex items-baseline justify-between">
-        <p className="font-display text-sm font-semibold text-ink">ยอดขายเทียบกำไรสุทธิ 3 เดือนล่าสุด</p>
+        <p className="font-display text-sm font-semibold text-ink">
+          ยอดขายเทียบกำไรสุทธิ 3 เดือนล่าสุด{titleSuffix ? ` — ${titleSuffix}` : ''}
+        </p>
         <p className="font-mono text-[10px] text-ink/40">หน่วย: บาท</p>
       </div>
 

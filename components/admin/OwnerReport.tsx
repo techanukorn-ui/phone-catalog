@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
 import { OWNERS } from '@/lib/types'
 import type { ProductOwner } from '@/lib/types'
@@ -67,11 +68,38 @@ export default function OwnerReport() {
     return <p className="py-8 text-center font-mono text-sm text-ink/50">กำลังโหลดรายงาน…</p>
   }
 
+  function handleExportExcel() {
+    const headers = [
+      'เจ้าของทุน',
+      'สต็อกคงเหลือ (ชิ้น)',
+      'มูลค่าสต็อกคงเหลือ',
+      'ขายแล้วทั้งหมด (ชิ้น)',
+      'ยอดขายรวม',
+      'กำไรสุทธิรวม',
+    ]
+    const dataRows = BUCKETS.map((owner) => {
+      const s = stats[owner]
+      return [owner, s.availableCount, s.availableValue, s.soldCount, s.saleTotal, s.profitTotal]
+    })
+    const sheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows])
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, sheet, 'เจ้าของทุน')
+    XLSX.writeFile(workbook, 'รายงานเจ้าของทุน.xlsx')
+  }
+
   return (
     <div className="space-y-3">
       <p className="font-mono text-xs text-ink/50">
         สรุปสต็อกและยอดขายทั้งหมด (ไม่จำกัดช่วงเวลา) แยกตามเจ้าของทุนของแต่ละเครื่อง
       </p>
+
+      <button
+        type="button"
+        onClick={handleExportExcel}
+        className="w-full rounded-tag bg-teal px-4 py-2.5 font-mono text-sm font-semibold text-white"
+      >
+        ดาวน์โหลด Excel (.xlsx)
+      </button>
 
       {BUCKETS.map((owner) => {
         const s = stats[owner]
