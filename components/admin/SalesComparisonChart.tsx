@@ -182,7 +182,7 @@ export default function SalesComparisonChart({ rows, months, titleSuffix }: Prop
                       style={{ filter: profitHovered ? 'brightness(1.12)' : undefined, cursor: 'pointer' }}
                       tabIndex={0}
                       role="img"
-                      aria-label={`${d.fullLabel} กำไรสุทธิ ${formatPrice(d.profit)}`}
+                      aria-label={`${d.fullLabel} กำไรสุทธิ(ก่อนแบ่งปันผล) ${formatPrice(d.profit)}`}
                       onMouseEnter={() => setHovered({ idx, series: 'profit' })}
                       onMouseLeave={() => setHovered(null)}
                       onFocus={() => setHovered({ idx, series: 'profit' })}
@@ -233,16 +233,16 @@ export default function SalesComparisonChart({ rows, months, titleSuffix }: Prop
                 const groupCenterX = MARGIN.left + groupW * hovered.idx + groupW / 2
                 const barX = isSale ? groupCenterX - pairW / 2 : groupCenterX - pairW / 2 + BAR_W + BAR_GAP
                 const topY = yScale(Math.max(value, 0))
-                const leftPct = Math.min(88, Math.max(12, ((barX + BAR_W / 2) / W) * 100))
+                const leftPct = Math.min(85, Math.max(15, ((barX + BAR_W / 2) / W) * 100))
                 const topPct = Math.max(4, (topY / H) * 100)
                 return (
                   <div
-                    className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-tag border border-line bg-ink px-2 py-1 text-center shadow-tag"
+                    className="pointer-events-none absolute z-10 w-28 -translate-x-1/2 -translate-y-full rounded-tag border border-line bg-ink px-2 py-1 text-center shadow-tag"
                     style={{ left: `${leftPct}%`, top: `${topPct}%`, marginTop: -6 }}
                   >
-                    <p className="whitespace-nowrap font-mono text-[10px] text-white/70">{d.fullLabel}</p>
-                    <p className="whitespace-nowrap font-mono text-xs font-semibold text-white">
-                      {isSale ? 'ยอดขาย' : 'กำไรสุทธิ'} {formatPrice(value)}
+                    <p className="font-mono text-[10px] text-white/70">{d.fullLabel}</p>
+                    <p className="font-mono text-xs font-semibold text-white">
+                      {isSale ? 'ยอดขาย' : 'กำไรสุทธิ(ก่อนแบ่งปันผล)'} {formatPrice(value)}
                     </p>
                   </div>
                 )
@@ -256,7 +256,7 @@ export default function SalesComparisonChart({ rows, months, titleSuffix }: Prop
             </span>
             <span className="flex items-center gap-1.5 font-mono text-[11px] text-ink/70">
               <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: PROFIT_COLOR }} />
-              กำไรสุทธิ
+              กำไรสุทธิ(ก่อนแบ่งปันผล)
             </span>
           </div>
         </>

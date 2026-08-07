@@ -10,7 +10,7 @@ type ReportTab = 'sales' | 'owner' | 'stagnant' | 'cleanup'
 
 const REPORT_TABS: { key: ReportTab; label: string; danger?: boolean }[] = [
   { key: 'sales', label: 'รายงานการขาย' },
-  { key: 'owner', label: 'รายงานเจ้าของทุน' },
+  { key: 'owner', label: 'สต็อกคงเหลือตามเจ้าของทุน' },
   { key: 'stagnant', label: 'รายงานสินค้าค้างสต็อกเกิน 15 วัน' },
   { key: 'cleanup', label: 'ลบสินค้าที่ขายแล้วเกิน 3 เดือน', danger: true },
 ]

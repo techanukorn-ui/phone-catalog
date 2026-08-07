@@ -85,7 +85,7 @@ export default function ReportView() {
       'เจ้าของทุน',
       'ต้นทุนรวม',
       'ราคาขายจริง',
-      'กำไรสุทธิ',
+      'กำไรสุทธิ(ก่อนแบ่งปันผล)',
       'ปันผลวอลเล่',
       'ปันผลโบว์',
       'ปันผลเมจิ',
@@ -175,7 +175,7 @@ export default function ReportView() {
                 {activeOwner === 'ทั้งหมด' && <th className="whitespace-nowrap px-3 py-2">เจ้าของทุน</th>}
                 <th className="whitespace-nowrap px-3 py-2 text-right">ต้นทุนรวม</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">ราคาขายจริง</th>
-                <th className="whitespace-nowrap px-3 py-2 text-right">กำไรสุทธิ</th>
+                <th className="whitespace-nowrap px-3 py-2 text-right">กำไรสุทธิ(ก่อนแบ่งปันผล)</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">ปันผลวอลเล่</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">ปันผลโบว์</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">ปันผลเมจิ</th>

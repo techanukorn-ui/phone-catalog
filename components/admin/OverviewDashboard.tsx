@@ -91,7 +91,7 @@ export default function OverviewDashboard() {
           }}
         />
         <StatTile
-          label={`กำไรสุทธิ — ${months[0].label}`}
+          label={`กำไรสุทธิ(ก่อนแบ่งปันผล) — ${months[0].label}`}
           value={formatPrice(thisMonth.profit)}
           delta={{
             text: profitDelta === 0 ? 'เท่ากับเดือนก่อน' : `${profitDelta > 0 ? '▲' : '▼'} ${formatPrice(Math.abs(profitDelta))} เทียบเดือนก่อน`,

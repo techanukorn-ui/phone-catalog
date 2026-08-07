@@ -55,7 +55,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
     }
     if (!dividendMatches) {
       setError(
-        `ผลรวมปันผล (${dividendSum.toLocaleString('th-TH')}) ต้องเท่ากับกำไรสุทธิ (${netProfit.toLocaleString('th-TH')})`
+        `ผลรวมปันผล (${dividendSum.toLocaleString('th-TH')}) ต้องเท่ากับกำไรสุทธิ(ก่อนแบ่งปันผล) (${netProfit.toLocaleString('th-TH')})`
       )
       return
     }
@@ -143,7 +143,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
       </label>
 
       <div>
-        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">กำไรสุทธิ</span>
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">กำไรสุทธิ(ก่อนแบ่งปันผล)</span>
         <p className="rounded-tag border border-line bg-line/20 px-3 py-2 font-mono text-sm font-semibold text-teal-dark">
           {netProfit.toLocaleString('th-TH')}
         </p>
@@ -193,7 +193,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
       </div>
 
       <p className={`font-mono text-xs ${dividendMatches ? 'text-ink/50' : 'text-danger'}`}>
-        รวมปันผล {dividendSum.toLocaleString('th-TH')} / กำไรสุทธิ {netProfit.toLocaleString('th-TH')}
+        รวมปันผล {dividendSum.toLocaleString('th-TH')} / กำไรสุทธิ(ก่อนแบ่งปันผล) {netProfit.toLocaleString('th-TH')}
       </p>
 
       {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>}
