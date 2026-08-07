@@ -10,6 +10,11 @@ export const CATEGORIES: ProductCategory[] = [
   'อื่นๆ',
 ]
 
+// "ทั้งหมด" คือแท็บรวมทุกหมวด ไม่ใช่หมวดหมู่จริงของสินค้า แต่เข้าไปอยู่ในลำดับที่ลากสลับได้ด้วย
+export type CategoryTab = 'ทั้งหมด' | ProductCategory
+
+export const CATEGORY_TABS: CategoryTab[] = ['ทั้งหมด', ...CATEGORIES]
+
 export interface Product {
   id: string
   product_code: string
@@ -64,6 +69,6 @@ export interface StoreSettings {
   logo_url: string | null
   phone1: string | null
   phone2: string | null
-  category_order: ProductCategory[] | null
+  category_order: CategoryTab[] | null
   updated_at: string
 }

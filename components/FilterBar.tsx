@@ -1,10 +1,10 @@
-import { CATEGORIES } from '@/lib/types'
-import type { ProductCategory } from '@/lib/types'
+import { CATEGORY_TABS } from '@/lib/types'
+import type { CategoryTab } from '@/lib/types'
 
 export type SortOption = 'newest' | 'price-asc' | 'price-desc'
 
 type Props = {
-  categories?: ProductCategory[]
+  categories?: CategoryTab[]
   activeCategory: string
   onCategoryChange: (category: string) => void
   search: string
@@ -28,7 +28,7 @@ export default function FilterBar({
   sort,
   onSortChange,
 }: Props) {
-  const tabs = ['ทั้งหมด', ...(categories?.length ? categories : CATEGORIES)]
+  const tabs = categories?.length ? categories : CATEGORY_TABS
   return (
     <div className="sticky top-[196px] z-20 border-b border-line bg-paper/95 backdrop-blur">
       <div className="mx-auto max-w-3xl px-4 py-2.5">

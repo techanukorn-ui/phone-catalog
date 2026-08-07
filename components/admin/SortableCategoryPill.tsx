@@ -2,10 +2,10 @@
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import type { ProductCategory } from '@/lib/types'
+import type { CategoryTab } from '@/lib/types'
 
 type Props = {
-  category: ProductCategory
+  category: CategoryTab
   active: boolean
   onSelect: () => void
 }

@@ -9,15 +9,13 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { supabase } from '@/lib/supabaseClient'
-import { CATEGORIES } from '@/lib/types'
-import type { Product, ProductCategory, ProductStatus } from '@/lib/types'
+import { CATEGORY_TABS } from '@/lib/types'
+import type { CategoryTab, Product, ProductStatus } from '@/lib/types'
 import { deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
 import MarkSoldForm from './MarkSoldForm'
 import SortableProductRow from './SortableProductRow'
 import SortableCategoryPill from './SortableCategoryPill'
-
-type CategoryTab = 'ทั้งหมด' | ProductCategory
 
 export default function ProductList({ status }: { status: ProductStatus }) {
   const [products, setProducts] = useState<Product[]>([])
@@ -26,7 +24,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   const [sellingId, setSellingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
-  const [categoryOrder, setCategoryOrder] = useState<ProductCategory[]>(CATEGORIES)
+  const [categoryOrder, setCategoryOrder] = useState<CategoryTab[]>(CATEGORY_TABS)
   const [activeTab, setActiveTab] = useState<CategoryTab>('ทั้งหมด')
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -50,7 +48,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     // ลำดับหมวดหมู่เป็นค่าที่ใช้ร่วมกันทั้งสองแท็บและหน้าร้าน จึงโหลดครั้งเดียว
     async function loadCategoryOrder() {
       const { data } = await supabase.from('store_settings').select('category_order').eq('id', 1).maybeSingle()
-      const order = (data as { category_order: ProductCategory[] | null } | null)?.category_order
+      const order = (data as { category_order: CategoryTab[] | null } | null)?.category_order
       if (order?.length) setCategoryOrder(order)
     }
     loadCategoryOrder()
@@ -274,17 +272,6 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   return (
     <div>
       <div className="no-scrollbar mb-3 flex gap-2 overflow-x-auto [touch-action:pan-x]">
-        <button
-          type="button"
-          onClick={() => setActiveTab('ทั้งหมด')}
-          className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
-            activeTab === 'ทั้งหมด'
-              ? 'border-teal bg-teal text-white'
-              : 'border-line bg-panel text-ink/70 active:bg-line/40'
-          }`}
-        >
-          ทั้งหมด
-        </button>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
           <SortableContext items={categoryOrder} strategy={horizontalListSortingStrategy}>
             {categoryOrder.map((category) => (
