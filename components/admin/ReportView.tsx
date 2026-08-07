@@ -117,8 +117,6 @@ export default function ReportView() {
 
   return (
     <div className="space-y-3">
-      {!loading && !error && <SalesComparisonChart rows={rows} months={months} />}
-
       <div className="flex gap-2">
         {months.map((m) => (
           <button
@@ -132,16 +130,6 @@ export default function ReportView() {
           </button>
         ))}
       </div>
-
-      {!loading && !error && filtered.length > 0 && (
-        <button
-          type="button"
-          onClick={handleExportExcel}
-          className="w-full rounded-tag bg-teal px-4 py-2.5 font-mono text-sm font-semibold text-white"
-        >
-          ดาวน์โหลด Excel (.xlsx) — {selectedMonth.label}
-        </button>
-      )}
 
       {loading && <p className="py-8 text-center font-mono text-sm text-ink/50">กำลังโหลดรายงาน…</p>}
 
@@ -204,6 +192,18 @@ export default function ReportView() {
           </table>
         </div>
       )}
+
+      {!loading && !error && filtered.length > 0 && (
+        <button
+          type="button"
+          onClick={handleExportExcel}
+          className="w-full rounded-tag bg-teal px-4 py-2.5 font-mono text-sm font-semibold text-white"
+        >
+          ดาวน์โหลด Excel (.xlsx) — {selectedMonth.label}
+        </button>
+      )}
+
+      {!loading && !error && <SalesComparisonChart rows={rows} months={months} />}
     </div>
   )
 }
