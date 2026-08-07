@@ -383,7 +383,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       </label>
 
       <label className="block">
-        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">รายละเอียดตำหนิ</span>
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">รายละเอียดสินค้า / ตำหนิ(ถ้ามี)</span>
         <textarea
           value={fields.defects}
           onChange={(e) => updateField('defects', e.target.value)}
