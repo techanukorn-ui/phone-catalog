@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
-import type { Product } from '@/lib/types'
+import { CATEGORY_TABS } from '@/lib/types'
+import type { CategoryTab, Product } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 
 const STAGNANT_DAYS = 15
@@ -20,6 +21,8 @@ export default function StagnantStockReport() {
   const [rows, setRows] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [categoryOrder, setCategoryOrder] = useState<CategoryTab[]>(CATEGORY_TABS)
+  const [activeTab, setActiveTab] = useState<CategoryTab>('ทั้งหมด')
 
   useEffect(() => {
     async function load() {
@@ -40,7 +43,18 @@ export default function StagnantStockReport() {
     load()
   }, [])
 
-  const stagnant = rows.filter((p) => daysSince(p.listed_at) > STAGNANT_DAYS)
+  useEffect(() => {
+    // ใช้ลำดับหมวดหมู่เดียวกับที่ตั้งไว้ในหน้าสต็อก/หน้าร้าน (แค่อ่าน ไม่มีการลากที่นี่)
+    async function loadCategoryOrder() {
+      const { data } = await supabase.from('store_settings').select('category_order').eq('id', 1).maybeSingle()
+      const order = (data as { category_order: CategoryTab[] | null } | null)?.category_order
+      if (order?.length) setCategoryOrder(order)
+    }
+    loadCategoryOrder()
+  }, [])
+
+  const stagnantAll = rows.filter((p) => daysSince(p.listed_at) > STAGNANT_DAYS)
+  const stagnant = activeTab === 'ทั้งหมด' ? stagnantAll : stagnantAll.filter((p) => p.category === activeTab)
 
   function handleExportExcel() {
     const headers = ['รหัสสินค้า', 'หมวดหมู่', 'ชื่อรุ่น', 'ราคา', 'วันที่ลงขาย', 'ค้างมาแล้ว (วัน)']
@@ -63,6 +77,25 @@ export default function StagnantStockReport() {
       {loading && <p className="py-8 text-center font-mono text-sm text-ink/50">กำลังโหลดรายงาน…</p>}
 
       {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>}
+
+      {!loading && !error && (
+        <div className="no-scrollbar flex gap-2 overflow-x-auto [touch-action:pan-x]">
+          {categoryOrder.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setActiveTab(category)}
+              className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
+                activeTab === category
+                  ? 'border-teal bg-teal text-white'
+                  : 'border-line bg-panel text-ink/70 active:bg-line/40'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      )}
 
       {!loading && !error && (
         <p className="font-mono text-xs text-ink/50">
