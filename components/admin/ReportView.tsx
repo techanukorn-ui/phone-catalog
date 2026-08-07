@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
 import type { Product } from '@/lib/types'
 import { buildLastMonths, toDateInputStr } from '@/lib/utils'
+import SalesComparisonChart from './SalesComparisonChart'
 
 function fmt(n: number | null): string {
   if (n == null) return '-'
@@ -116,6 +117,8 @@ export default function ReportView() {
 
   return (
     <div className="space-y-3">
+      {!loading && !error && <SalesComparisonChart rows={rows} months={months} />}
+
       <div className="flex gap-2">
         {months.map((m) => (
           <button
