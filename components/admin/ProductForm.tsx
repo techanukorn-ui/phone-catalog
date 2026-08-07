@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { CATEGORIES, type Product, type ProductCategory, type ProductStatus } from '@/lib/types'
+import { CATEGORIES, OWNERS, type Product, type ProductCategory, type ProductOwner, type ProductStatus } from '@/lib/types'
 import {
   deleteImageByUrl,
   deleteImagesByUrls,
@@ -21,6 +21,7 @@ type Props = {
 
 type FieldState = {
   category: ProductCategory
+  owner: ProductOwner | ''
   product_code: string
   model_name: string
   capacity: string
@@ -44,6 +45,7 @@ function todayStr(): string {
 function toFieldState(p?: Product): FieldState {
   return {
     category: p?.category ?? 'IPAD',
+    owner: p?.owner ?? '',
     product_code: p?.product_code ?? '',
     model_name: p?.model_name ?? '',
     capacity: p?.capacity ?? '',
@@ -140,6 +142,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
 
       const payload = {
         category: fields.category,
+        owner: fields.owner || null,
         model_name: fields.model_name.trim(),
         capacity: fields.capacity.trim() || null,
         color: fields.color.trim() || null,
@@ -257,6 +260,22 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           </select>
         </label>
       </div>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">เจ้าของทุน</span>
+        <select
+          value={fields.owner}
+          onChange={(e) => updateField('owner', e.target.value as ProductOwner | '')}
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+        >
+          <option value="">ไม่ระบุ</option>
+          {OWNERS.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+      </label>
 
       {mode === 'add' && (
         <label className="block">

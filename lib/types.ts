@@ -15,10 +15,17 @@ export type CategoryTab = 'ทั้งหมด' | ProductCategory
 
 export const CATEGORY_TABS: CategoryTab[] = ['ทั้งหมด', ...CATEGORIES]
 
+// เจ้าของทุนของเครื่องนี้ — ใครเป็นคนหาเครื่องมาลง ไม่ใช่ทุกคนลงขันร่วมกัน 1 เครื่องมีเจ้าของทุนคนเดียว
+// (เมจิไม่ได้ลงทุน แค่ช่วยขาย จึงไม่อยู่ในตัวเลือกนี้ — ดู dividend_magic สำหรับส่วนแบ่งตอนช่วยขาย)
+export type ProductOwner = 'โบ๊ท' | 'วอลเล่' | 'โบว์'
+
+export const OWNERS: ProductOwner[] = ['โบ๊ท', 'วอลเล่', 'โบว์']
+
 export interface Product {
   id: string
   product_code: string
   category: ProductCategory
+  owner: ProductOwner | null
   model_name: string
   capacity: string | null
   color: string | null

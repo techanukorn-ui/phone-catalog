@@ -133,6 +133,11 @@ alter table products alter column category_sort_order set default 0;
 alter table products alter column category_sort_order set not null;
 create index if not exists products_category_sort_order_idx on products (category, category_sort_order);
 
+-- เจ้าของทุนของเครื่องนี้ (ใครหาเครื่องมาลง ไม่ใช่ปันผลตอนขาย — ดู dividend_* ด้านบนสำหรับส่วนแบ่งตอนขาย)
+-- เว้นว่างได้ (nullable) เครื่องเก่าที่มีอยู่แล้วก่อนเพิ่มคอลัมน์นี้จะว่างไว้ก่อน ต้องไล่แก้ไขทีละตัวเอาเอง
+alter table products add column if not exists owner text check (owner in ('โบ๊ท','วอลเล่','โบว์'));
+create index if not exists products_owner_idx on products (owner);
+
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------
