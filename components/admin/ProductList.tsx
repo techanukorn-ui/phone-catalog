@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { supabase } from '@/lib/supabaseClient'
-import type { Product, ProductStatus } from '@/lib/types'
+import { CATEGORIES } from '@/lib/types'
+import type { Product, ProductCategory, ProductStatus } from '@/lib/types'
 import { deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
 import MarkSoldForm from './MarkSoldForm'
@@ -49,21 +50,25 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     }
   }
 
-  async function handleDragEnd(event: DragEndEvent) {
+  async function handleDragEnd(category: ProductCategory, event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    const oldIndex = products.findIndex((p) => p.id === active.id)
-    const newIndex = products.findIndex((p) => p.id === over.id)
+    // จำกัดการลากสลับไว้แค่ภายในหมวดหมู่เดียวกัน ไม่ข้ามหมวด
+    const group = products.filter((p) => p.category === category)
+    const oldIndex = group.findIndex((p) => p.id === active.id)
+    const newIndex = group.findIndex((p) => p.id === over.id)
     if (oldIndex === -1 || newIndex === -1) return
 
-    // คงชุดค่า sort_order เดิมไว้ทั้งหมด แค่สลับว่าใครได้ค่าไหนตามลำดับใหม่
-    // (ไม่แตะสินค้าที่อยู่นอกรายการนี้ เช่น ในแท็บสินค้าขายแล้ว)
-    const sortOrders = products.map((p) => p.sort_order)
-    const reordered = arrayMove(products, oldIndex, newIndex)
-    const next = reordered.map((p, i) => ({ ...p, sort_order: sortOrders[i] }))
-    const changed = next.filter((p) => products.find((pp) => pp.id === p.id)?.sort_order !== p.sort_order)
+    // คงชุดค่า sort_order เดิมของหมวดนี้ไว้ทั้งหมด แค่สลับว่าใครได้ค่าไหนตามลำดับใหม่
+    const sortOrders = group.map((p) => p.sort_order)
+    const reordered = arrayMove(group, oldIndex, newIndex)
+    const remapped = reordered.map((p, i) => ({ ...p, sort_order: sortOrders[i] }))
+    const changed = remapped.filter((p) => group.find((gp) => gp.id === p.id)?.sort_order !== p.sort_order)
 
+    const next = products
+      .map((p) => remapped.find((rp) => rp.id === p.id) ?? p)
+      .sort((a, b) => a.sort_order - b.sort_order)
     setProducts(next)
 
     const results = await Promise.all(
@@ -200,21 +205,56 @@ export default function ProductList({ status }: { status: ProductStatus }) {
 
   const visible = activeId ? products.filter((p) => p.id === activeId) : products
 
-  if (status === 'พร้อมขาย' && !activeId) {
+  const groups = CATEGORIES.map((category) => ({
+    category,
+    items: visible.filter((p) => p.category === category),
+  })).filter((g) => g.items.length > 0)
+
+  function CategoryHeader({ category, count }: { category: ProductCategory; count: number }) {
     return (
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={visible.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2">
-            {visible.map((product) => (
-              <SortableProductRow key={product.id} product={product}>
-                {renderProductRow(product)}
-              </SortableProductRow>
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+      <div className="mb-1.5 mt-4 flex items-center gap-2 first:mt-0">
+        <p className="font-mono text-xs font-semibold uppercase tracking-wide text-ink/60">{category}</p>
+        <span className="font-mono text-[10px] text-ink/40">({count})</span>
+        <div className="h-px flex-1 bg-line" />
+      </div>
     )
   }
 
-  return <div className="space-y-3">{visible.map(renderProductRow)}</div>
+  if (status === 'พร้อมขาย' && !activeId) {
+    return (
+      <div>
+        {groups.map(({ category, items }) => (
+          <div key={category}>
+            <CategoryHeader category={category} count={items.length} />
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={(event) => handleDragEnd(category, event)}
+            >
+              <SortableContext items={items.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2">
+                  {items.map((product) => (
+                    <SortableProductRow key={product.id} product={product}>
+                      {renderProductRow(product)}
+                    </SortableProductRow>
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {groups.map(({ category, items }) => (
+        <div key={category}>
+          <CategoryHeader category={category} count={items.length} />
+          <div className="space-y-3">{items.map(renderProductRow)}</div>
+        </div>
+      ))}
+    </div>
+  )
 }
