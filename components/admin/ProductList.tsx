@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { supabase } from '@/lib/supabaseClient'
 import { CATEGORIES } from '@/lib/types'
 import type { Product, ProductCategory, ProductStatus } from '@/lib/types'
@@ -10,7 +15,9 @@ import { deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
 import MarkSoldForm from './MarkSoldForm'
 import SortableProductRow from './SortableProductRow'
-import SortableCategorySection from './SortableCategorySection'
+import SortableCategoryPill from './SortableCategoryPill'
+
+type CategoryTab = 'ทั้งหมด' | ProductCategory
 
 export default function ProductList({ status }: { status: ProductStatus }) {
   const [products, setProducts] = useState<Product[]>([])
@@ -20,6 +27,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [categoryOrder, setCategoryOrder] = useState<ProductCategory[]>(CATEGORIES)
+  const [activeTab, setActiveTab] = useState<CategoryTab>('ทั้งหมด')
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   async function loadProducts() {
@@ -81,12 +89,12 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     }
   }
 
-  async function handleDragEnd(category: ProductCategory, event: DragEndEvent) {
+  async function handleDragEnd(scope: CategoryTab, event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    // จำกัดการลากสลับไว้แค่ภายในหมวดหมู่เดียวกัน ไม่ข้ามหมวด
-    const group = products.filter((p) => p.category === category)
+    // แท็บ "ทั้งหมด" ลากสลับได้ทั้งลิสต์ (ลำดับข้ามหมวดจริง) ส่วนแท็บหมวดหมู่ ลากสลับได้แค่ภายในหมวดนั้น
+    const group = scope === 'ทั้งหมด' ? products : products.filter((p) => p.category === scope)
     const oldIndex = group.findIndex((p) => p.id === active.id)
     const newIndex = group.findIndex((p) => p.id === over.id)
     if (oldIndex === -1 || newIndex === -1) return
@@ -261,38 +269,55 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     )
   }
 
+  const displayed = activeTab === 'ทั้งหมด' ? products : products.filter((p) => p.category === activeTab)
+
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
-      <SortableContext items={categoryOrder} strategy={verticalListSortingStrategy}>
-        <div>
-          {categoryOrder.map((category) => {
-            const items = products.filter((p) => p.category === category)
-            return (
-              <SortableCategorySection key={category} category={category} count={items.length}>
-                {items.length === 0 ? (
-                  <p className="py-1.5 font-mono text-xs text-ink/30">ไม่มีสินค้าในหมวดนี้</p>
-                ) : (
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={(event) => handleDragEnd(category, event)}
-                  >
-                    <SortableContext items={items.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-                      <div className="space-y-2">
-                        {items.map((product) => (
-                          <SortableProductRow key={product.id} product={product}>
-                            {renderProductRow(product)}
-                          </SortableProductRow>
-                        ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                )}
-              </SortableCategorySection>
-            )
-          })}
-        </div>
-      </SortableContext>
-    </DndContext>
+    <div>
+      <div className="no-scrollbar mb-3 flex gap-2 overflow-x-auto [touch-action:pan-x]">
+        <button
+          type="button"
+          onClick={() => setActiveTab('ทั้งหมด')}
+          className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
+            activeTab === 'ทั้งหมด'
+              ? 'border-teal bg-teal text-white'
+              : 'border-line bg-panel text-ink/70 active:bg-line/40'
+          }`}
+        >
+          ทั้งหมด
+        </button>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
+          <SortableContext items={categoryOrder} strategy={horizontalListSortingStrategy}>
+            {categoryOrder.map((category) => (
+              <SortableCategoryPill
+                key={category}
+                category={category}
+                active={activeTab === category}
+                onSelect={() => setActiveTab(category)}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
+
+      {displayed.length === 0 ? (
+        <p className="py-8 text-center font-mono text-sm text-ink/50">ไม่มีสินค้าในหมวดนี้</p>
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(event) => handleDragEnd(activeTab, event)}
+        >
+          <SortableContext items={displayed.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {displayed.map((product) => (
+                <SortableProductRow key={product.id} product={product}>
+                  {renderProductRow(product)}
+                </SortableProductRow>
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
+    </div>
   )
 }
