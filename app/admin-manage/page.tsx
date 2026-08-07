@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import StoreSettingsForm from '@/components/admin/StoreSettingsForm'
 import ProductForm from '@/components/admin/ProductForm'
 import ProductList from '@/components/admin/ProductList'
-import ReportView from '@/components/admin/ReportView'
+import ReportSection from '@/components/admin/ReportSection'
 import LoginForm from '@/components/admin/LoginForm'
 
 type Tab = 'settings' | 'add' | 'stock-available' | 'stock-sold' | 'report'
@@ -124,7 +124,7 @@ export default function AdminManagePage() {
 
         {tab === 'stock-sold' && <ProductList key={refreshKey} status="ขายแล้ว" />}
 
-        {tab === 'report' && <ReportView />}
+        {tab === 'report' && <ReportSection />}
       </div>
     </main>
   )
