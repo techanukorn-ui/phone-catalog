@@ -43,6 +43,18 @@ export async function getNextCategorySortOrder(category: ProductCategory): Promi
   return (data?.category_sort_order ?? 0) - 1
 }
 
+/** จำนวนวันที่ค้างสต็อกถึงจะถือว่า "ค้างนาน" (ใช้ทั้งในรายงานและป้ายเตือนที่หน้าสต็อก) */
+export const STAGNANT_DAYS = 15
+
+/** จำนวนวันนับจากวันที่ลงขาย (listed_at) ถึงวันนี้ */
+export function daysSince(dateStr: string): number {
+  const listed = new Date(dateStr)
+  const listedUTC = Date.UTC(listed.getFullYear(), listed.getMonth(), listed.getDate())
+  const now = new Date()
+  const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+  return Math.round((todayUTC - listedUTC) / (1000 * 60 * 60 * 24))
+}
+
 export function formatPrice(price: number): string {
   return `${new Intl.NumberFormat('th-TH').format(price)} บาท`
 }

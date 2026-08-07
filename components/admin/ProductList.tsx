@@ -11,7 +11,7 @@ import {
 import { supabase } from '@/lib/supabaseClient'
 import { CATEGORY_TABS } from '@/lib/types'
 import type { CategoryTab, Product, ProductStatus } from '@/lib/types'
-import { deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
+import { STAGNANT_DAYS, daysSince, deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
 import MarkSoldForm from './MarkSoldForm'
 import SortableProductRow from './SortableProductRow'
@@ -198,6 +198,11 @@ export default function ProductList({ status }: { status: ProductStatus }) {
                 {product.product_code} · {product.status}
               </p>
               <p className="font-mono text-sm font-semibold text-amber-dark">{formatPrice(product.price)}</p>
+              {product.status === 'พร้อมขาย' && daysSince(product.listed_at) > STAGNANT_DAYS && (
+                <span className="mt-1 inline-block rounded-tag bg-danger/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-danger">
+                  ค้าง {daysSince(product.listed_at)} วัน
+                </span>
+              )}
             </div>
             <div className="flex shrink-0 flex-col gap-1.5">
               <button

@@ -5,17 +5,7 @@ import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
 import { CATEGORY_TABS } from '@/lib/types'
 import type { CategoryTab, Product } from '@/lib/types'
-import { formatPrice } from '@/lib/utils'
-
-const STAGNANT_DAYS = 15
-
-function daysSince(dateStr: string): number {
-  const listed = new Date(dateStr)
-  const listedUTC = Date.UTC(listed.getFullYear(), listed.getMonth(), listed.getDate())
-  const now = new Date()
-  const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-  return Math.round((todayUTC - listedUTC) / (1000 * 60 * 60 * 24))
-}
+import { STAGNANT_DAYS, daysSince, formatPrice } from '@/lib/utils'
 
 export default function StagnantStockReport() {
   const [rows, setRows] = useState<Product[]>([])
