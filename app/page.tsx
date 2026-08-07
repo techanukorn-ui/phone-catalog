@@ -108,7 +108,7 @@ function StorefrontPageContent() {
         onSortChange={setSort}
       />
 
-      <div className="mx-auto max-w-3xl px-4 pt-4">
+      <div className="mx-auto max-w-3xl px-4 pt-4 lg:max-w-6xl">
         {loading && (
           <p className="py-16 text-center font-mono text-sm text-ink/50">กำลังโหลดสต็อกสินค้า…</p>
         )}
@@ -121,7 +121,7 @@ function StorefrontPageContent() {
         )}
 
         {!loading && filtered.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filtered.map((product) => (
               <ProductCard key={product.id} product={product} onSelect={handleSelectProduct} />
             ))}

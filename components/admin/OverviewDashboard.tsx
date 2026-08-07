@@ -79,7 +79,7 @@ export default function OverviewDashboard() {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatTile label="มูลค่าสต็อกคงเหลือ" value={formatPrice(available.totalValue)} />
         <StatTile label="สินค้าพร้อมขาย" value={`${available.count} ชิ้น`} />
         <StatTile

@@ -75,54 +75,56 @@ export default function OwnerReport() {
         ดาวน์โหลด Excel (.xlsx)
       </button>
 
-      {BUCKETS.map((owner) => {
-        const list = items[owner]
-        const value = list.reduce((sum, p) => sum + p.price, 0)
-        const isUnassigned = owner === 'ไม่ระบุ'
-        const isOpen = expanded === owner
+      <div className="space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+        {BUCKETS.map((owner) => {
+          const list = items[owner]
+          const value = list.reduce((sum, p) => sum + p.price, 0)
+          const isUnassigned = owner === 'ไม่ระบุ'
+          const isOpen = expanded === owner
 
-        return (
-          <div
-            key={owner}
-            className={`rounded-card border ${isUnassigned ? 'border-line bg-paper' : 'border-line bg-panel'}`}
-          >
-            <button
-              type="button"
-              onClick={() => list.length > 0 && setExpanded(isOpen ? null : owner)}
-              className="flex w-full items-center justify-between p-3 text-left"
+          return (
+            <div
+              key={owner}
+              className={`rounded-card border ${isUnassigned ? 'border-line bg-paper' : 'border-line bg-panel'}`}
             >
-              <span className="flex items-center gap-1.5">
-                <p className="font-display text-sm font-semibold text-ink">{owner}</p>
-                {list.length > 0 && (
-                  <span className={`text-[10px] text-ink/40 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
-                    ▼
+              <button
+                type="button"
+                onClick={() => list.length > 0 && setExpanded(isOpen ? null : owner)}
+                className="flex w-full items-center justify-between p-3 text-left"
+              >
+                <span className="flex items-center gap-1.5">
+                  <p className="font-display text-sm font-semibold text-ink">{owner}</p>
+                  {list.length > 0 && (
+                    <span className={`text-[10px] text-ink/40 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  )}
+                </span>
+                {list.length === 0 ? (
+                  <span className="font-mono text-xs text-ink/40">ไม่มีสต็อกคงเหลือ</span>
+                ) : (
+                  <span className="font-mono text-sm text-ink">
+                    {list.length} ชิ้น · {formatPrice(value)}
                   </span>
                 )}
-              </span>
-              {list.length === 0 ? (
-                <span className="font-mono text-xs text-ink/40">ไม่มีสต็อกคงเหลือ</span>
-              ) : (
-                <span className="font-mono text-sm text-ink">
-                  {list.length} ชิ้น · {formatPrice(value)}
-                </span>
-              )}
-            </button>
+              </button>
 
-            {isOpen && list.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 border-t border-line px-3 pb-3 pt-2">
-                {list.map((p) => (
-                  <span
-                    key={p.product_code}
-                    className="rounded-tag border border-line bg-paper px-2 py-0.5 font-mono text-[11px] text-ink/70"
-                  >
-                    {p.product_code}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        )
-      })}
+              {isOpen && list.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 border-t border-line px-3 pb-3 pt-2">
+                  {list.map((p) => (
+                    <span
+                      key={p.product_code}
+                      className="rounded-tag border border-line bg-paper px-2 py-0.5 font-mono text-[11px] text-ink/70"
+                    >
+                      {p.product_code}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -83,7 +83,7 @@ export default function AdminManagePage() {
   return (
     <main className="min-h-screen bg-paper pb-16">
       <header className="sticky top-0 z-30 border-b border-line bg-ink">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 lg:max-w-5xl">
           <div>
             <p className="font-display text-lg font-semibold text-white">แผงควบคุมร้านค้า</p>
             <p className="font-mono text-[11px] uppercase tracking-wide text-white/50">
@@ -100,7 +100,7 @@ export default function AdminManagePage() {
       </header>
 
       <div className="sticky top-[60px] z-20 border-b border-line bg-paper/95 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl flex-wrap gap-2 px-4 py-2.5">
+        <div className="mx-auto flex max-w-2xl flex-wrap gap-2 px-4 py-2.5 lg:max-w-5xl">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -115,7 +115,7 @@ export default function AdminManagePage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 py-4">
+      <div className="mx-auto max-w-2xl px-4 py-4 lg:max-w-5xl">
         {tab === 'overview' && <OverviewDashboard />}
 
         {tab === 'settings' && <StoreSettingsForm />}

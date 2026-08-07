@@ -6,7 +6,7 @@ export default function Header({ settings }: { settings: StoreSettings | null })
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/95 backdrop-blur">
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-2 px-4 py-4">
+      <div className="mx-auto flex max-w-3xl flex-col items-center gap-2 px-4 py-4 lg:max-w-6xl">
         <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-tag border border-line bg-panel">
           {settings?.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
