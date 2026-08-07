@@ -64,5 +64,6 @@ export interface StoreSettings {
   logo_url: string | null
   phone1: string | null
   phone2: string | null
+  category_order: ProductCategory[] | null
   updated_at: string
 }

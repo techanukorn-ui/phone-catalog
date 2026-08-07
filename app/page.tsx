@@ -64,6 +64,7 @@ export default function StorefrontPage() {
     <main className="min-h-screen bg-paper pb-10">
       <Header settings={settings} />
       <FilterBar
+        categories={settings?.category_order ?? undefined}
         activeCategory={category}
         onCategoryChange={setCategory}
         search={search}

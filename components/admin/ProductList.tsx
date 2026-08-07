@@ -10,6 +10,7 @@ import { deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
 import MarkSoldForm from './MarkSoldForm'
 import SortableProductRow from './SortableProductRow'
+import SortableCategorySection from './SortableCategorySection'
 
 export default function ProductList({ status }: { status: ProductStatus }) {
   const [products, setProducts] = useState<Product[]>([])
@@ -18,6 +19,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   const [sellingId, setSellingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [categoryOrder, setCategoryOrder] = useState<ProductCategory[]>(CATEGORIES)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   async function loadProducts() {
@@ -35,6 +37,35 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     loadProducts()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
+
+  useEffect(() => {
+    // ลำดับหมวดหมู่เป็นค่าที่ใช้ร่วมกันทั้งสองแท็บและหน้าร้าน จึงโหลดครั้งเดียว
+    async function loadCategoryOrder() {
+      const { data } = await supabase.from('store_settings').select('category_order').eq('id', 1).maybeSingle()
+      const order = (data as { category_order: ProductCategory[] | null } | null)?.category_order
+      if (order?.length) setCategoryOrder(order)
+    }
+    loadCategoryOrder()
+  }, [])
+
+  async function handleCategoryDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = categoryOrder.findIndex((c) => c === active.id)
+    const newIndex = categoryOrder.findIndex((c) => c === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const previous = categoryOrder
+    const next = arrayMove(categoryOrder, oldIndex, newIndex)
+    setCategoryOrder(next)
+
+    const { error } = await supabase.from('store_settings').update({ category_order: next }).eq('id', 1)
+    if (error) {
+      window.alert('เปลี่ยนลำดับหมวดหมู่ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+      setCategoryOrder(previous)
+    }
+  }
 
   async function handleRevertToAvailable(product: Product) {
     setTogglingId(product.id)
@@ -203,58 +234,43 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     )
   }
 
-  const visible = activeId ? products.filter((p) => p.id === activeId) : products
-
-  const groups = CATEGORIES.map((category) => ({
-    category,
-    items: visible.filter((p) => p.category === category),
-  })).filter((g) => g.items.length > 0)
-
-  function CategoryHeader({ category, count }: { category: ProductCategory; count: number }) {
-    return (
-      <div className="mb-1.5 mt-4 flex items-center gap-2 first:mt-0">
-        <p className="font-mono text-xs font-semibold uppercase tracking-wide text-ink/60">{category}</p>
-        <span className="font-mono text-[10px] text-ink/40">({count})</span>
-        <div className="h-px flex-1 bg-line" />
-      </div>
-    )
-  }
-
-  if (status === 'พร้อมขาย' && !activeId) {
-    return (
-      <div>
-        {groups.map(({ category, items }) => (
-          <div key={category}>
-            <CategoryHeader category={category} count={items.length} />
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={(event) => handleDragEnd(category, event)}
-            >
-              <SortableContext items={items.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-                <div className="space-y-2">
-                  {items.map((product) => (
-                    <SortableProductRow key={product.id} product={product}>
-                      {renderProductRow(product)}
-                    </SortableProductRow>
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          </div>
-        ))}
-      </div>
-    )
+  if (activeId) {
+    const visible = products.filter((p) => p.id === activeId)
+    return <div className="space-y-3">{visible.map(renderProductRow)}</div>
   }
 
   return (
-    <div>
-      {groups.map(({ category, items }) => (
-        <div key={category}>
-          <CategoryHeader category={category} count={items.length} />
-          <div className="space-y-3">{items.map(renderProductRow)}</div>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
+      <SortableContext items={categoryOrder} strategy={verticalListSortingStrategy}>
+        <div>
+          {categoryOrder.map((category) => {
+            const items = products.filter((p) => p.category === category)
+            return (
+              <SortableCategorySection key={category} category={category} count={items.length}>
+                {items.length === 0 ? (
+                  <p className="py-1.5 font-mono text-xs text-ink/30">ไม่มีสินค้าในหมวดนี้</p>
+                ) : (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event) => handleDragEnd(category, event)}
+                  >
+                    <SortableContext items={items.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-2">
+                        {items.map((product) => (
+                          <SortableProductRow key={product.id} product={product}>
+                            {renderProductRow(product)}
+                          </SortableProductRow>
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                )}
+              </SortableCategorySection>
+            )
+          })}
         </div>
-      ))}
-    </div>
+      </SortableContext>
+    </DndContext>
   )
 }

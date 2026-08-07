@@ -22,6 +22,13 @@ create table if not exists store_settings (
 alter table store_settings add column if not exists phone1 text;
 alter table store_settings add column if not exists phone2 text;
 
+-- ลำดับหมวดหมู่ที่ร้านค้ากำหนดเอง (ใช้ทั้งหลังบ้านและหน้าร้าน)
+alter table store_settings add column if not exists category_order text[];
+update store_settings set category_order = array['IPAD','IPHONE','MACBOOK','APPLE PENCIL','APPLE WATCH','อื่นๆ']
+where category_order is null;
+alter table store_settings alter column category_order set default array['IPAD','IPHONE','MACBOOK','APPLE PENCIL','APPLE WATCH','อื่นๆ'];
+alter table store_settings alter column category_order set not null;
+
 insert into store_settings (id, store_name)
 values (1, 'ร้านมือถือมือสอง')
 on conflict (id) do nothing;

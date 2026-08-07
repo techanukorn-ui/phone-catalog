@@ -1,8 +1,10 @@
 import { CATEGORIES } from '@/lib/types'
+import type { ProductCategory } from '@/lib/types'
 
 export type SortOption = 'newest' | 'price-asc' | 'price-desc'
 
 type Props = {
+  categories?: ProductCategory[]
   activeCategory: string
   onCategoryChange: (category: string) => void
   search: string
@@ -11,8 +13,6 @@ type Props = {
   onSortChange: (value: SortOption) => void
 }
 
-const TABS = ['ทั้งหมด', ...CATEGORIES]
-
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'newest', label: 'แนะนำ' },
   { value: 'price-asc', label: 'ราคา: ถูก → แพง' },
@@ -20,6 +20,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 ]
 
 export default function FilterBar({
+  categories,
   activeCategory,
   onCategoryChange,
   search,
@@ -27,11 +28,12 @@ export default function FilterBar({
   sort,
   onSortChange,
 }: Props) {
+  const tabs = ['ทั้งหมด', ...(categories?.length ? categories : CATEGORIES)]
   return (
     <div className="sticky top-[196px] z-20 border-b border-line bg-paper/95 backdrop-blur">
       <div className="mx-auto max-w-3xl px-4 py-2.5">
         <div className="no-scrollbar mb-2 flex gap-2 overflow-x-auto [touch-action:pan-x]">
-          {TABS.map((tab) => {
+          {tabs.map((tab) => {
             const active = tab === activeCategory
             return (
               <button
