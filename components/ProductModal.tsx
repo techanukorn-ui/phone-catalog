@@ -11,6 +11,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
     [product.cover_image_url, product.gallery_images]
   )
   const [activeIndex, setActiveIndex] = useState(0)
+  const [copied, setCopied] = useState(false)
   const scrollerRef = useRef<HTMLDivElement>(null)
 
   function handleScroll() {
@@ -18,6 +19,30 @@ export default function ProductModal({ product, onClose }: { product: Product; o
     if (!el) return
     const index = Math.round(el.scrollLeft / el.clientWidth)
     setActiveIndex(index)
+  }
+
+  async function handleShare() {
+    const url = `${window.location.origin}${window.location.pathname}?p=${product.id}`
+    const shareData = {
+      title: product.model_name,
+      text: `${product.model_name} ราคา ${formatPrice(product.price)}`,
+      url,
+    }
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // ผู้ใช้กดยกเลิกการแชร์ ไม่ต้องทำอะไรต่อ
+      }
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // เบราว์เซอร์บล็อกการเข้าถึงคลิปบอร์ด ปล่อยผ่านเงียบๆ
+    }
   }
 
   const sold = product.status === 'ขายแล้ว'
@@ -66,6 +91,26 @@ export default function ProductModal({ product, onClose }: { product: Product; o
           >
             ✕
           </button>
+
+          <button
+            onClick={handleShare}
+            aria-label="แชร์สินค้า"
+            className="absolute right-14 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-ink/70 text-white"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+          </button>
+
+          {copied && (
+            <span className="absolute right-3 top-14 whitespace-nowrap rounded-tag bg-ink/80 px-2 py-1 font-mono text-[11px] text-white">
+              คัดลอกลิงก์แล้ว
+            </span>
+          )}
 
           <span className="absolute left-3 top-3 rounded-tag bg-ink/80 px-2 py-0.5 font-mono text-[11px] tracking-wide text-white">
             {product.product_code}

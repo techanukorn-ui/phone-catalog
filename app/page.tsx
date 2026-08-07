@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import type { Product, StoreSettings } from '@/lib/types'
 import Header from '@/components/Header'
@@ -9,6 +10,17 @@ import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
 
 export default function StorefrontPage() {
+  return (
+    <Suspense fallback={null}>
+      <StorefrontPageContent />
+    </Suspense>
+  )
+}
+
+function StorefrontPageContent() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [settings, setSettings] = useState<StoreSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -41,6 +53,26 @@ export default function StorefrontPage() {
       active = false
     }
   }, [])
+
+  useEffect(() => {
+    // เปิดสินค้าที่ระบุใน URL (?p=id) อัตโนมัติ ใช้ตอนมีคนแชร์ลิงก์สินค้ามา
+    if (loading || selected) return
+    const sharedId = searchParams.get('p')
+    if (!sharedId) return
+    const found = products.find((p) => p.id === sharedId)
+    if (found) setSelected(found)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, products])
+
+  function handleSelectProduct(product: Product) {
+    setSelected(product)
+    router.replace(`${pathname}?p=${product.id}`, { scroll: false })
+  }
+
+  function handleCloseModal() {
+    setSelected(null)
+    router.replace(pathname, { scroll: false })
+  }
 
   const filtered = useMemo(() => {
     const result = products.filter((p) => {
@@ -91,13 +123,13 @@ export default function StorefrontPage() {
         {!loading && filtered.length > 0 && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} onSelect={setSelected} />
+              <ProductCard key={product.id} product={product} onSelect={handleSelectProduct} />
             ))}
           </div>
         )}
       </div>
 
-      {selected && <ProductModal product={selected} onClose={() => setSelected(null)} />}
+      {selected && <ProductModal product={selected} onClose={handleCloseModal} />}
     </main>
   )
 }
