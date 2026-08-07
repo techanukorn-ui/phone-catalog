@@ -7,11 +7,18 @@ import StoreSettingsForm from '@/components/admin/StoreSettingsForm'
 import ProductForm from '@/components/admin/ProductForm'
 import ProductList from '@/components/admin/ProductList'
 import ReportSection from '@/components/admin/ReportSection'
+import OverviewDashboard from '@/components/admin/OverviewDashboard'
 import LoginForm from '@/components/admin/LoginForm'
 
-type Tab = 'settings' | 'add' | 'stock-available' | 'stock-sold' | 'report'
+type Tab = 'overview' | 'settings' | 'add' | 'stock-available' | 'stock-sold' | 'report'
 
 const TABS: { key: Tab; label: string; active: string; inactive: string }[] = [
+  {
+    key: 'overview',
+    label: 'ภาพรวม',
+    active: 'border-info bg-info text-white',
+    inactive: 'border-info text-info bg-panel',
+  },
   {
     key: 'stock-available',
     label: 'สต็อกสินค้าพร้อมขาย',
@@ -45,7 +52,7 @@ const TABS: { key: Tab; label: string; active: string; inactive: string }[] = [
 ]
 
 export default function AdminManagePage() {
-  const [tab, setTab] = useState<Tab>('stock-available')
+  const [tab, setTab] = useState<Tab>('overview')
   const [refreshKey, setRefreshKey] = useState(0)
   const [session, setSession] = useState<Session | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
@@ -109,6 +116,8 @@ export default function AdminManagePage() {
       </div>
 
       <div className="mx-auto max-w-2xl px-4 py-4">
+        {tab === 'overview' && <OverviewDashboard />}
+
         {tab === 'settings' && <StoreSettingsForm />}
 
         {tab === 'add' && (
