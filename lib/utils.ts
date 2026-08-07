@@ -59,6 +59,31 @@ export function formatPrice(price: number): string {
   return `${new Intl.NumberFormat('th-TH').format(price)} บาท`
 }
 
+export type MonthOption = {
+  key: string // YYYY-MM
+  label: string
+  start: Date
+  end: Date // exclusive
+}
+
+/** สร้างรายการ "เดือนล่าสุด count เดือน" ย้อนหลัง ใช้เลือกช่วงเวลาในหน้ารายงาน */
+export function buildLastMonths(count: number): MonthOption[] {
+  const now = new Date()
+  const months: MonthOption[] = []
+  for (let i = 0; i < count; i++) {
+    const start = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1)
+    const key = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`
+    const label = start.toLocaleDateString('th-TH', { year: 'numeric', month: 'long' })
+    months.push({ key, start, end, label })
+  }
+  return months
+}
+
+export function toDateInputStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function sanitizeFileName(name: string): string {
   const ext = name.includes('.') ? name.split('.').pop() : 'jpg'
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
