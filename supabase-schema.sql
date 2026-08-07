@@ -120,6 +120,19 @@ alter table products alter column sort_order set default 0;
 alter table products alter column sort_order set not null;
 create index if not exists products_sort_order_idx on products (sort_order);
 
+-- ลำดับแสดงผล "เฉพาะภายในหมวดหมู่" แยกอิสระจาก sort_order (ซึ่งใช้กับมุมมอง "ทั้งหมด"/"แนะนำ" เท่านั้น)
+-- ตอน migrate ครั้งแรก คงลำดับปัจจุบันของแต่ละหมวดไว้ตาม sort_order เดิม
+alter table products add column if not exists category_sort_order integer;
+update products set category_sort_order = sub.rn
+from (
+  select id, row_number() over (partition by category order by sort_order asc) as rn
+  from products
+) sub
+where products.id = sub.id and products.category_sort_order is null;
+alter table products alter column category_sort_order set default 0;
+alter table products alter column category_sort_order set not null;
+create index if not exists products_category_sort_order_idx on products (category, category_sort_order);
+
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------

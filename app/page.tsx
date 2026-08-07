@@ -56,6 +56,9 @@ export default function StorefrontPage() {
       result.sort((a, b) => a.price - b.price)
     } else if (sort === 'price-desc') {
       result.sort((a, b) => b.price - a.price)
+    } else if (category !== 'ทั้งหมด') {
+      // กรองเฉพาะหมวดหมู่ → เรียงตามลำดับที่ตั้งไว้เฉพาะหมวดนั้น แยกจากลำดับ "แนะนำ" โดยรวม
+      result.sort((a, b) => a.category_sort_order - b.category_sort_order)
     }
     return result
   }, [products, category, search, sort])

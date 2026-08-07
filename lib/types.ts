@@ -44,6 +44,7 @@ export interface Product {
   dividend_magic: number | null
   dividend_boat: number | null
   sort_order: number
+  category_sort_order: number
   created_at: string
 }
 

@@ -31,6 +31,18 @@ export async function getNextSortOrder(): Promise<number> {
   return (data?.sort_order ?? 0) - 1
 }
 
+/** ค่า category_sort_order สำหรับสินค้าใหม่ ให้ขึ้นแสดงบนสุดของหมวดนั้นเสมอ (แยกอิสระจาก sort_order) */
+export async function getNextCategorySortOrder(category: ProductCategory): Promise<number> {
+  const { data } = await supabase
+    .from('products')
+    .select('category_sort_order')
+    .eq('category', category)
+    .order('category_sort_order', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  return (data?.category_sort_order ?? 0) - 1
+}
+
 export function formatPrice(price: number): string {
   return `${new Intl.NumberFormat('th-TH').format(price)} บาท`
 }

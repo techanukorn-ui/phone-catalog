@@ -91,17 +91,21 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    // แท็บ "ทั้งหมด" ลากสลับได้ทั้งลิสต์ (ลำดับข้ามหมวดจริง) ส่วนแท็บหมวดหมู่ ลากสลับได้แค่ภายในหมวดนั้น
-    const group = scope === 'ทั้งหมด' ? products : products.filter((p) => p.category === scope)
+    // แท็บ "ทั้งหมด" ลากสลับ sort_order (ลำดับ "แนะนำ" ข้ามหมวด) ส่วนแท็บหมวดหมู่ ลากสลับ category_sort_order
+    // (ลำดับเฉพาะภายในหมวดนั้น) — สองค่านี้แยกอิสระจากกันไม่กระทบกัน
+    const field = scope === 'ทั้งหมด' ? 'sort_order' : 'category_sort_order'
+    const group = (scope === 'ทั้งหมด' ? products : products.filter((p) => p.category === scope))
+      .slice()
+      .sort((a, b) => a[field] - b[field])
     const oldIndex = group.findIndex((p) => p.id === active.id)
     const newIndex = group.findIndex((p) => p.id === over.id)
     if (oldIndex === -1 || newIndex === -1) return
 
-    // คงชุดค่า sort_order เดิมของหมวดนี้ไว้ทั้งหมด แค่สลับว่าใครได้ค่าไหนตามลำดับใหม่
-    const sortOrders = group.map((p) => p.sort_order)
+    // คงชุดค่าเดิมของฟิลด์นี้ไว้ทั้งหมด แค่สลับว่าใครได้ค่าไหนตามลำดับใหม่
+    const values = group.map((p) => p[field])
     const reordered = arrayMove(group, oldIndex, newIndex)
-    const remapped = reordered.map((p, i) => ({ ...p, sort_order: sortOrders[i] }))
-    const changed = remapped.filter((p) => group.find((gp) => gp.id === p.id)?.sort_order !== p.sort_order)
+    const remapped = reordered.map((p, i) => ({ ...p, [field]: values[i] }))
+    const changed = remapped.filter((p) => group.find((gp) => gp.id === p.id)?.[field] !== p[field])
 
     const next = products
       .map((p) => remapped.find((rp) => rp.id === p.id) ?? p)
@@ -109,7 +113,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     setProducts(next)
 
     const results = await Promise.all(
-      changed.map((p) => supabase.from('products').update({ sort_order: p.sort_order }).eq('id', p.id))
+      changed.map((p) => supabase.from('products').update({ [field]: p[field] }).eq('id', p.id))
     )
     if (results.some((r) => r.error)) {
       window.alert('เปลี่ยนลำดับไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
@@ -250,7 +254,9 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     return (
       <div>
         {categoryOrder.map((category) => {
-          const items = products.filter((p) => p.category === category)
+          const items = products
+            .filter((p) => p.category === category)
+            .sort((a, b) => a.category_sort_order - b.category_sort_order)
           if (items.length === 0) return null
           return (
             <div key={category} className="mt-4 first:mt-0">
@@ -267,7 +273,12 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     )
   }
 
-  const displayed = activeTab === 'ทั้งหมด' ? products : products.filter((p) => p.category === activeTab)
+  const displayed =
+    activeTab === 'ทั้งหมด'
+      ? products
+      : products
+          .filter((p) => p.category === activeTab)
+          .sort((a, b) => a.category_sort_order - b.category_sort_order)
 
   return (
     <div>
