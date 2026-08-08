@@ -70,6 +70,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
   const [newGalleryFiles, setNewGalleryFiles] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
 
   useEffect(() => {
     document.documentElement.classList.add('allow-x-pan')
@@ -232,6 +233,70 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-card border border-line bg-panel p-4">
+      <div>
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
+          รูปปก (Cover) {mode === 'add' && '*'}
+        </span>
+        <div className="flex items-center gap-3">
+          {coverPreview && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverPreview}
+              alt="cover preview"
+              onClick={() => setLightboxUrl(coverPreview)}
+              className="h-16 w-16 cursor-zoom-in rounded-tag border border-line object-cover"
+            />
+          )}
+          <input type="file" accept="image/*" onChange={handleCoverChange} className="text-xs" />
+        </div>
+      </div>
+
+      <div>
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">รูปประกอบ (Gallery)</span>
+        <div className="mb-2 flex flex-wrap gap-2">
+          {existingGallery.map((url) => (
+            <div key={url} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={url}
+                alt="gallery"
+                onClick={() => setLightboxUrl(url)}
+                className="h-14 w-14 cursor-zoom-in rounded-tag border border-line object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => removeExistingGalleryImage(url)}
+                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+          {newGalleryFiles.map((file, i) => {
+            const previewUrl = URL.createObjectURL(file)
+            return (
+              <div key={i} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt="new gallery"
+                  onClick={() => setLightboxUrl(previewUrl)}
+                  className="h-14 w-14 cursor-zoom-in rounded-tag border border-line object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeNewGalleryFile(i)}
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
+                >
+                  ✕
+                </button>
+              </div>
+            )
+          })}
+        </div>
+        <input type="file" accept="image/*" multiple onChange={handleGalleryChange} className="text-xs" />
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
           <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">หมวดหมู่</span>
@@ -397,52 +462,6 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         />
       </label>
 
-      <div>
-        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
-          รูปปก (Cover) {mode === 'add' && '*'}
-        </span>
-        <div className="flex items-center gap-3">
-          {coverPreview && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={coverPreview} alt="cover preview" className="h-16 w-16 rounded-tag border border-line object-cover" />
-          )}
-          <input type="file" accept="image/*" onChange={handleCoverChange} className="text-xs" />
-        </div>
-      </div>
-
-      <div>
-        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">รูปประกอบ (Gallery)</span>
-        <div className="mb-2 flex flex-wrap gap-2">
-          {existingGallery.map((url) => (
-            <div key={url} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="gallery" className="h-14 w-14 rounded-tag border border-line object-cover" />
-              <button
-                type="button"
-                onClick={() => removeExistingGalleryImage(url)}
-                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-          {newGalleryFiles.map((file, i) => (
-            <div key={i} className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={URL.createObjectURL(file)} alt="new gallery" className="h-14 w-14 rounded-tag border border-line object-cover" />
-              <button
-                type="button"
-                onClick={() => removeNewGalleryFile(i)}
-                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-        <input type="file" accept="image/*" multiple onChange={handleGalleryChange} className="text-xs" />
-      </div>
-
       {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>}
 
       <div className="flex gap-2 pt-1">
@@ -463,6 +482,29 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           </button>
         )}
       </div>
+
+      {lightboxUrl && (
+        <div
+          onClick={() => setLightboxUrl(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 p-6"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxUrl}
+            alt="ดูรูปขยาย"
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-full max-w-full rounded-card object-contain"
+          />
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="ปิด"
+            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-ink/70 text-white"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </form>
   )
 }
