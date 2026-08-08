@@ -141,7 +141,7 @@ export default function ReportView() {
         ))}
       </div>
 
-      <div className="pill-row sm:justify-center">
+      <div className="pill-row justify-center">
         {(['ทั้งหมด', ...OWNERS] as OwnerFilter[]).map((o) => (
           <button
             key={o}
