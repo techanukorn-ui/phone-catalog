@@ -9,13 +9,15 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { supabase } from '@/lib/supabaseClient'
-import { CATEGORY_TABS } from '@/lib/types'
-import type { CategoryTab, Product, ProductStatus } from '@/lib/types'
+import { CATEGORY_TABS, OWNERS } from '@/lib/types'
+import type { CategoryTab, Product, ProductOwner, ProductStatus } from '@/lib/types'
 import { STAGNANT_DAYS, daysSince, deleteImageByUrl, deleteImagesByUrls, formatPrice } from '@/lib/utils'
 import ProductForm from './ProductForm'
 import MarkSoldForm from './MarkSoldForm'
 import SortableProductRow from './SortableProductRow'
 import SortableCategoryPill from './SortableCategoryPill'
+
+type OwnerFilter = 'ทั้งหมด' | ProductOwner
 
 export default function ProductList({ status }: { status: ProductStatus }) {
   const [products, setProducts] = useState<Product[]>([])
@@ -26,6 +28,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [categoryOrder, setCategoryOrder] = useState<CategoryTab[]>(CATEGORY_TABS)
   const [activeTab, setActiveTab] = useState<CategoryTab>('ทั้งหมด')
+  const [activeOwner, setActiveOwner] = useState<OwnerFilter>('ทั้งหมด')
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   async function loadProducts() {
@@ -263,12 +266,19 @@ export default function ProductList({ status }: { status: ProductStatus }) {
   // สินค้าขายแล้วคือข้อมูลปิดจบแล้ว ไม่ต้องจัดลำดับ แค่กรองดูทีละหมวดให้ง่ายขึ้น
   const canReorder = status === 'พร้อมขาย'
 
-  const displayed =
+  const categoryFiltered =
     activeTab === 'ทั้งหมด'
       ? products
       : products
           .filter((p) => p.category === activeTab)
           .sort((a, b) => a.category_sort_order - b.category_sort_order)
+
+  const displayed =
+    activeOwner === 'ทั้งหมด' ? categoryFiltered : categoryFiltered.filter((p) => p.owner === activeOwner)
+
+  // ลากจัดลำดับได้เฉพาะตอนดู "ทั้งหมด" ของเจ้าของทุน ไม่งั้นตำแหน่งที่ลากในรายการที่กรองแล้ว
+  // จะไม่ตรงกับลำดับจริงของสินค้าทั้งหมด (sort_order/category_sort_order)
+  const canReorderProducts = canReorder && activeOwner === 'ทั้งหมด'
 
   return (
     <div>
@@ -304,9 +314,30 @@ export default function ProductList({ status }: { status: ProductStatus }) {
         )}
       </div>
 
+      {status === 'พร้อมขาย' && (
+        <div className="pill-row mb-3">
+          {(['ทั้งหมด', ...OWNERS] as OwnerFilter[]).map((owner) => (
+            <button
+              key={owner}
+              type="button"
+              onClick={() => setActiveOwner(owner)}
+              className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
+                activeOwner === owner
+                  ? 'border-teal bg-teal text-white'
+                  : 'border-line bg-panel text-ink/70 active:bg-line/40'
+              }`}
+            >
+              {owner}
+            </button>
+          ))}
+        </div>
+      )}
+
       {displayed.length === 0 ? (
-        <p className="py-8 text-center font-mono text-sm text-ink/50">ไม่มีสินค้าในหมวดนี้</p>
-      ) : canReorder ? (
+        <p className="py-8 text-center font-mono text-sm text-ink/50">
+          {activeOwner === 'ทั้งหมด' ? 'ไม่มีสินค้าในหมวดนี้' : `ไม่มีสินค้าของ ${activeOwner} ในหมวดนี้`}
+        </p>
+      ) : canReorderProducts ? (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
