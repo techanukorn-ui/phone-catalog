@@ -114,6 +114,10 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       setError('กรุณาเลือกรูปปกสินค้า')
       return
     }
+    if (mode === 'edit' && !fields.product_code.trim()) {
+      setError('กรุณากรอกรหัสสินค้า')
+      return
+    }
 
     setSaving(true)
     try {
@@ -187,16 +191,22 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           if (lastError) throw lastError
         }
       } else if (initialProduct) {
+        const newCode = fields.product_code.trim().toUpperCase()
         // เปลี่ยนหมวดหมู่ระหว่างแก้ไข → ค่า category_sort_order เดิมใช้กับหมวดใหม่ไม่ได้ ต้องขอค่าลำดับใหม่
         const updatePayload =
           initialProduct.category !== fields.category
-            ? { ...payload, category_sort_order: await getNextCategorySortOrder(fields.category) }
-            : payload
+            ? { ...payload, product_code: newCode, category_sort_order: await getNextCategorySortOrder(fields.category) }
+            : { ...payload, product_code: newCode }
         const { error: updateError } = await supabase
           .from('products')
           .update(updatePayload)
           .eq('id', initialProduct.id)
-        if (updateError) throw updateError
+        if (updateError) {
+          if (updateError.code === '23505') {
+            throw new Error(`รหัสสินค้า "${newCode}" ถูกใช้ไปแล้ว กรุณาใช้รหัสอื่น`)
+          }
+          throw updateError
+        }
 
         // ลบรูปเก่าที่ถูกถอดออก และรูปปกเก่าถ้ามีการเปลี่ยนรูปใหม่
         if (removedGallery.length > 0) {
@@ -333,19 +343,17 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         </select>
       </label>
 
-      {mode === 'add' && (
-        <label className="block">
-          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
-            รหัสสินค้า (เว้นว่างเพื่อสุ่มอัตโนมัติ)
-          </span>
-          <input
-            value={fields.product_code}
-            onChange={(e) => updateField('product_code', e.target.value)}
-            placeholder="เช่น IP-7F3K9A"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 font-mono text-base uppercase"
-          />
-        </label>
-      )}
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
+          {mode === 'add' ? 'รหัสสินค้า (เว้นว่างเพื่อสุ่มอัตโนมัติ)' : 'รหัสสินค้า *'}
+        </span>
+        <input
+          value={fields.product_code}
+          onChange={(e) => updateField('product_code', e.target.value)}
+          placeholder="เช่น IP-7F3K9A"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 font-mono text-base uppercase"
+        />
+      </label>
 
       <label className="block">
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">วันที่ลงสินค้า</span>
