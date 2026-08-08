@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { CATEGORIES, OWNERS, type Product, type ProductCategory, type ProductOwner, type ProductStatus } from '@/lib/types'
 import {
@@ -71,27 +71,6 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
-
-  useEffect(() => {
-    document.documentElement.classList.add('allow-x-pan')
-    document.body.classList.add('allow-x-pan')
-    return () => {
-      document.documentElement.classList.remove('allow-x-pan')
-      document.body.classList.remove('allow-x-pan')
-      // ผู้ใช้อาจซูมค้างไว้ตอนอยู่ในฟอร์ม พอล็อกจอกลับเป็น pan-y เฉยๆ
-      // จะซูมเข้า/เลื่อนออกไม่ได้อีก ต้องรีเซ็ตซูมกลับเป็นปกติก่อนออกจากฟอร์ม
-      const viewport = document.querySelector('meta[name="viewport"]')
-      if (viewport instanceof HTMLMetaElement) {
-        const original = viewport.getAttribute('content') ?? 'width=device-width, initial-scale=1'
-        viewport.setAttribute('content', `${original}, maximum-scale=1`)
-        // ต้องหน่วงเวลาจริง ให้เบราว์เซอร์ประมวลผลค่าซูมใหม่ก่อน
-        // (requestAnimationFrame เร็วเกินไป มือถือบางรุ่นยังไม่ทันซูมออกให้)
-        setTimeout(() => {
-          viewport.setAttribute('content', original)
-        }, 350)
-      }
-    }
-  }, [])
 
   function updateField<K extends keyof FieldState>(key: K, value: FieldState[K]) {
     setFields((f) => ({ ...f, [key]: value }))

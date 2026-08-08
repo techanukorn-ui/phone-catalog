@@ -18,12 +18,6 @@ body {
   touch-action: pan-y;
 }
 
-html.allow-x-pan,
-body.allow-x-pan {
-  touch-action: pan-x pan-y pinch-zoom;
-  overscroll-behavior-x: auto;
-}
-
 body {
   font-family: var(--font-body);
 }
