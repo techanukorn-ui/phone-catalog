@@ -16,7 +16,7 @@ function fmt(n: number | null): string {
 }
 
 export default function ReportView() {
-  const months = useMemo(() => buildLastMonths(3), [])
+  const months = useMemo(() => buildLastMonths(12), [])
   const [selectedKey, setSelectedKey] = useState(months[0].key)
   const [activeOwner, setActiveOwner] = useState<OwnerFilter>('ทั้งหมด')
   const [rows, setRows] = useState<Product[]>([])
@@ -127,12 +127,12 @@ export default function ReportView() {
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
+      <div className="pill-row">
         {months.map((m) => (
           <button
             key={m.key}
             onClick={() => setSelectedKey(m.key)}
-            className={`flex-1 rounded-tag border px-3 py-2 font-mono text-xs ${
+            className={`shrink-0 rounded-tag border px-3 py-2 font-mono text-xs ${
               selectedKey === m.key ? 'border-teal bg-teal text-white' : 'border-line bg-panel text-ink/70'
             }`}
           >
@@ -236,7 +236,7 @@ export default function ReportView() {
       {!loading && !error && (
         <SalesComparisonChart
           rows={ownerFilteredRows}
-          months={months}
+          months={months.slice(0, 3)}
           titleSuffix={activeOwner !== 'ทั้งหมด' ? activeOwner : undefined}
         />
       )}

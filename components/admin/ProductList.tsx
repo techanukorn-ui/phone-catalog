@@ -186,12 +186,18 @@ export default function ProductList({ status }: { status: ProductStatus }) {
           />
         ) : (
           <div className="flex items-center gap-3 p-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={product.cover_image_url}
-              alt={product.model_name}
-              className="h-14 w-14 shrink-0 rounded-tag border border-line object-cover"
-            />
+            {product.cover_image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={product.cover_image_url}
+                alt={product.model_name}
+                className="h-14 w-14 shrink-0 rounded-tag border border-line object-cover"
+              />
+            ) : (
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-tag border border-line bg-paper text-center font-mono text-[9px] leading-tight text-ink/40">
+                ลบรูปแล้ว
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate font-display text-sm font-semibold text-ink">{product.model_name}</p>
               <p className="font-mono text-xs text-ink/50">

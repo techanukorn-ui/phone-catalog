@@ -23,6 +23,7 @@ export default function SoldCleanupReport() {
       .select('*')
       .eq('status', 'ขายแล้ว')
       .lt('sold_at', toDateInputStr(oldestStart))
+      .neq('cover_image_url', '')
       .order('sold_at', { ascending: true })
     if (!fetchError) {
       setCleanupCandidates((data as Product[]) ?? [])
@@ -33,7 +34,7 @@ export default function SoldCleanupReport() {
   async function handleCleanup() {
     if (!cleanupCandidates || cleanupCandidates.length === 0) return
     const confirmed = window.confirm(
-      `ลบสินค้าที่ขายแล้วเกิน 3 เดือนทั้งหมด ${cleanupCandidates.length} รายการ พร้อมรูปภาพทั้งหมดถาวร ไม่สามารถย้อนกลับได้ ยืนยันหรือไม่?`
+      `ลบรูปภาพของสินค้าที่ขายแล้วเกิน 3 เดือนทั้งหมด ${cleanupCandidates.length} รายการถาวร ไม่สามารถย้อนกลับได้ (ข้อมูลตัวเลข/รายงานยังเก็บไว้เหมือนเดิม) ยืนยันหรือไม่?`
     )
     if (!confirmed) return
 
@@ -45,8 +46,11 @@ export default function SoldCleanupReport() {
         if (p.gallery_images?.length) {
           await deleteImagesByUrls('product-images', p.gallery_images)
         }
-        const { error: deleteError } = await supabase.from('products').delete().eq('id', p.id)
-        if (deleteError) throw deleteError
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({ cover_image_url: '', gallery_images: [] })
+          .eq('id', p.id)
+        if (updateError) throw updateError
         done++
       } catch {
         // ข้ามรายการที่ลบไม่สำเร็จ แล้วลบรายการถัดไปต่อ
@@ -59,14 +63,14 @@ export default function SoldCleanupReport() {
 
   return (
     <div className="space-y-2 rounded-card border border-line bg-panel p-3">
-      <p className="font-display text-sm font-semibold text-ink">ลบสินค้าที่ขายแล้วเกิน 3 เดือน</p>
+      <p className="font-display text-sm font-semibold text-ink">ลบรูปภาพสินค้าที่ขายแล้วเกิน 3 เดือน</p>
       <p className="font-mono text-xs text-ink/50">
-        ลบสินค้าที่สถานะ &quot;ขายแล้ว&quot; และวันที่ขายเก่ากว่า {cutoffLabel} ออกจากฐานข้อมูล พร้อมรูปภาพทั้งหมดถาวร
-        (รายการเหล่านี้ไม่แสดงในรายงานการขายอยู่แล้วเพราะเกิน 3 เดือน)
+        ลบเฉพาะ<strong>รูปภาพ</strong>ของสินค้าที่สถานะ &quot;ขายแล้ว&quot; และวันที่ขายเก่ากว่า {cutoffLabel} ออกจาก Storage ถาวร
+        เพื่อประหยัดพื้นที่ ส่วนข้อมูลตัวเลข (ต้นทุน/ราคาขาย/กำไร) ยังเก็บไว้เหมือนเดิม ดูย้อนหลังในรายงานได้ต่อ
       </p>
 
       {cleanupDone != null && (
-        <p className="rounded-tag bg-teal-light px-3 py-2 text-sm text-teal-dark">ลบเรียบร้อย {cleanupDone} รายการ</p>
+        <p className="rounded-tag bg-teal-light px-3 py-2 text-sm text-teal-dark">ลบรูปภาพเรียบร้อย {cleanupDone} รายการ</p>
       )}
 
       {!cleanupCandidates && (
@@ -81,7 +85,7 @@ export default function SoldCleanupReport() {
       )}
 
       {cleanupCandidates && cleanupCandidates.length === 0 && (
-        <p className="font-mono text-sm text-ink/50">ไม่มีรายการที่เก่าเกิน 3 เดือน ไม่ต้องล้างข้อมูล</p>
+        <p className="font-mono text-sm text-ink/50">ไม่มีรูปภาพที่เก่าเกิน 3 เดือนต้องลบแล้ว</p>
       )}
 
       {cleanupCandidates && cleanupCandidates.length > 0 && (
