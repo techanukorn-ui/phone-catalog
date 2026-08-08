@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import type { Product } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import ConditionDial from './ConditionDial'
@@ -11,11 +12,12 @@ export default function ProductCard({ product, onSelect }: { product: Product; o
       className="group flex flex-col overflow-hidden rounded-card border border-line bg-panel text-left shadow-tag transition-transform active:scale-[0.98]"
     >
       <div className="relative aspect-square w-full overflow-hidden bg-line/30">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={product.cover_image_url}
           alt={product.model_name}
-          className={`h-full w-full object-cover transition-opacity ${sold ? 'opacity-40 grayscale' : ''}`}
+          fill
+          sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1279px) 25vw, 20vw"
+          className={`object-cover transition-opacity ${sold ? 'opacity-40 grayscale' : ''}`}
         />
         <span className="absolute left-2 top-2 rounded-tag bg-ink/80 px-2 py-0.5 font-mono text-[10px] tracking-wide text-white">
           {product.product_code}

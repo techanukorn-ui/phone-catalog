@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
 import type { Product } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import ConditionDial from './ConditionDial'
@@ -64,13 +65,15 @@ export default function ProductModal({ product, onClose }: { product: Product; o
             className="no-scrollbar snap-x-mandatory flex aspect-square w-full overflow-x-auto overscroll-x-contain [touch-action:pan-x]"
           >
             {images.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={i}
-                src={src}
-                alt={`${product.model_name} รูปที่ ${i + 1}`}
-                className="h-full w-full shrink-0 snap-center object-cover"
-              />
+              <div key={i} className="relative h-full w-full shrink-0 snap-center">
+                <Image
+                  src={src}
+                  alt={`${product.model_name} รูปที่ ${i + 1}`}
+                  fill
+                  sizes="(max-width: 639px) 100vw, 512px"
+                  className="object-cover"
+                />
+              </div>
             ))}
           </div>
 
