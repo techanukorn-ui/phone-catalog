@@ -41,7 +41,7 @@ export default function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             autoComplete="username"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           />
         </label>
 
@@ -52,7 +52,7 @@ export default function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             autoComplete="current-password"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           />
         </label>
 

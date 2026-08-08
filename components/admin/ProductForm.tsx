@@ -84,9 +84,11 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       if (viewport instanceof HTMLMetaElement) {
         const original = viewport.getAttribute('content') ?? 'width=device-width, initial-scale=1'
         viewport.setAttribute('content', `${original}, maximum-scale=1`)
-        requestAnimationFrame(() => {
+        // ต้องหน่วงเวลาจริง ให้เบราว์เซอร์ประมวลผลค่าซูมใหม่ก่อน
+        // (requestAnimationFrame เร็วเกินไป มือถือบางรุ่นยังไม่ทันซูมออกให้)
+        setTimeout(() => {
           viewport.setAttribute('content', original)
-        })
+        }, 350)
       }
     }
   }, [])
@@ -313,7 +315,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           <select
             value={fields.category}
             onChange={(e) => updateField('category', e.target.value as ProductCategory)}
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
@@ -328,7 +330,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           <select
             value={fields.status}
             onChange={(e) => updateField('status', e.target.value as ProductStatus)}
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           >
             <option value="พร้อมขาย">พร้อมขาย</option>
             <option value="ขายแล้ว">ขายแล้ว</option>
@@ -341,7 +343,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         <select
           value={fields.owner}
           onChange={(e) => updateField('owner', e.target.value as ProductOwner | '')}
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         >
           <option value="">ไม่ระบุ</option>
           {OWNERS.map((o) => (
@@ -361,7 +363,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
             value={fields.product_code}
             onChange={(e) => updateField('product_code', e.target.value)}
             placeholder="เช่น IP-7F3K9A"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 font-mono text-sm uppercase"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 font-mono text-base uppercase"
           />
         </label>
       )}
@@ -372,7 +374,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           type="date"
           value={fields.listed_at}
           onChange={(e) => updateField('listed_at', e.target.value)}
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -382,7 +384,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           value={fields.model_name}
           onChange={(e) => updateField('model_name', e.target.value)}
           placeholder="เช่น iPhone 13 Pro Max"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -393,7 +395,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
             value={fields.capacity}
             onChange={(e) => updateField('capacity', e.target.value)}
             placeholder="เช่น 256GB"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           />
         </label>
         <label className="block">
@@ -402,7 +404,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
             value={fields.color}
             onChange={(e) => updateField('color', e.target.value)}
             placeholder="เช่น Titanium Blue"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           />
         </label>
       </div>
@@ -414,7 +416,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           onChange={(e) => updateField('price', e.target.value)}
           inputMode="numeric"
           placeholder="เช่น 21900"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -425,7 +427,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           onChange={(e) => updateField('battery_percent', e.target.value)}
           inputMode="numeric"
           placeholder="0-100"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -436,7 +438,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           onChange={(e) => updateField('charge_cycles', e.target.value)}
           inputMode="numeric"
           placeholder="เช่น 79"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -446,7 +448,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           value={fields.warranty_until}
           onChange={(e) => updateField('warranty_until', e.target.value)}
           placeholder="เช่น 12 มี.ค. 2569 หรือ หมดประกัน"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -457,7 +459,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           onChange={(e) => updateField('accessories', e.target.value)}
           rows={2}
           placeholder="เช่น กล่อง, สายชาร์จ, เคส"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -468,7 +470,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           onChange={(e) => updateField('defects', e.target.value)}
           rows={2}
           placeholder="เช่น มีรอยขีดข่วนเล็กน้อยที่มุมล่างขวา"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 

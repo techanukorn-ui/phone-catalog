@@ -97,7 +97,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           type="date"
           value={soldAt}
           onChange={(e) => setSoldAt(e.target.value)}
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -109,7 +109,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
             onChange={(e) => setCostDevice(e.target.value)}
             inputMode="numeric"
             placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           />
         </label>
         <label className="block">
@@ -119,7 +119,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
             onChange={(e) => setCostOther(e.target.value)}
             inputMode="numeric"
             placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           />
         </label>
       </div>
@@ -138,7 +138,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           onChange={(e) => setSalePrice(e.target.value)}
           inputMode="numeric"
           placeholder="เช่น 17300"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -157,7 +157,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
             onChange={(e) => setDivWallet(e.target.value)}
             inputMode="numeric"
             placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
           />
         </label>
         <label className="block">
@@ -167,7 +167,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
             onChange={(e) => setDivBow(e.target.value)}
             inputMode="numeric"
             placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
           />
         </label>
         <label className="block">
@@ -177,7 +177,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
             onChange={(e) => setDivMagic(e.target.value)}
             inputMode="numeric"
             placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
           />
         </label>
         <label className="block">
@@ -187,7 +187,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
             onChange={(e) => setDivBoat(e.target.value)}
             inputMode="numeric"
             placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
           />
         </label>
       </div>

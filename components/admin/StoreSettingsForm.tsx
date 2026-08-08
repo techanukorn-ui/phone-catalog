@@ -86,7 +86,7 @@ export default function StoreSettingsForm() {
           value={storeName}
           onChange={(e) => setStoreName(e.target.value)}
           placeholder="เช่น ร้านมือถือใจดี"
-          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
 
@@ -98,7 +98,7 @@ export default function StoreSettingsForm() {
             onChange={(e) => setPhone1(e.target.value)}
             inputMode="tel"
             placeholder="เช่น 081-234-5678"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           />
         </label>
         <label className="block">
@@ -108,7 +108,7 @@ export default function StoreSettingsForm() {
             onChange={(e) => setPhone2(e.target.value)}
             inputMode="tel"
             placeholder="เช่น 089-876-5432"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-sm"
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           />
         </label>
       </div>
