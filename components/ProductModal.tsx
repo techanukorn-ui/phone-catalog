@@ -218,7 +218,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
             )}
             {product.defects && (
               <div>
-                <dt className="font-mono text-[11px] uppercase tracking-wide text-ink/50">ตำหนิ / รายละเอียดสภาพ</dt>
+                <dt className="font-mono text-[11px] uppercase tracking-wide text-ink/50">รายละเอียดสินค้า / ตำหนิ(ถ้ามี)</dt>
                 <dd className="whitespace-pre-line break-words text-ink">{product.defects}</dd>
               </div>
             )}
