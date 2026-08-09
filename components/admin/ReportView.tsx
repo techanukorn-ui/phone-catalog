@@ -65,6 +65,7 @@ export default function ReportView() {
       acc.dividend_bow += p.dividend_bow ?? 0
       acc.dividend_magic += p.dividend_magic ?? 0
       acc.dividend_boat += p.dividend_boat ?? 0
+      acc.dividend_neng += p.dividend_neng ?? 0
       return acc
     },
     {
@@ -75,6 +76,7 @@ export default function ReportView() {
       dividend_bow: 0,
       dividend_magic: 0,
       dividend_boat: 0,
+      dividend_neng: 0,
     }
   )
 
@@ -90,6 +92,7 @@ export default function ReportView() {
       'ปันผลโบว์',
       'ปันผลเมจิ',
       'ปันผลโบ๊ท',
+      'ปันผลน้าเหน่ง',
       'วันที่ขาย',
     ]
     const dataRows = filtered.map((p) => [
@@ -103,6 +106,7 @@ export default function ReportView() {
       p.dividend_bow ?? 0,
       p.dividend_magic ?? 0,
       p.dividend_boat ?? 0,
+      p.dividend_neng ?? 0,
       p.sold_at ?? '',
     ])
     const totalRow = [
@@ -116,6 +120,7 @@ export default function ReportView() {
       totals.dividend_bow,
       totals.dividend_magic,
       totals.dividend_boat,
+      totals.dividend_neng,
       '',
     ]
     const sheet = XLSX.utils.aoa_to_sheet([headers, ...dataRows, totalRow])
@@ -180,6 +185,7 @@ export default function ReportView() {
                 <th className="whitespace-nowrap px-3 py-2 text-right">ปันผลโบว์</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">ปันผลเมจิ</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">ปันผลโบ๊ท</th>
+                <th className="whitespace-nowrap px-3 py-2 text-right">ปันผลน้าเหน่ง</th>
                 <th className="whitespace-nowrap px-3 py-2">วันที่ขาย</th>
               </tr>
             </thead>
@@ -200,6 +206,7 @@ export default function ReportView() {
                   <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(p.dividend_bow)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(p.dividend_magic)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(p.dividend_boat)}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(p.dividend_neng)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-ink">{p.sold_at}</td>
                 </tr>
               ))}
@@ -216,6 +223,7 @@ export default function ReportView() {
                 <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(totals.dividend_bow)}</td>
                 <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(totals.dividend_magic)}</td>
                 <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(totals.dividend_boat)}</td>
+                <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{fmt(totals.dividend_neng)}</td>
                 <td className="whitespace-nowrap px-3 py-2"></td>
               </tr>
             </tfoot>

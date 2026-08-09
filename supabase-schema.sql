@@ -68,6 +68,7 @@ create table if not exists products (
   dividend_bow numeric,
   dividend_magic numeric,
   dividend_boat numeric,
+  dividend_neng numeric,
   created_at timestamptz not null default now()
 );
 
@@ -103,6 +104,7 @@ alter table products add column if not exists dividend_wallet numeric;
 alter table products add column if not exists dividend_bow numeric;
 alter table products add column if not exists dividend_magic numeric;
 alter table products add column if not exists dividend_boat numeric;
+alter table products add column if not exists dividend_neng numeric;
 
 create index if not exists products_category_idx on products (category);
 create index if not exists products_created_at_idx on products (created_at desc);
@@ -135,7 +137,13 @@ create index if not exists products_category_sort_order_idx on products (categor
 
 -- เจ้าของทุนของเครื่องนี้ (ใครหาเครื่องมาลง ไม่ใช่ปันผลตอนขาย — ดู dividend_* ด้านบนสำหรับส่วนแบ่งตอนขาย)
 -- เว้นว่างได้ (nullable) เครื่องเก่าที่มีอยู่แล้วก่อนเพิ่มคอลัมน์นี้จะว่างไว้ก่อน ต้องไล่แก้ไขทีละตัวเอาเอง
-alter table products add column if not exists owner text check (owner in ('โบ๊ท','วอลเล่','โบว์'));
+alter table products add column if not exists owner text check (owner in ('โบ๊ท','วอลเล่','โบว์','น้าเหน่ง'));
+
+-- เพิ่ม "น้าเหน่ง" เข้าไปในตัวเลือกเจ้าของทุน (สำหรับฐานข้อมูลที่สร้างคอลัมน์ owner ไว้ก่อนหน้านี้แล้ว
+-- ต้องถอด constraint เดิมออกก่อน ไม่งั้นจะชนกับ constraint เก่าที่ไม่มี "น้าเหน่ง")
+alter table products drop constraint if exists products_owner_check;
+alter table products add constraint products_owner_check
+  check (owner in ('โบ๊ท','วอลเล่','โบว์','น้าเหน่ง'));
 create index if not exists products_owner_idx on products (owner);
 
 -- ----------------------------------------------------------

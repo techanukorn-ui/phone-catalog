@@ -30,14 +30,15 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
   const [divBow, setDivBow] = useState(product.dividend_bow != null ? String(product.dividend_bow) : '')
   const [divMagic, setDivMagic] = useState(product.dividend_magic != null ? String(product.dividend_magic) : '')
   const [divBoat, setDivBoat] = useState(product.dividend_boat != null ? String(product.dividend_boat) : '')
+  const [divNeng, setDivNeng] = useState(product.dividend_neng != null ? String(product.dividend_neng) : '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const totalCost = useMemo(() => parseNum(costDevice) + parseNum(costOther), [costDevice, costOther])
   const netProfit = useMemo(() => parseNum(salePrice) - totalCost, [salePrice, totalCost])
   const dividendSum = useMemo(
-    () => parseNum(divWallet) + parseNum(divBow) + parseNum(divMagic) + parseNum(divBoat),
-    [divWallet, divBow, divMagic, divBoat]
+    () => parseNum(divWallet) + parseNum(divBow) + parseNum(divMagic) + parseNum(divBoat) + parseNum(divNeng),
+    [divWallet, divBow, divMagic, divBoat, divNeng]
   )
   const dividendMatches = Math.abs(dividendSum - netProfit) < 0.01
 
@@ -74,6 +75,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           dividend_bow: divBow ? parseNum(divBow) : null,
           dividend_magic: divMagic ? parseNum(divMagic) : null,
           dividend_boat: divBoat ? parseNum(divBoat) : null,
+          dividend_neng: divNeng ? parseNum(divNeng) : null,
         })
         .eq('id', product.id)
       if (updateError) throw updateError
@@ -185,6 +187,16 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           <input
             value={divBoat}
             onChange={(e) => setDivBoat(e.target.value)}
+            inputMode="numeric"
+            placeholder="0"
+            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">ปันผลน้าเหน่ง</span>
+          <input
+            value={divNeng}
+            onChange={(e) => setDivNeng(e.target.value)}
             inputMode="numeric"
             placeholder="0"
             className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"

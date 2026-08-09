@@ -17,9 +17,9 @@ export const CATEGORY_TABS: CategoryTab[] = ['ทั้งหมด', ...CATEGOR
 
 // เจ้าของทุนของเครื่องนี้ — ใครเป็นคนหาเครื่องมาลง ไม่ใช่ทุกคนลงขันร่วมกัน 1 เครื่องมีเจ้าของทุนคนเดียว
 // (เมจิไม่ได้ลงทุน แค่ช่วยขาย จึงไม่อยู่ในตัวเลือกนี้ — ดู dividend_magic สำหรับส่วนแบ่งตอนช่วยขาย)
-export type ProductOwner = 'โบ๊ท' | 'วอลเล่' | 'โบว์'
+export type ProductOwner = 'โบ๊ท' | 'วอลเล่' | 'โบว์' | 'น้าเหน่ง'
 
-export const OWNERS: ProductOwner[] = ['โบ๊ท', 'วอลเล่', 'โบว์']
+export const OWNERS: ProductOwner[] = ['โบ๊ท', 'วอลเล่', 'โบว์', 'น้าเหน่ง']
 
 export interface Product {
   id: string
@@ -50,6 +50,7 @@ export interface Product {
   dividend_bow: number | null
   dividend_magic: number | null
   dividend_boat: number | null
+  dividend_neng: number | null
   sort_order: number
   category_sort_order: number
   created_at: string

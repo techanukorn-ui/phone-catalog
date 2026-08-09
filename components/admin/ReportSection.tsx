@@ -2,14 +2,16 @@
 
 import { useState } from 'react'
 import ReportView from './ReportView'
+import DividendReport from './DividendReport'
 import OwnerReport from './OwnerReport'
 import StagnantStockReport from './StagnantStockReport'
 import SoldCleanupReport from './SoldCleanupReport'
 
-type ReportTab = 'sales' | 'owner' | 'stagnant' | 'cleanup'
+type ReportTab = 'sales' | 'dividend' | 'owner' | 'stagnant' | 'cleanup'
 
 const REPORT_TABS: { key: ReportTab; label: string; danger?: boolean }[] = [
   { key: 'sales', label: 'รายงานการขาย' },
+  { key: 'dividend', label: 'รายงานปันผล' },
   { key: 'owner', label: 'สต็อกคงเหลือตามเจ้าของทุน' },
   { key: 'stagnant', label: 'รายงานสินค้าค้างสต็อกเกิน 15 วัน' },
   { key: 'cleanup', label: 'ลบรูปสินค้าที่ขายแล้วเกิน 3 เดือน', danger: true },
@@ -43,6 +45,7 @@ export default function ReportSection() {
       </div>
 
       {tab === 'sales' && <ReportView />}
+      {tab === 'dividend' && <DividendReport />}
       {tab === 'owner' && <OwnerReport />}
       {tab === 'stagnant' && <StagnantStockReport />}
       {tab === 'cleanup' && <SoldCleanupReport />}
