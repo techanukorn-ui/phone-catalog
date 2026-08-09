@@ -17,7 +17,7 @@ const REPORT_TABS: { key: ReportTab; label: string; danger?: boolean }[] = [
   { key: 'cleanup', label: 'ลบรูปสินค้าที่ขายแล้วเกิน 3 เดือน', danger: true },
 ]
 
-export default function ReportSection() {
+export default function ReportSection({ onSelectProduct }: { onSelectProduct: (id: string) => void }) {
   const [tab, setTab] = useState<ReportTab>('sales')
 
   return (
@@ -46,7 +46,7 @@ export default function ReportSection() {
 
       {tab === 'sales' && <ReportView />}
       {tab === 'dividend' && <DividendReport />}
-      {tab === 'owner' && <OwnerReport />}
+      {tab === 'owner' && <OwnerReport onSelectProduct={onSelectProduct} />}
       {tab === 'stagnant' && <StagnantStockReport />}
       {tab === 'cleanup' && <SoldCleanupReport />}
     </div>

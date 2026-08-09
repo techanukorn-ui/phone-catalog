@@ -19,7 +19,13 @@ import SortableCategoryPill from './SortableCategoryPill'
 
 type OwnerFilter = 'ทั้งหมด' | ProductOwner | 'ไม่ระบุ'
 
-export default function ProductList({ status }: { status: ProductStatus }) {
+type Props = {
+  status: ProductStatus
+  openProductId?: string | null
+  onOpenedProduct?: () => void
+}
+
+export default function ProductList({ status, openProductId, onOpenedProduct }: Props) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -46,6 +52,20 @@ export default function ProductList({ status }: { status: ProductStatus }) {
     loadProducts()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
+
+  // มาจากลิงก์รหัสสินค้าในหน้ารายงาน — เปิดฟอร์มแก้ไขของสินค้านั้นตรงๆ
+  // ต้องเคลียร์ตัวกรองหมวดหมู่/เจ้าของทุนก่อน ไม่งั้นสินค้าอาจถูกกรองซ่อนอยู่จนหาฟอร์มไม่เจอ
+  useEffect(() => {
+    if (!openProductId || loading) return
+    const target = products.find((p) => p.id === openProductId)
+    if (target) {
+      setActiveTab('ทั้งหมด')
+      setActiveOwner('ทั้งหมด')
+      setEditingId(openProductId)
+    }
+    onOpenedProduct?.()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openProductId, loading, products])
 
   useEffect(() => {
     // ลำดับหมวดหมู่เป็นค่าที่ใช้ร่วมกันทั้งสองแท็บและหน้าร้าน จึงโหลดครั้งเดียว

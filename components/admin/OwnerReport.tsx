@@ -9,11 +9,11 @@ import { formatPrice } from '@/lib/utils'
 
 type OwnerBucket = ProductOwner | 'ไม่ระบุ'
 
-type Item = { product_code: string; price: number }
+type Item = { id: string; product_code: string; price: number }
 
 const BUCKETS: OwnerBucket[] = [...OWNERS, 'ไม่ระบุ']
 
-export default function OwnerReport() {
+export default function OwnerReport({ onSelectProduct }: { onSelectProduct: (id: string) => void }) {
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState<Record<OwnerBucket, Item[]>>(() => {
     const init = {} as Record<OwnerBucket, Item[]>
@@ -27,16 +27,17 @@ export default function OwnerReport() {
       setLoading(true)
       const { data } = await supabase
         .from('products')
-        .select('owner, product_code, price')
+        .select('id, owner, product_code, price')
         .eq('status', 'พร้อมขาย')
         .order('product_code', { ascending: true })
-      const rows = (data as { owner: ProductOwner | null; product_code: string; price: number }[]) ?? []
+      const rows =
+        (data as { id: string; owner: ProductOwner | null; product_code: string; price: number }[]) ?? []
 
       const next = {} as Record<OwnerBucket, Item[]>
       BUCKETS.forEach((b) => (next[b] = []))
       for (const p of rows) {
         const bucket: OwnerBucket = p.owner ?? 'ไม่ระบุ'
-        next[bucket].push({ product_code: p.product_code, price: p.price })
+        next[bucket].push({ id: p.id, product_code: p.product_code, price: p.price })
       }
       setItems(next)
       setLoading(false)
@@ -65,6 +66,7 @@ export default function OwnerReport() {
       <p className="font-mono text-xs text-ink/50">
         สรุปสต็อกที่ยังไม่ขาย (มูลค่าอิงราคาตั้งขาย) แยกตามเจ้าของทุนของแต่ละเครื่อง — ยอดขาย/กำไรของสินค้าที่ขายไปแล้ว
         ดูได้ที่แท็บ &quot;รายงานการขาย&quot; แทน (กรองตามเจ้าของทุนได้เหมือนกัน) — กดชื่อแต่ละคนเพื่อดูรายการรหัสสินค้า
+        กดรหัสสินค้าเพื่อไปแก้ไขสินค้าตัวนั้นได้เลย
       </p>
 
       <button
@@ -112,12 +114,14 @@ export default function OwnerReport() {
               {isOpen && list.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 border-t border-line px-3 pb-3 pt-2">
                   {list.map((p) => (
-                    <span
+                    <button
                       key={p.product_code}
-                      className="rounded-tag border border-line bg-paper px-2 py-0.5 font-mono text-[11px] text-ink/70"
+                      type="button"
+                      onClick={() => onSelectProduct(p.id)}
+                      className="rounded-tag border border-line bg-paper px-2 py-0.5 font-mono text-[11px] text-ink/70 underline decoration-dotted active:bg-teal/10 active:text-teal-dark"
                     >
                       {p.product_code}
-                    </span>
+                    </button>
                   ))}
                 </div>
               )}

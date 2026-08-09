@@ -56,6 +56,12 @@ export default function AdminManagePage() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [session, setSession] = useState<Session | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
+  const [jumpToProductId, setJumpToProductId] = useState<string | null>(null)
+
+  function handleSelectProductFromReport(id: string) {
+    setJumpToProductId(id)
+    setTab('stock-available')
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -129,11 +135,18 @@ export default function AdminManagePage() {
           />
         )}
 
-        {tab === 'stock-available' && <ProductList key={refreshKey} status="พร้อมขาย" />}
+        {tab === 'stock-available' && (
+          <ProductList
+            key={refreshKey}
+            status="พร้อมขาย"
+            openProductId={jumpToProductId}
+            onOpenedProduct={() => setJumpToProductId(null)}
+          />
+        )}
 
         {tab === 'stock-sold' && <ProductList key={refreshKey} status="ขายแล้ว" />}
 
-        {tab === 'report' && <ReportSection />}
+        {tab === 'report' && <ReportSection onSelectProduct={handleSelectProductFromReport} />}
       </div>
     </main>
   )
