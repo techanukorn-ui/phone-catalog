@@ -17,7 +17,7 @@ import MarkSoldForm from './MarkSoldForm'
 import SortableProductRow from './SortableProductRow'
 import SortableCategoryPill from './SortableCategoryPill'
 
-type OwnerFilter = 'ทั้งหมด' | ProductOwner
+type OwnerFilter = 'ทั้งหมด' | ProductOwner | 'ไม่ระบุ'
 
 export default function ProductList({ status }: { status: ProductStatus }) {
   const [products, setProducts] = useState<Product[]>([])
@@ -274,7 +274,11 @@ export default function ProductList({ status }: { status: ProductStatus }) {
           .sort((a, b) => a.category_sort_order - b.category_sort_order)
 
   const displayed =
-    activeOwner === 'ทั้งหมด' ? categoryFiltered : categoryFiltered.filter((p) => p.owner === activeOwner)
+    activeOwner === 'ทั้งหมด'
+      ? categoryFiltered
+      : activeOwner === 'ไม่ระบุ'
+        ? categoryFiltered.filter((p) => !p.owner)
+        : categoryFiltered.filter((p) => p.owner === activeOwner)
 
   // ลากจัดลำดับได้เฉพาะตอนดู "ทั้งหมด" ของเจ้าของทุน ไม่งั้นตำแหน่งที่ลากในรายการที่กรองแล้ว
   // จะไม่ตรงกับลำดับจริงของสินค้าทั้งหมด (sort_order/category_sort_order)
@@ -316,7 +320,7 @@ export default function ProductList({ status }: { status: ProductStatus }) {
 
       {status === 'พร้อมขาย' && (
         <div className="pill-row mb-3">
-          {(['ทั้งหมด', ...OWNERS] as OwnerFilter[]).map((owner) => (
+          {(['ทั้งหมด', ...OWNERS, 'ไม่ระบุ'] as OwnerFilter[]).map((owner) => (
             <button
               key={owner}
               type="button"
@@ -335,7 +339,11 @@ export default function ProductList({ status }: { status: ProductStatus }) {
 
       {displayed.length === 0 ? (
         <p className="py-8 text-center font-mono text-sm text-ink/50">
-          {activeOwner === 'ทั้งหมด' ? 'ไม่มีสินค้าในหมวดนี้' : `ไม่มีสินค้าของ ${activeOwner} ในหมวดนี้`}
+          {activeOwner === 'ทั้งหมด'
+            ? 'ไม่มีสินค้าในหมวดนี้'
+            : activeOwner === 'ไม่ระบุ'
+              ? 'ไม่มีสินค้าที่ไม่ระบุเจ้าของทุนในหมวดนี้'
+              : `ไม่มีสินค้าของ ${activeOwner} ในหมวดนี้`}
         </p>
       ) : canReorderProducts ? (
         <DndContext
