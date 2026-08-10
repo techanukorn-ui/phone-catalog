@@ -18,15 +18,65 @@
   --brand-dark: 29 78 216;
   --brand-light: 219 234 254;
 }
-[data-store-theme='rose'] {
-  --brand: 225 29 72;
-  --brand-dark: 190 18 60;
-  --brand-light: 255 228 230;
+[data-store-theme='indigo'] {
+  --brand: 79 70 229;
+  --brand-dark: 67 56 202;
+  --brand-light: 224 231 255;
 }
 [data-store-theme='violet'] {
   --brand: 124 58 237;
   --brand-dark: 109 40 217;
   --brand-light: 237 233 254;
+}
+[data-store-theme='purple'] {
+  --brand: 147 51 234;
+  --brand-dark: 126 34 206;
+  --brand-light: 243 232 255;
+}
+[data-store-theme='pink'] {
+  --brand: 219 39 119;
+  --brand-dark: 190 24 93;
+  --brand-light: 252 231 243;
+}
+[data-store-theme='rose'] {
+  --brand: 225 29 72;
+  --brand-dark: 190 18 60;
+  --brand-light: 255 228 230;
+}
+[data-store-theme='red'] {
+  --brand: 220 38 38;
+  --brand-dark: 185 28 28;
+  --brand-light: 254 226 226;
+}
+[data-store-theme='orange'] {
+  --brand: 234 88 12;
+  --brand-dark: 194 65 12;
+  --brand-light: 255 237 213;
+}
+[data-store-theme='amber'] {
+  --brand: 217 119 6;
+  --brand-dark: 180 83 9;
+  --brand-light: 254 243 199;
+}
+[data-store-theme='green'] {
+  --brand: 22 163 74;
+  --brand-dark: 21 128 61;
+  --brand-light: 220 252 231;
+}
+[data-store-theme='emerald'] {
+  --brand: 5 150 105;
+  --brand-dark: 4 120 87;
+  --brand-light: 209 250 229;
+}
+[data-store-theme='cyan'] {
+  --brand: 8 145 178;
+  --brand-dark: 14 116 144;
+  --brand-light: 207 250 254;
+}
+[data-store-theme='sky'] {
+  --brand: 2 132 199;
+  --brand-dark: 3 105 161;
+  --brand-light: 224 242 254;
 }
 [data-store-theme='slate'] {
   --brand: 51 65 85;

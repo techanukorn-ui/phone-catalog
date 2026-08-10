@@ -72,14 +72,39 @@ export type ProductFormValues = {
   listed_at: string
 }
 
-export type StoreTheme = 'teal' | 'blue' | 'rose' | 'violet' | 'slate'
+export type StoreTheme =
+  | 'teal'
+  | 'blue'
+  | 'indigo'
+  | 'violet'
+  | 'purple'
+  | 'pink'
+  | 'rose'
+  | 'red'
+  | 'orange'
+  | 'amber'
+  | 'green'
+  | 'emerald'
+  | 'cyan'
+  | 'sky'
+  | 'slate'
 
 // พรีเซ็ตธีมสี — ให้เลือกจากชุดที่คุมคอนทราสต์ไว้แล้วแทนกรอกสีอิสระ กันสีอ่านยาก/มืดไป
 export const THEME_PRESETS: { value: StoreTheme; label: string; swatch: string }[] = [
   { value: 'teal', label: 'เขียวเทียล', swatch: '#0E7C6B' },
   { value: 'blue', label: 'น้ำเงิน', swatch: '#2563EB' },
-  { value: 'rose', label: 'แดงกุหลาบ', swatch: '#E11D48' },
+  { value: 'indigo', label: 'คราม', swatch: '#4F46E5' },
   { value: 'violet', label: 'ม่วง', swatch: '#7C3AED' },
+  { value: 'purple', label: 'ม่วงเข้ม', swatch: '#9333EA' },
+  { value: 'pink', label: 'ชมพู', swatch: '#DB2777' },
+  { value: 'rose', label: 'แดงกุหลาบ', swatch: '#E11D48' },
+  { value: 'red', label: 'แดง', swatch: '#DC2626' },
+  { value: 'orange', label: 'ส้ม', swatch: '#EA580C' },
+  { value: 'amber', label: 'เหลืองอำพัน', swatch: '#D97706' },
+  { value: 'green', label: 'เขียว', swatch: '#16A34A' },
+  { value: 'emerald', label: 'เขียวมรกต', swatch: '#059669' },
+  { value: 'cyan', label: 'ฟ้าอมเขียว', swatch: '#0891B2' },
+  { value: 'sky', label: 'ฟ้า', swatch: '#0284C7' },
   { value: 'slate', label: 'เทาเข้ม', swatch: '#334155' },
 ]
 
