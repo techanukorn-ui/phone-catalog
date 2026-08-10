@@ -12,13 +12,13 @@ import LoginForm from '@/components/admin/LoginForm'
 
 type Tab = 'overview' | 'settings' | 'add' | 'stock-available' | 'stock-sold' | 'report'
 
-const TABS: { key: Tab; label: string; shortLabel: string; icon: string }[] = [
-  { key: 'overview', label: 'ภาพรวม', shortLabel: 'ภาพรวม', icon: '📊' },
-  { key: 'stock-available', label: 'สต็อกสินค้าพร้อมขาย', shortLabel: 'พร้อมขาย', icon: '📦' },
-  { key: 'stock-sold', label: 'สินค้าขายแล้ว', shortLabel: 'ขายแล้ว', icon: '✅' },
-  { key: 'add', label: 'เพิ่มสินค้า', shortLabel: 'เพิ่ม', icon: '➕' },
-  { key: 'report', label: 'รายงาน', shortLabel: 'รายงาน', icon: '📈' },
-  { key: 'settings', label: 'ข้อมูลร้านค้า', shortLabel: 'ตั้งค่า', icon: '⚙️' },
+const TABS: { key: Tab; shortLabel: string; icon: string }[] = [
+  { key: 'overview', shortLabel: 'ภาพรวม', icon: '📊' },
+  { key: 'stock-available', shortLabel: 'พร้อมขาย', icon: '📦' },
+  { key: 'stock-sold', shortLabel: 'ขายแล้ว', icon: '✅' },
+  { key: 'add', shortLabel: 'เพิ่มสินค้า', icon: '➕' },
+  { key: 'report', shortLabel: 'รายงาน', icon: '📈' },
+  { key: 'settings', shortLabel: 'ตั้งค่า', icon: '⚙️' },
 ]
 
 export default function AdminManagePage() {

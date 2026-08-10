@@ -84,6 +84,33 @@
   --brand-light: 226 232 240;
 }
 
+/* โทนพาสเทล — อ่อนกว่าธีมหลักด้านบน แต่ยังคงเข้มพอให้ตัวหนังสือสีขาวบนปุ่มอ่านออก */
+[data-store-theme='pastel-blue'] {
+  --brand: 96 165 250;
+  --brand-dark: 59 130 246;
+  --brand-light: 239 246 255;
+}
+[data-store-theme='pastel-pink'] {
+  --brand: 244 114 182;
+  --brand-dark: 236 72 153;
+  --brand-light: 253 242 248;
+}
+[data-store-theme='pastel-mint'] {
+  --brand: 52 211 153;
+  --brand-dark: 16 185 129;
+  --brand-light: 236 253 245;
+}
+[data-store-theme='pastel-lavender'] {
+  --brand: 167 139 250;
+  --brand-dark: 139 92 246;
+  --brand-light: 245 243 255;
+}
+[data-store-theme='pastel-gray'] {
+  --brand: 107 114 128;
+  --brand-dark: 75 85 99;
+  --brand-light: 243 244 246;
+}
+
 html,
 body {
   background-color: #f1f0ec;

@@ -40,7 +40,7 @@ alter table store_settings add column if not exists tagline text;
 -- ใช้พรีเซ็ตแทนให้กรอกสีเองอิสระ เพื่อคุมคุณภาพสี (คอนทราสต์/ความเข้ม-อ่อน) ให้อ่านง่ายเสมอ
 alter table store_settings add column if not exists theme text not null default 'teal';
 alter table store_settings drop constraint if exists store_settings_theme_check;
-alter table store_settings add constraint store_settings_theme_check check (theme in ('teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald','cyan','sky','slate'));
+alter table store_settings add constraint store_settings_theme_check check (theme in ('teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald','cyan','sky','slate','pastel-blue','pastel-pink','pastel-mint','pastel-lavender','pastel-gray'));
 
 insert into store_settings (id, store_name)
 values (1, 'ร้านมือถือมือสอง')
