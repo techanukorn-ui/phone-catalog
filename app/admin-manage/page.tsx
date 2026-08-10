@@ -57,7 +57,7 @@ export default function AdminManagePage() {
   }
 
   return (
-    <main className="min-h-screen bg-paper pb-24">
+    <main className="min-h-screen bg-paper pb-24 sm:pb-10">
       <header className="sticky top-0 z-30 border-b border-line bg-ink">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 lg:max-w-5xl">
           <div>
@@ -74,6 +74,24 @@ export default function AdminManagePage() {
           </button>
         </div>
       </header>
+
+      {/* จอกว้าง (คอมพิวเตอร์) — แถบแท็บติดกับเนื้อหา เพราะ bottom nav แบบมือถือจะดูลอยแยกจากเนื้อหาไปไกล */}
+      <div className="sticky top-[60px] z-20 hidden border-b border-line bg-paper/95 backdrop-blur sm:block">
+        <div className="mx-auto flex max-w-2xl gap-1 px-4 py-2 lg:max-w-5xl">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-tag border px-3 py-2 font-mono text-xs uppercase tracking-wide transition-colors ${
+                tab === t.key ? 'border-teal bg-teal text-white' : 'border-line bg-panel text-ink/70'
+              }`}
+            >
+              <span className="text-sm leading-none">{t.icon}</span>
+              {t.shortLabel}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div key={tab} className="animate-fade-in mx-auto max-w-2xl px-4 py-4 lg:max-w-5xl">
         {tab === 'overview' && <OverviewDashboard />}
@@ -104,7 +122,7 @@ export default function AdminManagePage() {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-panel/95 backdrop-blur"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-panel/95 backdrop-blur sm:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="mx-auto flex max-w-2xl lg:max-w-5xl">
