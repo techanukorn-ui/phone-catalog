@@ -8,6 +8,7 @@ import Header from '@/components/Header'
 import FilterBar, { type SortOption } from '@/components/FilterBar'
 import ProductCard from '@/components/ProductCard'
 import ProductModal from '@/components/ProductModal'
+import ThemeSync from '@/components/ThemeSync'
 
 export default function StorefrontPage() {
   return (
@@ -97,6 +98,7 @@ function StorefrontPageContent() {
 
   return (
     <main className="min-h-screen bg-paper pb-10">
+      <ThemeSync theme={settings?.theme} />
       <Header settings={settings} />
       <FilterBar
         categories={settings?.category_order ?? undefined}
@@ -110,7 +112,18 @@ function StorefrontPageContent() {
 
       <div className="mx-auto max-w-3xl px-4 pt-4 lg:max-w-6xl">
         {loading && (
-          <p className="py-16 text-center font-mono text-sm text-ink/50">กำลังโหลดสต็อกสินค้า…</p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="flex flex-col overflow-hidden rounded-card border border-line bg-panel">
+                <div className="skeleton-shimmer aspect-square w-full" />
+                <div className="flex flex-col gap-2 p-3">
+                  <div className="skeleton-shimmer h-3.5 w-4/5 rounded-tag" />
+                  <div className="skeleton-shimmer h-3.5 w-2/5 rounded-tag" />
+                  <div className="skeleton-shimmer mt-2 h-5 w-1/2 rounded-tag" />
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         {!loading && filtered.length === 0 && (

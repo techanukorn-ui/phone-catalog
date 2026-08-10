@@ -1,23 +1,28 @@
 import Image from 'next/image'
+import { useState } from 'react'
 import type { Product } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import ConditionDial from './ConditionDial'
 
 export default function ProductCard({ product, onSelect }: { product: Product; onSelect: (p: Product) => void }) {
   const sold = product.status === 'ขายแล้ว'
+  const [loaded, setLoaded] = useState(false)
 
   return (
     <button
       onClick={() => onSelect(product)}
       className="group flex flex-col overflow-hidden rounded-card border border-line bg-panel text-left shadow-tag transition-transform active:scale-[0.98]"
     >
-      <div className="relative aspect-square w-full overflow-hidden bg-line/30">
+      <div className={`relative aspect-square w-full overflow-hidden ${loaded ? 'bg-line/30' : 'skeleton-shimmer'}`}>
         <Image
           src={product.cover_image_url}
           alt={product.model_name}
           fill
           sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1279px) 25vw, 20vw"
-          className={`object-cover transition-opacity ${sold ? 'opacity-40 grayscale' : ''}`}
+          onLoad={() => setLoaded(true)}
+          className={`object-cover transition-opacity duration-300 ${sold ? 'grayscale' : ''} ${
+            !loaded ? 'opacity-0' : sold ? 'opacity-40' : 'opacity-100'
+          }`}
         />
         <span className="absolute left-2 top-2 rounded-tag bg-ink/80 px-2 py-0.5 font-mono text-[10px] tracking-wide text-white">
           {product.product_code}

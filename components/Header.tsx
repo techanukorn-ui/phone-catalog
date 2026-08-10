@@ -22,7 +22,7 @@ export default function Header({ settings }: { settings: StoreSettings | null })
             {storeName}
           </p>
           <p className="text-base font-mono font-bold uppercase tracking-wide text-teal">
-            รับซื้อ ฝาก ขาย สินค้า Apple มือ 2 ทุกชนิด
+            {settings?.tagline || 'รับซื้อ ฝาก ขาย สินค้า Apple มือ 2 ทุกชนิด'}
           </p>
           {phones.length > 0 && (
             <p className="mt-1 flex flex-wrap items-center justify-center gap-x-2 font-mono text-base text-ink/70">

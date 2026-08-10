@@ -72,6 +72,17 @@ export type ProductFormValues = {
   listed_at: string
 }
 
+export type StoreTheme = 'teal' | 'blue' | 'rose' | 'violet' | 'slate'
+
+// พรีเซ็ตธีมสี — ให้เลือกจากชุดที่คุมคอนทราสต์ไว้แล้วแทนกรอกสีอิสระ กันสีอ่านยาก/มืดไป
+export const THEME_PRESETS: { value: StoreTheme; label: string; swatch: string }[] = [
+  { value: 'teal', label: 'เขียวเทียล', swatch: '#0E7C6B' },
+  { value: 'blue', label: 'น้ำเงิน', swatch: '#2563EB' },
+  { value: 'rose', label: 'แดงกุหลาบ', swatch: '#E11D48' },
+  { value: 'violet', label: 'ม่วง', swatch: '#7C3AED' },
+  { value: 'slate', label: 'เทาเข้ม', swatch: '#334155' },
+]
+
 export interface StoreSettings {
   id: number
   store_name: string
@@ -79,5 +90,7 @@ export interface StoreSettings {
   phone1: string | null
   phone2: string | null
   category_order: CategoryTab[] | null
+  tagline: string | null
+  theme: StoreTheme
   updated_at: string
 }

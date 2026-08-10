@@ -71,13 +71,13 @@ export default function ProductModal({ product, onClose }: { product: Product; o
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center overscroll-none bg-ink/60 [touch-action:pan-y] sm:items-center"
+      className="animate-fade-in fixed inset-0 z-50 flex items-end justify-center overscroll-none bg-ink/60 [touch-action:pan-y] sm:items-center"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[85dvh] w-full max-w-lg flex-col overflow-hidden overscroll-none rounded-t-card bg-panel [touch-action:pan-y] sm:max-h-[92dvh] sm:rounded-card"
+        className="animate-sheet-up flex max-h-[85dvh] w-full max-w-lg flex-col overflow-hidden overscroll-none rounded-t-card bg-panel [touch-action:pan-y] sm:max-h-[92dvh] sm:animate-pop-in sm:rounded-card"
       >
         <div className="relative shrink-0">
           <div

@@ -33,6 +33,15 @@ where not ('ทั้งหมด' = any(category_order));
 alter table store_settings alter column category_order set default array['ทั้งหมด','IPAD','IPHONE','MACBOOK','APPLE PENCIL','APPLE WATCH','อื่นๆ'];
 alter table store_settings alter column category_order set not null;
 
+-- ข้อความสโลแกนใต้ชื่อร้าน (ถ้าไม่ตั้งจะใช้ข้อความเริ่มต้นในโค้ด)
+alter table store_settings add column if not exists tagline text;
+
+-- ธีมสีของหน้าร้าน เลือกได้จากพรีเซ็ตที่กำหนดไว้ (ดู THEME_PRESETS ใน lib/types.ts)
+-- ใช้พรีเซ็ตแทนให้กรอกสีเองอิสระ เพื่อคุมคุณภาพสี (คอนทราสต์/ความเข้ม-อ่อน) ให้อ่านง่ายเสมอ
+alter table store_settings add column if not exists theme text not null default 'teal';
+alter table store_settings drop constraint if exists store_settings_theme_check;
+alter table store_settings add constraint store_settings_theme_check check (theme in ('teal','blue','rose','violet','slate'));
+
 insert into store_settings (id, store_name)
 values (1, 'ร้านมือถือมือสอง')
 on conflict (id) do nothing;

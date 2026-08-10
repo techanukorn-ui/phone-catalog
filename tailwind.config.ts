@@ -10,9 +10,9 @@ const config: Config = {
         panel: '#FFFFFF',
         line: '#DAD7CF',
         teal: {
-          DEFAULT: '#0E7C6B',
-          dark: '#0A5C4F',
-          light: '#E4F1EE',
+          DEFAULT: 'rgb(var(--brand) / <alpha-value>)',
+          dark: 'rgb(var(--brand-dark) / <alpha-value>)',
+          light: 'rgb(var(--brand-light) / <alpha-value>)',
         },
         amber: {
           DEFAULT: '#E8A33D',

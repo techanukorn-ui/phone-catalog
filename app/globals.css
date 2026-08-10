@@ -6,6 +6,32 @@
   --font-display: initial;
   --font-body: initial;
   --font-mono: initial;
+
+  /* สีแบรนด์หลัก (ธีมเริ่มต้น: เขียวเทียล) — สลับด้วย [data-store-theme] บน <html> */
+  --brand: 14 124 107;
+  --brand-dark: 10 92 79;
+  --brand-light: 228 241 238;
+}
+
+[data-store-theme='blue'] {
+  --brand: 37 99 235;
+  --brand-dark: 29 78 216;
+  --brand-light: 219 234 254;
+}
+[data-store-theme='rose'] {
+  --brand: 225 29 72;
+  --brand-dark: 190 18 60;
+  --brand-light: 255 228 230;
+}
+[data-store-theme='violet'] {
+  --brand: 124 58 237;
+  --brand-dark: 109 40 217;
+  --brand-light: 237 233 254;
+}
+[data-store-theme='slate'] {
+  --brand: 51 65 85;
+  --brand-dark: 30 41 59;
+  --brand-light: 226 232 240;
 }
 
 html,
@@ -23,7 +49,7 @@ body {
 }
 
 ::selection {
-  background-color: #0e7c6b;
+  background-color: rgb(var(--brand));
   color: #ffffff;
 }
 
@@ -91,5 +117,63 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes pop-in {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
+.animate-sheet-up {
+  animation: sheet-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-pop-in {
+  animation: pop-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* พื้นหลังกะพริบระหว่างรอรูปโหลด — ให้รู้สึกว่ากำลังโหลดจริงแทนพื้นเรียบนิ่ง */
+.skeleton-shimmer {
+  background: linear-gradient(
+    100deg,
+    rgba(23, 24, 26, 0.06) 30%,
+    rgba(23, 24, 26, 0.12) 50%,
+    rgba(23, 24, 26, 0.06) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
   }
 }

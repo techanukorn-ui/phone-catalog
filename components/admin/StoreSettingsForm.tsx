@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import type { StoreSettings } from '@/lib/types'
+import type { StoreSettings, StoreTheme } from '@/lib/types'
+import { THEME_PRESETS } from '@/lib/types'
 import { deleteImageByUrl, uploadImage } from '@/lib/utils'
 
 export default function StoreSettingsForm() {
   const [settings, setSettings] = useState<StoreSettings | null>(null)
   const [storeName, setStoreName] = useState('')
+  const [tagline, setTagline] = useState('')
   const [phone1, setPhone1] = useState('')
   const [phone2, setPhone2] = useState('')
+  const [theme, setTheme] = useState<StoreTheme>('teal')
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -23,8 +26,10 @@ export default function StoreSettingsForm() {
       const s = data as StoreSettings | null
       setSettings(s)
       setStoreName(s?.store_name ?? '')
+      setTagline(s?.tagline ?? '')
       setPhone1(s?.phone1 ?? '')
       setPhone2(s?.phone2 ?? '')
+      setTheme(s?.theme ?? 'teal')
       setLogoPreview(s?.logo_url ?? null)
       setLoading(false)
     }
@@ -56,9 +61,11 @@ export default function StoreSettingsForm() {
         .upsert({
           id: 1,
           store_name: storeName.trim() || 'ร้านมือถือมือสอง',
+          tagline: tagline.trim() || null,
           logo_url: logoUrl,
           phone1: phone1.trim() || null,
           phone2: phone2.trim() || null,
+          theme,
         })
         .select()
         .single()
@@ -89,6 +96,38 @@ export default function StoreSettingsForm() {
           className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">สโลแกนใต้ชื่อร้าน</span>
+        <input
+          value={tagline}
+          onChange={(e) => setTagline(e.target.value)}
+          placeholder="เช่น รับซื้อ ฝาก ขาย สินค้า Apple มือ 2 ทุกชนิด"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+        />
+      </label>
+
+      <div>
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ธีมสีของหน้าร้าน</span>
+        <div className="flex flex-wrap gap-2">
+          {THEME_PRESETS.map((preset) => (
+            <button
+              key={preset.value}
+              type="button"
+              onClick={() => setTheme(preset.value)}
+              className={`flex items-center gap-2 rounded-tag border px-3 py-2 text-xs ${
+                theme === preset.value ? 'border-ink bg-ink/5' : 'border-line bg-paper'
+              }`}
+            >
+              <span
+                className="h-4 w-4 shrink-0 rounded-full border border-ink/10"
+                style={{ backgroundColor: preset.swatch }}
+              />
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">

@@ -12,43 +12,13 @@ import LoginForm from '@/components/admin/LoginForm'
 
 type Tab = 'overview' | 'settings' | 'add' | 'stock-available' | 'stock-sold' | 'report'
 
-const TABS: { key: Tab; label: string; active: string; inactive: string }[] = [
-  {
-    key: 'overview',
-    label: 'ภาพรวม',
-    active: 'border-info bg-info text-white',
-    inactive: 'border-info text-info bg-panel',
-  },
-  {
-    key: 'stock-available',
-    label: 'สต็อกสินค้าพร้อมขาย',
-    active: 'border-teal bg-teal text-white',
-    inactive: 'border-teal text-teal-dark bg-panel',
-  },
-  {
-    key: 'stock-sold',
-    label: 'สินค้าขายแล้ว',
-    active: 'border-ink bg-ink text-white',
-    inactive: 'border-ink text-ink bg-panel',
-  },
-  {
-    key: 'add',
-    label: 'เพิ่มสินค้า',
-    active: 'border-success bg-success text-white',
-    inactive: 'border-success text-success bg-panel',
-  },
-  {
-    key: 'report',
-    label: 'รายงาน',
-    active: 'border-amber-dark bg-amber-dark text-white',
-    inactive: 'border-amber-dark text-amber-dark bg-panel',
-  },
-  {
-    key: 'settings',
-    label: 'ข้อมูลร้านค้า',
-    active: 'border-info-dark bg-info-dark text-white',
-    inactive: 'border-info-dark text-info-dark bg-panel',
-  },
+const TABS: { key: Tab; label: string; shortLabel: string; icon: string }[] = [
+  { key: 'overview', label: 'ภาพรวม', shortLabel: 'ภาพรวม', icon: '📊' },
+  { key: 'stock-available', label: 'สต็อกสินค้าพร้อมขาย', shortLabel: 'พร้อมขาย', icon: '📦' },
+  { key: 'stock-sold', label: 'สินค้าขายแล้ว', shortLabel: 'ขายแล้ว', icon: '✅' },
+  { key: 'add', label: 'เพิ่มสินค้า', shortLabel: 'เพิ่ม', icon: '➕' },
+  { key: 'report', label: 'รายงาน', shortLabel: 'รายงาน', icon: '📈' },
+  { key: 'settings', label: 'ข้อมูลร้านค้า', shortLabel: 'ตั้งค่า', icon: '⚙️' },
 ]
 
 export default function AdminManagePage() {
@@ -87,7 +57,7 @@ export default function AdminManagePage() {
   }
 
   return (
-    <main className="min-h-screen bg-paper pb-16">
+    <main className="min-h-screen bg-paper pb-24">
       <header className="sticky top-0 z-30 border-b border-line bg-ink">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 lg:max-w-5xl">
           <div>
@@ -105,23 +75,7 @@ export default function AdminManagePage() {
         </div>
       </header>
 
-      <div className="sticky top-[60px] z-20 border-b border-line bg-paper/95 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl flex-wrap gap-2 px-4 py-2.5 lg:max-w-5xl">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex-1 rounded-tag border px-3 py-2 font-mono text-xs uppercase tracking-wide ${
-                tab === t.key ? t.active : t.inactive
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-2xl px-4 py-4 lg:max-w-5xl">
+      <div key={tab} className="animate-fade-in mx-auto max-w-2xl px-4 py-4 lg:max-w-5xl">
         {tab === 'overview' && <OverviewDashboard />}
 
         {tab === 'settings' && <StoreSettingsForm />}
@@ -148,6 +102,26 @@ export default function AdminManagePage() {
 
         {tab === 'report' && <ReportSection onSelectProduct={handleSelectProductFromReport} />}
       </div>
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-panel/95 backdrop-blur"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="mx-auto flex max-w-2xl lg:max-w-5xl">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex flex-1 flex-col items-center gap-0.5 py-2 font-mono text-[10px] uppercase tracking-wide transition-colors ${
+                tab === t.key ? 'text-teal' : 'text-ink/45'
+              }`}
+            >
+              <span className="text-lg leading-none">{t.icon}</span>
+              {t.shortLabel}
+            </button>
+          ))}
+        </div>
+      </nav>
     </main>
   )
 }
