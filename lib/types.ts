@@ -93,6 +93,8 @@ export type StoreTheme =
   | 'pastel-mint'
   | 'pastel-lavender'
   | 'pastel-gray'
+  | 'black'
+  | 'gold'
 
 // พรีเซ็ตธีมสี — ให้เลือกจากชุดที่คุมคอนทราสต์ไว้แล้วแทนกรอกสีอิสระ กันสีอ่านยาก/มืดไป
 export const THEME_PRESETS: { value: StoreTheme; label: string; swatch: string }[] = [
@@ -116,6 +118,8 @@ export const THEME_PRESETS: { value: StoreTheme; label: string; swatch: string }
   { value: 'pastel-mint', label: 'มินต์พาสเทล', swatch: '#34D399' },
   { value: 'pastel-lavender', label: 'ลาเวนเดอร์พาสเทล', swatch: '#A78BFA' },
   { value: 'pastel-gray', label: 'เทาอ่อน', swatch: '#9CA3AF' },
+  { value: 'black', label: 'ดำ', swatch: '#18181B' },
+  { value: 'gold', label: 'ทอง', swatch: '#C9A227' },
 ]
 
 export interface StoreSettings {

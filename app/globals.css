@@ -110,6 +110,16 @@
   --brand-dark: 75 85 99;
   --brand-light: 243 244 246;
 }
+[data-store-theme='black'] {
+  --brand: 24 24 27;
+  --brand-dark: 9 9 11;
+  --brand-light: 244 244 245;
+}
+[data-store-theme='gold'] {
+  --brand: 201 162 39;
+  --brand-dark: 156 122 29;
+  --brand-light: 250 243 224;
+}
 
 html,
 body {
