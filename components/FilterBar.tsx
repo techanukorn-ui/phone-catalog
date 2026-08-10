@@ -3,6 +3,16 @@ import type { CategoryTab } from '@/lib/types'
 
 export type SortOption = 'newest' | 'price-asc' | 'price-desc'
 
+const CATEGORY_ICONS: Record<CategoryTab, string> = {
+  ทั้งหมด: '🗂️',
+  IPAD: '🗒️',
+  IPHONE: '📱',
+  MACBOOK: '💻',
+  'APPLE PENCIL': '✏️',
+  'APPLE WATCH': '⌚',
+  อื่นๆ: '🏷️',
+}
+
 type Props = {
   categories?: CategoryTab[]
   activeCategory: string
@@ -45,7 +55,7 @@ export default function FilterBar({
                     : 'border-line bg-panel text-ink/70 active:bg-line/40'
                 }`}
               >
-                {tab}
+                <span aria-hidden="true">{CATEGORY_ICONS[tab]}</span> {tab}
               </button>
             )
           })}
