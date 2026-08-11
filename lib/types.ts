@@ -94,6 +94,8 @@ export type StoreTheme =
   | 'pastel-lavender'
   | 'pastel-gray'
   | 'black'
+  | 'white'
+  | 'cream'
   | 'gold'
 
 // พรีเซ็ตธีมสี — ให้เลือกจากชุดที่คุมคอนทราสต์ไว้แล้วแทนกรอกสีอิสระ กันสีอ่านยาก/มืดไป
@@ -119,8 +121,19 @@ export const THEME_PRESETS: { value: StoreTheme; label: string; swatch: string }
   { value: 'pastel-lavender', label: 'ลาเวนเดอร์พาสเทล', swatch: '#A78BFA' },
   { value: 'pastel-gray', label: 'เทาอ่อน', swatch: '#9CA3AF' },
   { value: 'black', label: 'ดำ', swatch: '#18181B' },
+  { value: 'white', label: 'ขาว', swatch: '#FFFFFF' },
+  { value: 'cream', label: 'ครีม (สีพื้นหลังเดิม)', swatch: '#F1F0EC' },
   { value: 'gold', label: 'ทอง', swatch: '#C9A227' },
 ]
+
+/** แปลง swatch hex ของธีมที่เลือกเป็น "R G B" สำหรับตั้งเป็น CSS custom property */
+export function themeToRgbSpace(theme: StoreTheme | null | undefined, fallback: StoreTheme = 'teal'): string {
+  const hex = (THEME_PRESETS.find((p) => p.value === theme) ?? THEME_PRESETS.find((p) => p.value === fallback))!.swatch
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `${r} ${g} ${b}`
+}
 
 export interface StoreSettings {
   id: number
@@ -131,5 +144,10 @@ export interface StoreSettings {
   category_order: CategoryTab[] | null
   tagline: string | null
   theme: StoreTheme
+  name_theme: StoreTheme
+  price_theme: StoreTheme
+  tagline_theme: StoreTheme
+  bg_theme: StoreTheme
+  pill_text_theme: StoreTheme
   updated_at: string
 }

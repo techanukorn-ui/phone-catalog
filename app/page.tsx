@@ -97,8 +97,15 @@ function StorefrontPageContent() {
   }, [products, category, search, sort])
 
   return (
-    <main className="min-h-screen bg-paper pb-10">
-      <ThemeSync theme={settings?.theme} />
+    <main className="min-h-screen bg-storebg pb-10">
+      <ThemeSync
+        theme={settings?.theme}
+        nameTheme={settings?.name_theme}
+        priceTheme={settings?.price_theme}
+        taglineTheme={settings?.tagline_theme}
+        bgTheme={settings?.bg_theme}
+        pillTextTheme={settings?.pill_text_theme}
+      />
       <Header settings={settings} />
       <FilterBar
         categories={settings?.category_order ?? undefined}

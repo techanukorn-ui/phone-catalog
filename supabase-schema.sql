@@ -40,7 +40,46 @@ alter table store_settings add column if not exists tagline text;
 -- ใช้พรีเซ็ตแทนให้กรอกสีเองอิสระ เพื่อคุมคุณภาพสี (คอนทราสต์/ความเข้ม-อ่อน) ให้อ่านง่ายเสมอ
 alter table store_settings add column if not exists theme text not null default 'teal';
 alter table store_settings drop constraint if exists store_settings_theme_check;
-alter table store_settings add constraint store_settings_theme_check check (theme in ('teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald','cyan','sky','slate','pastel-blue','pastel-pink','pastel-mint','pastel-lavender','pastel-gray','black','gold'));
+alter table store_settings add constraint store_settings_theme_check check (theme in (
+  'teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald',
+  'cyan','sky','slate','pastel-blue','pastel-pink','pastel-mint','pastel-lavender','pastel-gray','black','white','cream','gold'
+));
+
+-- ธีมสีข้อความ/พื้นหลังของหน้าร้าน แยกอิสระทีละจุดจากธีมสีปุ่มกด (ซึ่งคุมแค่พื้นหลัง/ขอบปุ่ม)
+alter table store_settings add column if not exists name_theme text not null default 'black';
+alter table store_settings drop constraint if exists store_settings_name_theme_check;
+alter table store_settings add constraint store_settings_name_theme_check check (name_theme in (
+  'teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald',
+  'cyan','sky','slate','pastel-blue','pastel-pink','pastel-mint','pastel-lavender','pastel-gray','black','white','cream','gold'
+));
+
+alter table store_settings add column if not exists price_theme text not null default 'amber';
+alter table store_settings drop constraint if exists store_settings_price_theme_check;
+alter table store_settings add constraint store_settings_price_theme_check check (price_theme in (
+  'teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald',
+  'cyan','sky','slate','pastel-blue','pastel-pink','pastel-mint','pastel-lavender','pastel-gray','black','white','cream','gold'
+));
+
+alter table store_settings add column if not exists tagline_theme text not null default 'teal';
+alter table store_settings drop constraint if exists store_settings_tagline_theme_check;
+alter table store_settings add constraint store_settings_tagline_theme_check check (tagline_theme in (
+  'teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald',
+  'cyan','sky','slate','pastel-blue','pastel-pink','pastel-mint','pastel-lavender','pastel-gray','black','white','cream','gold'
+));
+
+alter table store_settings add column if not exists bg_theme text not null default 'cream';
+alter table store_settings drop constraint if exists store_settings_bg_theme_check;
+alter table store_settings add constraint store_settings_bg_theme_check check (bg_theme in (
+  'teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald',
+  'cyan','sky','slate','pastel-blue','pastel-pink','pastel-mint','pastel-lavender','pastel-gray','black','white','cream','gold'
+));
+
+alter table store_settings add column if not exists pill_text_theme text not null default 'white';
+alter table store_settings drop constraint if exists store_settings_pill_text_theme_check;
+alter table store_settings add constraint store_settings_pill_text_theme_check check (pill_text_theme in (
+  'teal','blue','indigo','violet','purple','pink','rose','red','orange','amber','green','emerald',
+  'cyan','sky','slate','pastel-blue','pastel-pink','pastel-mint','pastel-lavender','pastel-gray','black','white','cream','gold'
+));
 
 insert into store_settings (id, store_name)
 values (1, 'ร้านมือถือมือสอง')

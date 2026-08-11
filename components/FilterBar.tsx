@@ -51,7 +51,7 @@ export default function FilterBar({
                 onClick={() => onCategoryChange(tab)}
                 className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
                   active
-                    ? 'border-teal bg-teal text-white'
+                    ? 'border-teal bg-teal text-accent-pill'
                     : 'border-line bg-panel text-ink/70 active:bg-line/40'
                 }`}
               >

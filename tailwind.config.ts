@@ -26,6 +26,13 @@ const config: Config = {
           dark: '#2C4F91',
           light: '#E6ECFA',
         },
+        accent: {
+          name: 'rgb(var(--name-brand) / <alpha-value>)',
+          price: 'rgb(var(--price-brand) / <alpha-value>)',
+          tagline: 'rgb(var(--tagline-brand) / <alpha-value>)',
+          pill: 'rgb(var(--pill-text-brand) / <alpha-value>)',
+        },
+        storebg: 'rgb(var(--bg-brand) / <alpha-value>)',
       },
       fontFamily: {
         display: ['var(--font-display)'],

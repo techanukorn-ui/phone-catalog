@@ -11,6 +11,13 @@
   --brand: 14 124 107;
   --brand-dark: 10 92 79;
   --brand-light: 228 241 238;
+
+  /* สีข้อความ/พื้นหลังแยกอิสระทีละจุด — ตั้งค่าเป็น inline style โดย ThemeSync.tsx ตามที่แอดมินเลือกไว้ */
+  --name-brand: 23 24 26;
+  --price-brand: 198 129 31;
+  --tagline-brand: 14 124 107;
+  --bg-brand: 241 240 236;
+  --pill-text-brand: 255 255 255;
 }
 
 [data-store-theme='blue'] {

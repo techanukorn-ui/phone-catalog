@@ -38,7 +38,7 @@ export default function ProductCard({ product, onSelect }: { product: Product; o
 
       <div className="tag-perforation flex flex-1 flex-col gap-2 p-3">
         <div>
-          <p className="break-words font-display text-sm font-semibold leading-snug text-ink">
+          <p className="break-words font-display text-sm font-semibold leading-snug text-accent-name">
             {product.model_name}
             {product.capacity ? <span className="text-ink/60"> · {product.capacity}</span> : null}
             {product.color ? <span className="text-ink/60"> · {product.color}</span> : null}
@@ -56,7 +56,7 @@ export default function ProductCard({ product, onSelect }: { product: Product; o
           </div>
         )}
 
-        <p className="mt-auto font-mono text-lg font-semibold text-amber-dark">
+        <p className="mt-auto font-mono text-lg font-semibold text-accent-price">
           {formatPrice(product.price)}
         </p>
       </div>

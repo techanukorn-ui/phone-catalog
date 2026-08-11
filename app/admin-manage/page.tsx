@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 import StoreSettingsForm from '@/components/admin/StoreSettingsForm'
+import ThemeSettingsForm from '@/components/admin/ThemeSettingsForm'
 import ProductForm from '@/components/admin/ProductForm'
 import ProductList from '@/components/admin/ProductList'
 import ReportSection from '@/components/admin/ReportSection'
 import OverviewDashboard from '@/components/admin/OverviewDashboard'
 import LoginForm from '@/components/admin/LoginForm'
 
-type Tab = 'overview' | 'settings' | 'add' | 'stock-available' | 'stock-sold' | 'report'
+type Tab = 'overview' | 'settings' | 'theme' | 'add' | 'stock-available' | 'stock-sold' | 'report'
 
 const TABS: { key: Tab; shortLabel: string; icon: string }[] = [
   { key: 'overview', shortLabel: 'ภาพรวม', icon: '📊' },
@@ -19,6 +20,7 @@ const TABS: { key: Tab; shortLabel: string; icon: string }[] = [
   { key: 'add', shortLabel: 'เพิ่มสินค้า', icon: '➕' },
   { key: 'report', shortLabel: 'รายงาน', icon: '📈' },
   { key: 'settings', shortLabel: 'ตั้งค่า', icon: '⚙️' },
+  { key: 'theme', shortLabel: 'ธีมสี', icon: '🎨' },
 ]
 
 export default function AdminManagePage() {
@@ -97,6 +99,8 @@ export default function AdminManagePage() {
         {tab === 'overview' && <OverviewDashboard />}
 
         {tab === 'settings' && <StoreSettingsForm />}
+
+        {tab === 'theme' && <ThemeSettingsForm />}
 
         {tab === 'add' && (
           <ProductForm

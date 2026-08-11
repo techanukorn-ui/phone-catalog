@@ -169,7 +169,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
         <div className="tag-perforation overflow-x-hidden overflow-y-auto p-4">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="break-words font-display text-xl font-semibold text-ink">
+              <p className="break-words font-display text-xl font-semibold text-accent-name">
                 {product.model_name}
                 {product.capacity ? <span className="text-ink/60"> · {product.capacity}</span> : null}
                 {product.color ? <span className="text-ink/60"> · {product.color}</span> : null}
@@ -187,7 +187,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
             </span>
           </div>
 
-          <p className="mb-4 font-mono text-2xl font-semibold text-amber-dark">
+          <p className="mb-4 font-mono text-2xl font-semibold text-accent-price">
             {formatPrice(product.price)}
           </p>
 
