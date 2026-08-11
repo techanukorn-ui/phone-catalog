@@ -21,6 +21,48 @@ function todayStr(): string {
   return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 10)
 }
 
+function DividendField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  const isNegative = value.trim().startsWith('-')
+
+  function toggleSign() {
+    const trimmed = value.trim()
+    onChange(trimmed.startsWith('-') ? trimmed.slice(1) : `-${trimmed}`)
+  }
+
+  return (
+    <label className="block">
+      <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">{label}</span>
+      <div className="flex gap-1">
+        <button
+          type="button"
+          onClick={toggleSign}
+          aria-label={isNegative ? 'เปลี่ยนเป็นบวก' : 'เปลี่ยนเป็นลบ (ขาดทุน)'}
+          className={`w-9 shrink-0 rounded-tag border font-mono text-base font-semibold ${
+            isNegative ? 'border-danger bg-danger/10 text-danger' : 'border-line bg-paper text-ink/60'
+          }`}
+        >
+          {isNegative ? '−' : '+'}
+        </button>
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          inputMode="numeric"
+          placeholder="0"
+          className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
+        />
+      </div>
+    </label>
+  )
+}
+
 export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
   const [soldAt, setSoldAt] = useState(product.sold_at ?? todayStr())
   const [costDevice, setCostDevice] = useState(product.cost_device != null ? String(product.cost_device) : '')
@@ -152,56 +194,11 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <label className="block">
-          <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">ปันผลวอลเล่</span>
-          <input
-            value={divWallet}
-            onChange={(e) => setDivWallet(e.target.value)}
-            inputMode="numeric"
-            placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">ปันผลโบว์</span>
-          <input
-            value={divBow}
-            onChange={(e) => setDivBow(e.target.value)}
-            inputMode="numeric"
-            placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">ปันผลเมจิ</span>
-          <input
-            value={divMagic}
-            onChange={(e) => setDivMagic(e.target.value)}
-            inputMode="numeric"
-            placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">ปันผลโบ๊ท</span>
-          <input
-            value={divBoat}
-            onChange={(e) => setDivBoat(e.target.value)}
-            inputMode="numeric"
-            placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1 block font-mono text-[10px] uppercase tracking-wide text-ink/60">ปันผลน้าเหน่ง</span>
-          <input
-            value={divNeng}
-            onChange={(e) => setDivNeng(e.target.value)}
-            inputMode="numeric"
-            placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-2 py-2 text-base"
-          />
-        </label>
+        <DividendField label="ปันผลวอลเล่" value={divWallet} onChange={setDivWallet} />
+        <DividendField label="ปันผลโบว์" value={divBow} onChange={setDivBow} />
+        <DividendField label="ปันผลเมจิ" value={divMagic} onChange={setDivMagic} />
+        <DividendField label="ปันผลโบ๊ท" value={divBoat} onChange={setDivBoat} />
+        <DividendField label="ปันผลน้าเหน่ง" value={divNeng} onChange={setDivNeng} />
       </div>
 
       <p className={`font-mono text-xs ${dividendMatches ? 'text-ink/50' : 'text-danger'}`}>
