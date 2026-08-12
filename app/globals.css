@@ -206,6 +206,11 @@ body {
   scroll-snap-align: center;
 }
 
+/* ล็อกขนาดกระดาษเป็น A4 ทุกครั้งที่กดพิมพ์ (ปุ่ม "ปริ้น" ในระบบ) ไม่ว่าเครื่อง/เครื่องพิมพ์จะตั้งค่าอะไรไว้ */
+@page {
+  size: A4;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
