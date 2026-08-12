@@ -177,3 +177,20 @@ export interface OwnerProfile {
   phone: string | null
   updated_at: string
 }
+
+export type ReceiptDocType = 'ใบสำคัญรับเงิน' | 'ใบเสร็จรับเงิน'
+export type ReceiptMethod = 'TTB' | 'เงินสด' | 'อื่นๆ'
+
+export interface ReceiptVoucher {
+  id: string
+  doc_number: string
+  doc_type: ReceiptDocType
+  owner: string
+  product_id: string
+  method: ReceiptMethod
+  seller_name: string | null
+  seller_account_number: string | null
+  transfer_time: string | null
+  slip_reference: string | null
+  created_at: string
+}

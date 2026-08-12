@@ -84,6 +84,80 @@ export function toDateInputStr(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+const THAI_MONTHS = [
+  'มกราคม',
+  'กุมภาพันธ์',
+  'มีนาคม',
+  'เมษายน',
+  'พฤษภาคม',
+  'มิถุนายน',
+  'กรกฎาคม',
+  'สิงหาคม',
+  'กันยายน',
+  'ตุลาคม',
+  'พฤศจิกายน',
+  'ธันวาคม',
+]
+
+/** วันที่แบบไทย เช่น "13 สิงหาคม 2026" — ใช้ปี ค.ศ. ตรงตามที่แสดงทั้งระบบ ไม่แปลงเป็น พ.ศ. */
+export function formatThaiDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear()}`
+}
+
+const THAI_DIGIT_NAMES = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
+const THAI_PLACE_NAMES = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน']
+
+function readThaiDigitGroup(group: string): string {
+  let result = ''
+  const len = group.length
+  for (let i = 0; i < len; i++) {
+    const digit = parseInt(group[i], 10)
+    const placeIndex = len - i - 1
+    if (digit === 0) continue
+    if (placeIndex === 0 && digit === 1 && len > 1) {
+      result += 'เอ็ด'
+    } else if (placeIndex === 1 && digit === 1) {
+      result += 'สิบ'
+    } else if (placeIndex === 1 && digit === 2) {
+      result += 'ยี่สิบ'
+    } else {
+      result += THAI_DIGIT_NAMES[digit] + THAI_PLACE_NAMES[placeIndex]
+    }
+  }
+  return result
+}
+
+function readThaiInteger(numStr: string): string {
+  const trimmed = numStr.replace(/^0+(?=\d)/, '')
+  if (trimmed === '0') return 'ศูนย์'
+  const groups: string[] = []
+  let s = trimmed
+  while (s.length > 0) {
+    groups.unshift(s.slice(-6))
+    s = s.slice(0, -6)
+  }
+  let result = ''
+  for (let g = 0; g < groups.length; g++) {
+    const groupNum = parseInt(groups[g], 10)
+    if (groupNum === 0) continue
+    result += readThaiDigitGroup(String(groupNum))
+    if (g < groups.length - 1) result += 'ล้าน'
+  }
+  return result
+}
+
+/** แปลงจำนวนเงินเป็นตัวอักษรไทย เช่น 12000 → "หนึ่งหมื่นสองพันบาทถ้วน" ใช้ในเอกสารบัญชี */
+export function thaiBahtText(amount: number): string {
+  const negative = amount < 0
+  const rounded = Math.round(Math.abs(amount) * 100) / 100
+  const [intPartStr, decPartStr] = rounded.toFixed(2).split('.')
+  const satang = parseInt(decPartStr, 10)
+  let text = readThaiInteger(intPartStr) + 'บาท'
+  text += satang === 0 ? 'ถ้วน' : readThaiInteger(String(satang)) + 'สตางค์'
+  return (negative ? 'ลบ' : '') + text
+}
+
 function sanitizeFileName(name: string): string {
   const ext = name.includes('.') ? name.split('.').pop() : 'jpg'
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`

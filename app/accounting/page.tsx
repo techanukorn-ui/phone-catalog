@@ -5,6 +5,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 import LoginForm from '@/components/admin/LoginForm'
 import OwnerProfileForm from '@/components/admin/OwnerProfileForm'
+import ReceiptVoucherTTB from '@/components/admin/ReceiptVoucherTTB'
 
 const ACCOUNTING_OWNERS = ['วอลเล่', 'โบ๊ท', 'โบว์'] as const
 type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
@@ -110,7 +111,7 @@ export default function AccountingPage() {
 
   return (
     <div className="flex min-h-screen bg-[#F3F4F8] text-[#1B1E2B]">
-      <aside className="flex w-64 shrink-0 flex-col bg-[#12152A]">
+      <aside className="flex w-64 shrink-0 flex-col bg-[#12152A] print:hidden">
         <div className="flex items-center gap-2.5 px-5 py-5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#3B5BFF] text-sm font-semibold text-white">
             ฿
@@ -225,7 +226,7 @@ export default function AccountingPage() {
       </aside>
 
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-[#E4E6EF] bg-white px-8 py-5">
+        <header className="flex items-center justify-between border-b border-[#E4E6EF] bg-white px-8 py-5 print:hidden">
           <div>
             <div className="flex items-center gap-1.5 text-[13px] text-[#8A8FA3]">
               <span>{activeOwner}</span>
@@ -249,9 +250,11 @@ export default function AccountingPage() {
           </span>
         </header>
 
-        <main className="flex-1 px-8 py-8">
+        <main className="flex-1 px-8 py-8 print:px-0 print:py-0">
           {activeSection === PERSONAL_INFO ? (
             <OwnerProfileForm owner={activeOwner} />
+          ) : activeSection === 'ใบสำคัญรับเงิน' && activeMethod === 'TTB' ? (
+            <ReceiptVoucherTTB owner={activeOwner} />
           ) : (
           <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-[#E4E6EF] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)]">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF1FF] text-[#3B5BFF]">

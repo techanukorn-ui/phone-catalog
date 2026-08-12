@@ -257,6 +257,30 @@ create policy "authenticated all owner_profiles" on owner_profiles
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
 -- ----------------------------------------------------------
+-- ตาราง receipt_vouchers (เอกสารใบสำคัญรับเงิน/ใบเสร็จรับเงินที่ออกแล้ว — เก็บถาวรเพื่อให้เลขที่เอกสารคงที่ พิมพ์ซ้ำได้)
+-- ----------------------------------------------------------
+create table if not exists receipt_vouchers (
+  id uuid primary key default gen_random_uuid(),
+  doc_number text not null unique,
+  doc_type text not null check (doc_type in ('ใบสำคัญรับเงิน','ใบเสร็จรับเงิน')),
+  owner text not null,
+  product_id uuid not null references products(id) on delete restrict,
+  method text not null check (method in ('TTB','เงินสด','อื่นๆ')),
+  seller_name text,
+  seller_account_number text,
+  transfer_time text,
+  slip_reference text,
+  created_at timestamptz not null default now(),
+  unique (product_id, doc_type)
+);
+
+alter table receipt_vouchers enable row level security;
+
+drop policy if exists "authenticated all receipt_vouchers" on receipt_vouchers;
+create policy "authenticated all receipt_vouchers" on receipt_vouchers
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------
 insert into storage.buckets (id, name, public)
