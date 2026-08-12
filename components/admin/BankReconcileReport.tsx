@@ -9,6 +9,7 @@ import { formatPrice, toDateInputStr } from '@/lib/utils'
 const BANK = 'TTB' as const
 
 type OwnerFilter = 'ทั้งหมด' | ProductOwner
+type StatusFilter = 'ทั้งหมด' | 'ปิดยอดแล้ว'
 
 type Leg = {
   date: string
@@ -35,6 +36,7 @@ export default function BankReconcileReport() {
   const [from, setFrom] = useState(defaultFrom())
   const [to, setTo] = useState(toDateInputStr(new Date()))
   const [activeOwner, setActiveOwner] = useState<OwnerFilter>('ทั้งหมด')
+  const [activeStatus, setActiveStatus] = useState<StatusFilter>('ทั้งหมด')
   const [rows, setRows] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -87,8 +89,11 @@ export default function BankReconcileReport() {
     return built
   }, [rows, from, to, activeOwner])
 
-  const totalOut = reconcileRows.reduce((sum, r) => sum + (r.buy?.amount ?? 0), 0)
-  const totalIn = reconcileRows.reduce((sum, r) => sum + (r.sell?.amount ?? 0), 0)
+  const displayRows =
+    activeStatus === 'ปิดยอดแล้ว' ? reconcileRows.filter((r) => r.buy && r.sell) : reconcileRows
+
+  const totalOut = displayRows.reduce((sum, r) => sum + (r.buy?.amount ?? 0), 0)
+  const totalIn = displayRows.reduce((sum, r) => sum + (r.sell?.amount ?? 0), 0)
   const net = totalIn - totalOut
 
   return (
@@ -131,6 +136,23 @@ export default function BankReconcileReport() {
         ))}
       </div>
 
+      <div className="pill-row print:hidden">
+        {(['ทั้งหมด', 'ปิดยอดแล้ว'] as StatusFilter[]).map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setActiveStatus(s)}
+            className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
+              activeStatus === s
+                ? 'border-teal-dark bg-teal-dark text-white'
+                : 'border-teal-dark bg-panel text-teal-dark'
+            }`}
+          >
+            {s === 'ปิดยอดแล้ว' ? 'ปิดยอดแล้ว (ซื้อ-ขายผ่าน TTB ครบ)' : s}
+          </button>
+        ))}
+      </div>
+
       {loading && <p className="py-8 text-center font-mono text-sm text-ink/50 print:hidden">กำลังโหลดรายงาน…</p>}
 
       {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger print:hidden">{error}</p>}
@@ -140,9 +162,10 @@ export default function BankReconcileReport() {
           <h1 className="font-display text-lg font-semibold text-ink">
             หลักฐานการซื้อขาย
             {activeOwner !== 'ทั้งหมด' && ` — เจ้าของทุน ${activeOwner}`}
+            {activeStatus === 'ปิดยอดแล้ว' && ' — เฉพาะที่ปิดยอดแล้ว'}
           </h1>
           <p className="font-mono text-xs text-ink/70">
-            วันที่ {from} ถึง {to} · {reconcileRows.length} รายการ
+            วันที่ {from} ถึง {to} · {displayRows.length} รายการ
           </p>
         </div>
       )}
@@ -166,7 +189,7 @@ export default function BankReconcileReport() {
         </div>
       )}
 
-      {!loading && !error && reconcileRows.length > 0 && (
+      {!loading && !error && displayRows.length > 0 && (
         <button
           type="button"
           onClick={() => window.print()}
@@ -176,11 +199,15 @@ export default function BankReconcileReport() {
         </button>
       )}
 
-      {!loading && !error && reconcileRows.length === 0 && (
-        <p className="py-8 text-center font-mono text-sm text-ink/50">ไม่มีรายการโอนผ่านธนาคาร {BANK} ในช่วงเวลาที่เลือก</p>
+      {!loading && !error && displayRows.length === 0 && (
+        <p className="py-8 text-center font-mono text-sm text-ink/50">
+          {activeStatus === 'ปิดยอดแล้ว'
+            ? 'ยังไม่มีรายการที่ปิดยอดแล้วในช่วงเวลาที่เลือก'
+            : `ไม่มีรายการโอนผ่านธนาคาร ${BANK} ในช่วงเวลาที่เลือก`}
+        </p>
       )}
 
-      {!loading && !error && reconcileRows.length > 0 && (
+      {!loading && !error && displayRows.length > 0 && (
         <div className="overflow-x-auto rounded-card border border-line bg-panel print:hidden">
           <table className="min-w-full border-collapse font-mono text-xs">
             <thead>
@@ -197,7 +224,7 @@ export default function BankReconcileReport() {
               </tr>
             </thead>
             <tbody>
-              {reconcileRows.map((r) => (
+              {displayRows.map((r) => (
                 <tr key={r.key} className="border-b border-line last:border-b-0">
                   <td className="whitespace-nowrap px-3 py-2 text-ink">
                     {r.product.model_name} {r.product.capacity} {r.product.color}
@@ -277,9 +304,9 @@ export default function BankReconcileReport() {
         </div>
       )}
 
-      {!loading && !error && reconcileRows.length > 0 && (
+      {!loading && !error && displayRows.length > 0 && (
         <div className="hidden space-y-2 print:block">
-          {reconcileRows.map((r) => (
+          {displayRows.map((r) => (
             <div
               key={r.key}
               className="space-y-2 rounded-card border border-line bg-panel p-3 print:break-inside-avoid print:border-black"
