@@ -107,15 +107,26 @@ export default function PurchaseEvidenceReport() {
         ))}
       </div>
 
-      {loading && <p className="py-8 text-center font-mono text-sm text-ink/50">กำลังโหลดรายงาน…</p>}
+      {loading && <p className="py-8 text-center font-mono text-sm text-ink/50 print:hidden">กำลังโหลดรายงาน…</p>}
 
-      {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>}
+      {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger print:hidden">{error}</p>}
 
       {!loading && !error && (
-        <p className="font-mono text-xs text-ink/50">
+        <p className="font-mono text-xs text-ink/50 print:hidden">
           {activeOwner !== 'ทั้งหมด' && <>เจ้าของทุน {activeOwner} · </>}
           พบ {filtered.length} รายการ ({from} ถึง {to}) — ต้นทุนรวม {formatPrice(totalCost)}
         </p>
+      )}
+
+      {!loading && !error && filtered.length > 0 && (
+        <div className="hidden print:block">
+          <h1 className="font-display text-lg font-semibold text-ink">
+            หลักฐานการซื้อเครื่อง{activeOwner !== 'ทั้งหมด' && ` — เจ้าของทุน ${activeOwner}`}
+          </h1>
+          <p className="font-mono text-xs text-ink/70">
+            วันที่ {from} ถึง {to} · {filtered.length} รายการ · ต้นทุนรวม {formatPrice(totalCost)}
+          </p>
+        </div>
       )}
 
       {!loading && !error && filtered.length > 0 && (

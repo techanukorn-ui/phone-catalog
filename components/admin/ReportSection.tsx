@@ -24,7 +24,7 @@ export default function ReportSection({ onSelectProduct }: { onSelectProduct: (i
 
   return (
     <div className="space-y-3">
-      <div className="pill-row">
+      <div className="pill-row print:hidden">
         {REPORT_TABS.map((t) => {
           const active = tab === t.key
           const colorClass = t.danger

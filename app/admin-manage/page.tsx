@@ -60,7 +60,7 @@ export default function AdminManagePage() {
 
   return (
     <main className="min-h-screen bg-paper pb-24 sm:pb-10">
-      <header className="sticky top-0 z-30 border-b border-line bg-ink">
+      <header className="sticky top-0 z-30 border-b border-line bg-ink print:hidden">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 lg:max-w-5xl">
           <div>
             <p className="font-display text-lg font-semibold text-white">แผงควบคุมร้านค้า</p>
@@ -78,7 +78,7 @@ export default function AdminManagePage() {
       </header>
 
       {/* จอกว้าง (คอมพิวเตอร์) — แถบแท็บติดกับเนื้อหา เพราะ bottom nav แบบมือถือจะดูลอยแยกจากเนื้อหาไปไกล */}
-      <div className="sticky top-[60px] z-20 hidden border-b border-line bg-paper/95 backdrop-blur sm:block">
+      <div className="sticky top-[60px] z-20 hidden border-b border-line bg-paper/95 backdrop-blur sm:block print:hidden">
         <div className="mx-auto flex max-w-2xl gap-1 px-4 py-2 lg:max-w-5xl">
           {TABS.map((t) => (
             <button
@@ -126,7 +126,7 @@ export default function AdminManagePage() {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-panel/95 backdrop-blur sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-panel/95 backdrop-blur sm:hidden print:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="mx-auto flex max-w-2xl lg:max-w-5xl">
