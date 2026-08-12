@@ -10,13 +10,19 @@ const BANK = 'TTB' as const
 
 type OwnerFilter = 'ทั้งหมด' | ProductOwner
 
-type LedgerEntry = {
-  key: string
+type Leg = {
   date: string
-  type: 'ซื้อ' | 'ขาย'
   amount: number
-  product: Product
   slipUrl: string | null
+}
+
+type ReconcileRow = {
+  key: string
+  product: Product
+  anchorDate: string
+  buy: Leg | null // ซื้อผ่าน TTB
+  sold: boolean // ขายไปแล้วหรือยัง (ไม่ว่าจะผ่าน TTB หรือไม่)
+  sell: Leg | null // ขายผ่าน TTB (มีค่าเฉพาะตอนขายแล้วและขายผ่าน TTB)
 }
 
 function defaultFrom(): string {
@@ -52,54 +58,37 @@ export default function BankReconcileReport() {
     load()
   }, [])
 
-  const ledger = useMemo(() => {
-    const entries: LedgerEntry[] = []
+  const reconcileRows = useMemo(() => {
     const ownerRows = activeOwner === 'ทั้งหมด' ? rows : rows.filter((p) => p.owner === activeOwner)
-    for (const p of ownerRows) {
-      if (
-        p.purchase_payment_method === 'โอน' &&
-        p.purchase_bank === BANK &&
-        p.purchase_date &&
-        p.purchase_date >= from &&
-        p.purchase_date <= to
-      ) {
-        entries.push({
-          key: `${p.id}-buy`,
-          date: p.purchase_date,
-          type: 'ซื้อ',
-          amount: -(p.cost_device ?? 0),
-          product: p,
-          slipUrl: p.purchase_slip_url,
-        })
-      }
-      if (
-        p.sale_payment_method === 'โอน' &&
-        p.sale_bank === BANK &&
-        p.sold_at &&
-        p.sold_at >= from &&
-        p.sold_at <= to
-      ) {
-        entries.push({
-          key: `${p.id}-sale`,
-          date: p.sold_at,
-          type: 'ขาย',
-          amount: p.sale_price ?? 0,
-          product: p,
-          slipUrl: p.sale_slip_url,
-        })
-      }
-    }
-    entries.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    const built: ReconcileRow[] = []
 
-    let running = 0
-    return entries.map((e) => {
-      running += e.amount
-      return { ...e, balance: running }
-    })
+    for (const p of ownerRows) {
+      const buyIsTTB = p.purchase_payment_method === 'โอน' && p.purchase_bank === BANK
+      const sellIsTTB = p.sale_payment_method === 'โอน' && p.sale_bank === BANK
+      if (!buyIsTTB && !sellIsTTB) continue
+
+      const anchorDate = buyIsTTB ? p.purchase_date : p.sold_at
+      if (!anchorDate || anchorDate < from || anchorDate > to) continue
+
+      built.push({
+        key: p.id,
+        product: p,
+        anchorDate,
+        buy: buyIsTTB ? { date: p.purchase_date!, amount: p.cost_device ?? 0, slipUrl: p.purchase_slip_url } : null,
+        sold: p.status === 'ขายแล้ว',
+        sell:
+          p.status === 'ขายแล้ว' && sellIsTTB
+            ? { date: p.sold_at!, amount: p.sale_price ?? 0, slipUrl: p.sale_slip_url }
+            : null,
+      })
+    }
+
+    built.sort((a, b) => (a.anchorDate < b.anchorDate ? -1 : a.anchorDate > b.anchorDate ? 1 : 0))
+    return built
   }, [rows, from, to, activeOwner])
 
-  const totalIn = ledger.filter((e) => e.type === 'ขาย').reduce((sum, e) => sum + e.amount, 0)
-  const totalOut = ledger.filter((e) => e.type === 'ซื้อ').reduce((sum, e) => sum + Math.abs(e.amount), 0)
+  const totalOut = reconcileRows.reduce((sum, r) => sum + (r.buy?.amount ?? 0), 0)
+  const totalIn = reconcileRows.reduce((sum, r) => sum + (r.sell?.amount ?? 0), 0)
   const net = totalIn - totalOut
 
   return (
@@ -153,7 +142,7 @@ export default function BankReconcileReport() {
             {activeOwner !== 'ทั้งหมด' && ` — เจ้าของทุน ${activeOwner}`}
           </h1>
           <p className="font-mono text-xs text-ink/70">
-            วันที่ {from} ถึง {to} · {ledger.length} รายการ
+            วันที่ {from} ถึง {to} · {reconcileRows.length} รายการ
           </p>
         </div>
       )}
@@ -177,7 +166,7 @@ export default function BankReconcileReport() {
         </div>
       )}
 
-      {!loading && !error && ledger.length > 0 && (
+      {!loading && !error && reconcileRows.length > 0 && (
         <button
           type="button"
           onClick={() => window.print()}
@@ -187,62 +176,85 @@ export default function BankReconcileReport() {
         </button>
       )}
 
-      {!loading && !error && ledger.length === 0 && (
+      {!loading && !error && reconcileRows.length === 0 && (
         <p className="py-8 text-center font-mono text-sm text-ink/50">ไม่มีรายการโอนผ่านธนาคาร {BANK} ในช่วงเวลาที่เลือก</p>
       )}
 
-      {!loading && !error && ledger.length > 0 && (
+      {!loading && !error && reconcileRows.length > 0 && (
         <div className="overflow-x-auto rounded-card border border-line bg-panel print:hidden">
           <table className="min-w-full border-collapse font-mono text-xs">
             <thead>
               <tr className="border-b border-line bg-paper text-left text-ink/60">
-                <th className="whitespace-nowrap px-3 py-2">วันที่</th>
                 <th className="whitespace-nowrap px-3 py-2">รายการ</th>
-                <th className="whitespace-nowrap px-3 py-2">ประเภท</th>
-                <th className="whitespace-nowrap px-3 py-2 text-right">จำนวนเงิน</th>
-                <th className="whitespace-nowrap px-3 py-2 text-right">ยอดคงเหลือสะสม</th>
-                <th className="whitespace-nowrap px-3 py-2">สลิป</th>
+                <th className="whitespace-nowrap px-3 py-2 text-danger">วันที่ซื้อ</th>
+                <th className="whitespace-nowrap px-3 py-2 text-right text-danger">จำนวนเงินซื้อ</th>
+                <th className="whitespace-nowrap px-3 py-2 text-teal-dark">วันที่ขาย</th>
+                <th className="whitespace-nowrap px-3 py-2 text-right text-teal-dark">จำนวนเงินขาย</th>
+                <th className="whitespace-nowrap px-3 py-2 text-right">ส่วนต่าง</th>
+                <th className="whitespace-nowrap px-3 py-2">สถานะ</th>
+                <th className="whitespace-nowrap px-3 py-2">สลิปซื้อ</th>
+                <th className="whitespace-nowrap px-3 py-2">สลิปขาย</th>
               </tr>
             </thead>
             <tbody>
-              {ledger.map((e) => (
-                <tr key={e.key} className="border-b border-line last:border-b-0">
-                  <td className="whitespace-nowrap px-3 py-2 text-ink">{e.date}</td>
+              {reconcileRows.map((r) => (
+                <tr key={r.key} className="border-b border-line last:border-b-0">
                   <td className="whitespace-nowrap px-3 py-2 text-ink">
-                    {e.product.model_name} {e.product.capacity} {e.product.color}
-                    <span className="ml-1 text-ink/50">({e.product.product_code})</span>
+                    {r.product.model_name} {r.product.capacity} {r.product.color}
+                    <span className="ml-1 text-ink/50">({r.product.product_code})</span>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">{r.buy?.date ?? '-'}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-right text-danger">
+                    {r.buy ? `-${formatPrice(r.buy.amount)}` : '-'}
+                  </td>
+                  {r.sell ? (
+                    <>
+                      <td className="whitespace-nowrap px-3 py-2 text-ink">{r.sell.date}</td>
+                      <td className="whitespace-nowrap px-3 py-2 text-right text-teal-dark">
+                        +{formatPrice(r.sell.amount)}
+                      </td>
+                    </>
+                  ) : (
+                    <td className="whitespace-nowrap px-3 py-2 text-ink/40" colSpan={2}>
+                      {r.sold ? 'ขายแล้ว (ไม่ผ่าน TTB)' : 'ยังไม่ได้ขาย'}
+                    </td>
+                  )}
+                  <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-ink">
+                    {r.buy && r.sell ? formatPrice(r.sell.amount - r.buy.amount) : '-'}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2">
                     <span
                       className={`rounded-tag border px-1.5 py-0.5 text-[10px] uppercase ${
-                        e.type === 'ขาย'
-                          ? 'border-teal-dark text-teal-dark'
-                          : 'border-danger text-danger'
+                        r.buy && r.sell ? 'border-teal-dark text-teal-dark' : 'border-amber-dark text-amber-dark'
                       }`}
                     >
-                      {e.type}
+                      {r.buy && r.sell ? 'ปิดยอดแล้ว' : r.sold ? 'ขายแล้ว' : 'รอขาย'}
                     </span>
                   </td>
-                  <td
-                    className={`whitespace-nowrap px-3 py-2 text-right font-semibold ${
-                      e.amount >= 0 ? 'text-teal-dark' : 'text-danger'
-                    }`}
-                  >
-                    {e.amount >= 0 ? '+' : ''}
-                    {formatPrice(e.amount)}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{formatPrice(e.balance)}</td>
                   <td className="whitespace-nowrap px-3 py-2">
-                    {e.slipUrl ? (
+                    {r.buy?.slipUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={e.slipUrl}
-                        alt="สลิปโอนเงิน"
-                        onClick={() => setLightboxUrl(e.slipUrl)}
-                        className="h-14 w-14 cursor-zoom-in rounded-tag border border-line object-cover print:cursor-default print:break-inside-avoid"
+                        src={r.buy.slipUrl}
+                        alt="สลิปซื้อ"
+                        onClick={() => setLightboxUrl(r.buy!.slipUrl)}
+                        className="h-10 w-10 cursor-zoom-in rounded-tag border border-line object-cover"
                       />
                     ) : (
-                      <span className="text-ink/30">ไม่มีสลิป</span>
+                      <span className="text-ink/30">-</span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {r.sell?.slipUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={r.sell.slipUrl}
+                        alt="สลิปขาย"
+                        onClick={() => setLightboxUrl(r.sell!.slipUrl)}
+                        className="h-10 w-10 cursor-zoom-in rounded-tag border border-line object-cover"
+                      />
+                    ) : (
+                      <span className="text-ink/30">-</span>
                     )}
                   </td>
                 </tr>
@@ -250,11 +262,14 @@ export default function BankReconcileReport() {
             </tbody>
             <tfoot>
               <tr className="border-t border-line bg-paper font-semibold">
-                <td className="whitespace-nowrap px-3 py-2 text-ink" colSpan={3}>
-                  รวม
-                </td>
+                <td className="whitespace-nowrap px-3 py-2 text-ink">รวม</td>
+                <td className="whitespace-nowrap px-3 py-2"></td>
+                <td className="whitespace-nowrap px-3 py-2 text-right text-danger">-{formatPrice(totalOut)}</td>
+                <td className="whitespace-nowrap px-3 py-2"></td>
+                <td className="whitespace-nowrap px-3 py-2 text-right text-teal-dark">+{formatPrice(totalIn)}</td>
                 <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{formatPrice(net)}</td>
-                <td className="whitespace-nowrap px-3 py-2 text-right text-ink"></td>
+                <td className="whitespace-nowrap px-3 py-2"></td>
+                <td className="whitespace-nowrap px-3 py-2"></td>
                 <td className="whitespace-nowrap px-3 py-2"></td>
               </tr>
             </tfoot>
@@ -262,46 +277,69 @@ export default function BankReconcileReport() {
         </div>
       )}
 
-      {!loading && !error && ledger.length > 0 && (
+      {!loading && !error && reconcileRows.length > 0 && (
         <div className="hidden space-y-2 print:block">
-          {ledger.map((e) => (
+          {reconcileRows.map((r) => (
             <div
-              key={e.key}
-              className="flex gap-3 rounded-card border border-line bg-panel p-3 print:break-inside-avoid print:border-black"
+              key={r.key}
+              className="space-y-2 rounded-card border border-line bg-panel p-3 print:break-inside-avoid print:border-black"
             >
-              <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-between">
                 <p className="font-display text-sm font-semibold text-ink">
-                  {e.product.model_name} {e.product.capacity} {e.product.color}
-                  <span className="ml-1 font-mono text-xs text-ink/50">({e.product.product_code})</span>
+                  {r.product.model_name} {r.product.capacity} {r.product.color}
+                  <span className="ml-1 font-mono text-xs text-ink/50">({r.product.product_code})</span>
                 </p>
-                <p className="font-mono text-xs text-ink/60">
-                  วันที่ {e.date} ·{' '}
-                  <span
-                    className={`rounded-tag border px-1.5 py-0.5 text-[10px] uppercase ${
-                      e.type === 'ขาย' ? 'border-teal-dark text-teal-dark' : 'border-danger text-danger'
-                    }`}
-                  >
-                    {e.type}
-                  </span>
-                </p>
-                <p className="font-mono text-xs text-ink">
-                  จำนวนเงิน {e.amount >= 0 ? '+' : ''}
-                  {formatPrice(e.amount)} · ยอดคงเหลือสะสม {formatPrice(e.balance)}
-                </p>
+                <span
+                  className={`rounded-tag border px-1.5 py-0.5 text-[10px] uppercase ${
+                    r.buy && r.sell ? 'border-teal-dark text-teal-dark' : 'border-amber-dark text-amber-dark'
+                  }`}
+                >
+                  {r.buy && r.sell ? 'ปิดยอดแล้ว' : r.sold ? 'ขายแล้ว' : 'รอขาย'}
+                </span>
               </div>
-              <div className="shrink-0">
-                {e.slipUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={e.slipUrl}
-                    alt="สลิปโอนเงิน"
-                    className="h-16 w-16 rounded-tag border border-line object-cover"
-                  />
-                ) : (
-                  <p className="flex h-16 w-16 items-center justify-center rounded-tag border border-dashed border-line text-center font-mono text-[10px] text-ink/40">
-                    ไม่มีสลิป
-                  </p>
-                )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex gap-2">
+                  <div className="flex-1 space-y-0.5">
+                    <p className="font-mono text-[10px] uppercase text-danger">ซื้อ</p>
+                    {r.buy ? (
+                      <>
+                        <p className="font-mono text-xs text-ink">{r.buy.date}</p>
+                        <p className="font-mono text-xs font-semibold text-danger">-{formatPrice(r.buy.amount)}</p>
+                      </>
+                    ) : (
+                      <p className="font-mono text-xs text-ink/40">ไม่ได้ซื้อผ่าน TTB</p>
+                    )}
+                  </div>
+                  {r.buy?.slipUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={r.buy.slipUrl}
+                      alt="สลิปซื้อ"
+                      className="h-14 w-14 shrink-0 rounded-tag border border-line object-cover"
+                    />
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1 space-y-0.5">
+                    <p className="font-mono text-[10px] uppercase text-teal-dark">ขาย</p>
+                    {r.sell ? (
+                      <>
+                        <p className="font-mono text-xs text-ink">{r.sell.date}</p>
+                        <p className="font-mono text-xs font-semibold text-teal-dark">+{formatPrice(r.sell.amount)}</p>
+                      </>
+                    ) : (
+                      <p className="font-mono text-xs text-ink/40">{r.sold ? 'ขายแล้ว (ไม่ผ่าน TTB)' : 'ยังไม่ได้ขาย'}</p>
+                    )}
+                  </div>
+                  {r.sell?.slipUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={r.sell.slipUrl}
+                      alt="สลิปขาย"
+                      className="h-14 w-14 shrink-0 rounded-tag border border-line object-cover"
+                    />
+                  )}
+                </div>
               </div>
             </div>
           ))}
