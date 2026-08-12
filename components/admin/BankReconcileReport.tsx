@@ -104,44 +104,46 @@ export default function BankReconcileReport() {
     setSavingPdf(true)
     setError(null)
     const prevDisplay = el.style.display
-    const prevWidth = el.style.width
     try {
       // การ์ดนี้ปกติซ่อนไว้ (แสดงเฉพาะตอนพิมพ์) — เปิดให้แสดงชั่วคราวเพื่อถ่ายภาพ แล้วซ่อนกลับหลังเสร็จ
-      // ล็อกความกว้างเท่าหน้ากระดาษ A4 ไว้ด้วย ไม่งั้นตอนเซฟจากมือถือมันจะถ่ายภาพที่ความกว้างจอมือถือ (แคบมาก)
-      // ทำให้เนื้อหาถูกยืดเต็มหน้าแนวนอนแต่เตี้ยติดขอบบนแล้วเหลือพื้นที่ว่างเยอะด้านล่าง
+      // ไม่ล็อกความกว้างหน้าจอ — ถ่ายภาพตามความกว้างจริงที่เห็นบนอุปกรณ์ แล้วค่อยจัดวางลงหน้ากระดาษแบบคงสัดส่วน
       el.style.display = 'block'
-      el.style.width = '780px'
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
         import('jspdf'),
         import('html2canvas'),
       ])
-      // ต้องกำหนด windowWidth ด้วย เพราะทั้งเว็บล็อก overflow-x/max-width ไว้เท่าความกว้างจอจริง
-      // ถ้าไม่กำหนด ตอนถ่ายภาพบนมือถือ เนื้อหาจะยังโดนบีบเท่าความกว้างจอมือถืออยู่ดี
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: 780,
-      })
+      const captureScale = 2
+      const canvas = await html2canvas(el, { scale: captureScale, useCORS: true, backgroundColor: '#ffffff' })
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
-      const imgWidth = pageWidth
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      const margin = 24
 
-      if (imgHeight <= pageHeight) {
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+      // แปลงขนาดภาพจาก px จริงเป็น pt ตามสัดส่วนเดิม (ไม่ยืดเต็มความกว้างหน้ากระดาษ)
+      // แล้วค่อยย่อลงถ้ากว้างเกินพื้นที่พิมพ์ ป้องกันเนื้อหาน้อยแล้วโดนขยายจนดูเป็นแถบว่างเปล่า
+      let imgWidth = (canvas.width / captureScale) * 0.75
+      let imgHeight = (canvas.height / captureScale) * 0.75
+      const maxWidth = pageWidth - margin * 2
+      if (imgWidth > maxWidth) {
+        const ratio = maxWidth / imgWidth
+        imgWidth = maxWidth
+        imgHeight *= ratio
+      }
+
+      const availableHeight = pageHeight - margin * 2
+      if (imgHeight <= availableHeight) {
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight)
       } else {
         let heightLeft = imgHeight
-        let position = 0
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
+        let offset = 0
+        pdf.addImage(imgData, 'PNG', margin, margin - offset, imgWidth, imgHeight)
+        heightLeft -= availableHeight
         while (heightLeft > 0) {
-          position -= pageHeight
+          offset += availableHeight
           pdf.addPage()
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-          heightLeft -= pageHeight
+          pdf.addImage(imgData, 'PNG', margin, margin - offset, imgWidth, imgHeight)
+          heightLeft -= availableHeight
         }
       }
 
@@ -150,7 +152,6 @@ export default function BankReconcileReport() {
       setError('บันทึก PDF ไม่สำเร็จ ลองใช้ปุ่มพิมพ์แล้วเลือก "บันทึกเป็น PDF" แทนได้')
     } finally {
       el.style.display = prevDisplay
-      el.style.width = prevWidth
       setSavingPdf(false)
     }
   }
