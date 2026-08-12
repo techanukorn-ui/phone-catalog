@@ -73,7 +73,17 @@ export default function AccountingPage() {
   const [checkingSession, setCheckingSession] = useState(true)
   const [activeOwner, setActiveOwner] = useState<AccountingOwner>(ACCOUNTING_OWNERS[0])
   const [activeSection, setActiveSection] = useState<Section>(PERSONAL_INFO)
+  const [expandedDoc, setExpandedDoc] = useState<DocType | null>(null)
   const [activeMethod, setActiveMethod] = useState<DocPaymentMethod>(PAYMENT_METHODS[0])
+
+  function toggleDoc(d: DocType) {
+    if (expandedDoc === d) {
+      setExpandedDoc(null)
+    } else {
+      setExpandedDoc(d)
+      setActiveSection(d)
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -137,7 +147,10 @@ export default function AccountingPage() {
           <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">ทั่วไป</p>
           <button
             type="button"
-            onClick={() => setActiveSection(PERSONAL_INFO)}
+            onClick={() => {
+              setActiveSection(PERSONAL_INFO)
+              setExpandedDoc(null)
+            }}
             className={`mb-2 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
               activeSection === PERSONAL_INFO
                 ? 'bg-white/[0.08] text-white'
@@ -152,17 +165,18 @@ export default function AccountingPage() {
 
           <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">เอกสาร</p>
           {DOC_TYPES.map((d) => {
-            const isOpen = activeSection === d
+            const isSelected = activeSection === d
+            const isOpen = expandedDoc === d
             return (
               <div key={d} className="mb-0.5">
                 <button
                   type="button"
-                  onClick={() => setActiveSection(d)}
+                  onClick={() => toggleDoc(d)}
                   className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
-                    isOpen ? 'bg-white/[0.08] text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
+                    isSelected ? 'bg-white/[0.08] text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
                   }`}
                 >
-                  <span className={isOpen ? 'text-[#7C93FF]' : 'text-slate-500'}>
+                  <span className={isSelected ? 'text-[#7C93FF]' : 'text-slate-500'}>
                     <DocIcon />
                   </span>
                   <span className="flex-1 truncate">{d}</span>
