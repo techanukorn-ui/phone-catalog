@@ -168,3 +168,12 @@ export interface StoreSettings {
   pill_text_theme: StoreTheme
   updated_at: string
 }
+
+export interface OwnerProfile {
+  owner: string
+  full_name: string | null
+  id_card_number: string | null
+  address: string | null
+  phone: string | null
+  updated_at: string
+}

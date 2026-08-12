@@ -238,6 +238,25 @@ update products set purchase_evidence_urls = array[purchase_evidence_url]
 alter table products drop column if exists purchase_evidence_url;
 
 -- ----------------------------------------------------------
+-- ตาราง owner_profiles (ข้อมูลส่วนตัวเจ้าของทุนแต่ละคน — ใช้ตอนออกเอกสารบัญชี/ภาษี ในหน้า /accounting)
+-- มีเลขบัตรประชาชนอยู่ในนี้ ห้ามอ่านสาธารณะ จำกัดแค่ authenticated เท่านั้นทั้งอ่านและเขียน
+-- ----------------------------------------------------------
+create table if not exists owner_profiles (
+  owner text primary key,
+  full_name text,
+  id_card_number text,
+  address text,
+  phone text,
+  updated_at timestamptz not null default now()
+);
+
+alter table owner_profiles enable row level security;
+
+drop policy if exists "authenticated all owner_profiles" on owner_profiles;
+create policy "authenticated all owner_profiles" on owner_profiles
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------
 insert into storage.buckets (id, name, public)

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 import LoginForm from '@/components/admin/LoginForm'
+import OwnerProfileForm from '@/components/admin/OwnerProfileForm'
 
 const ACCOUNTING_OWNERS = ['วอลเล่', 'โบ๊ท', 'โบว์'] as const
 type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
@@ -11,8 +12,33 @@ type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
 const DOC_TYPES = ['ใบสำคัญรับเงิน', 'ใบเสร็จรับเงิน'] as const
 type DocType = (typeof DOC_TYPES)[number]
 
+const PERSONAL_INFO = 'ข้อมูลส่วนตัว' as const
+
+const SECTIONS = [PERSONAL_INFO, ...DOC_TYPES] as const
+type Section = (typeof SECTIONS)[number]
+
 const PAYMENT_METHODS = ['TTB', 'เงินสด', 'อื่นๆ'] as const
 type DocPaymentMethod = (typeof PAYMENT_METHODS)[number]
+
+function ProfileIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-[18px] w-[18px]" aria-hidden="true">
+      <path
+        d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4.5 20c1.2-3.6 4.2-5.5 7.5-5.5s6.3 1.9 7.5 5.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
 
 function DocIcon() {
   return (
@@ -46,7 +72,7 @@ export default function AccountingPage() {
   const [session, setSession] = useState<Session | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
   const [activeOwner, setActiveOwner] = useState<AccountingOwner>(ACCOUNTING_OWNERS[0])
-  const [activeDoc, setActiveDoc] = useState<DocType>(DOC_TYPES[0])
+  const [activeSection, setActiveSection] = useState<Section>(PERSONAL_INFO)
   const [activeMethod, setActiveMethod] = useState<DocPaymentMethod>(PAYMENT_METHODS[0])
 
   useEffect(() => {
@@ -108,14 +134,30 @@ export default function AccountingPage() {
         <div className="mx-5 mb-2 h-px bg-white/10" />
 
         <nav className="flex-1 overflow-y-auto px-3 py-2">
+          <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">ทั่วไป</p>
+          <button
+            type="button"
+            onClick={() => setActiveSection(PERSONAL_INFO)}
+            className={`mb-2 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
+              activeSection === PERSONAL_INFO
+                ? 'bg-white/[0.08] text-white'
+                : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
+            }`}
+          >
+            <span className={activeSection === PERSONAL_INFO ? 'text-[#7C93FF]' : 'text-slate-500'}>
+              <ProfileIcon />
+            </span>
+            <span className="flex-1 truncate">{PERSONAL_INFO}</span>
+          </button>
+
           <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">เอกสาร</p>
           {DOC_TYPES.map((d) => {
-            const isOpen = activeDoc === d
+            const isOpen = activeSection === d
             return (
               <div key={d} className="mb-0.5">
                 <button
                   type="button"
-                  onClick={() => setActiveDoc(d)}
+                  onClick={() => setActiveSection(d)}
                   className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
                     isOpen ? 'bg-white/[0.08] text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
                   }`}
@@ -174,12 +216,18 @@ export default function AccountingPage() {
             <div className="flex items-center gap-1.5 text-[13px] text-[#8A8FA3]">
               <span>{activeOwner}</span>
               <span>/</span>
-              <span>{activeDoc}</span>
-              <span>/</span>
-              <span className="font-medium text-[#3B5BFF]">{activeMethod}</span>
+              {activeSection === PERSONAL_INFO ? (
+                <span className="font-medium text-[#3B5BFF]">{activeSection}</span>
+              ) : (
+                <>
+                  <span>{activeSection}</span>
+                  <span>/</span>
+                  <span className="font-medium text-[#3B5BFF]">{activeMethod}</span>
+                </>
+              )}
             </div>
             <h1 className="mt-1 text-xl font-semibold text-[#1B1E2B]">
-              {activeDoc} · {activeMethod}
+              {activeSection === PERSONAL_INFO ? activeSection : `${activeSection} · ${activeMethod}`}
             </h1>
           </div>
           <span className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-[11px] font-medium text-[#3B5BFF]">
@@ -188,6 +236,9 @@ export default function AccountingPage() {
         </header>
 
         <main className="flex-1 px-8 py-8">
+          {activeSection === PERSONAL_INFO ? (
+            <OwnerProfileForm owner={activeOwner} />
+          ) : (
           <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-[#E4E6EF] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)]">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF1FF] text-[#3B5BFF]">
               <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" aria-hidden="true">
@@ -203,9 +254,10 @@ export default function AccountingPage() {
             </div>
             <p className="text-sm font-medium text-[#1B1E2B]">ยังไม่มีข้อมูลในหมวดนี้</p>
             <p className="mt-1 text-[13px] text-[#8A8FA3]">
-              {activeDoc} — {activeMethod} — เจ้าของทุน {activeOwner}
+              {activeSection} — {activeMethod} — เจ้าของทุน {activeOwner}
             </p>
           </div>
+          )}
         </main>
       </div>
     </div>
