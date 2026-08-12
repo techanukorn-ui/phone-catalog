@@ -11,15 +11,15 @@ type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
 const DOC_TYPES = ['ใบสำคัญรับเงิน', 'ใบเสร็จรับเงิน'] as const
 type DocType = (typeof DOC_TYPES)[number]
 
-const RECEIPT_METHODS = ['TTB', 'เงินสด', 'อื่นๆ'] as const
-type ReceiptMethod = (typeof RECEIPT_METHODS)[number]
+const PAYMENT_METHODS = ['TTB', 'เงินสด', 'อื่นๆ'] as const
+type DocPaymentMethod = (typeof PAYMENT_METHODS)[number]
 
 export default function AccountingPage() {
   const [session, setSession] = useState<Session | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
   const [activeOwner, setActiveOwner] = useState<AccountingOwner>(ACCOUNTING_OWNERS[0])
   const [activeDoc, setActiveDoc] = useState<DocType>(DOC_TYPES[0])
-  const [activeReceiptMethod, setActiveReceiptMethod] = useState<ReceiptMethod>(RECEIPT_METHODS[0])
+  const [activeMethod, setActiveMethod] = useState<DocPaymentMethod>(PAYMENT_METHODS[0])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -93,17 +93,15 @@ export default function AccountingPage() {
                   {d}
                 </button>
 
-                {d === 'ใบเสร็จรับเงิน' && activeDoc === 'ใบเสร็จรับเงิน' && (
+                {d === activeDoc && (
                   <div className="flex gap-2 sm:mt-2 sm:flex-col sm:pl-3">
-                    {RECEIPT_METHODS.map((m) => (
+                    {PAYMENT_METHODS.map((m) => (
                       <button
                         key={m}
                         type="button"
-                        onClick={() => setActiveReceiptMethod(m)}
+                        onClick={() => setActiveMethod(m)}
                         className={`shrink-0 rounded-tag border px-3 py-1.5 text-left font-mono text-[11px] uppercase tracking-wide transition-colors ${
-                          activeReceiptMethod === m
-                            ? 'border-teal bg-teal text-white'
-                            : 'border-line bg-paper text-ink/60'
+                          activeMethod === m ? 'border-teal bg-teal text-white' : 'border-line bg-paper text-ink/60'
                         }`}
                       >
                         {m}
@@ -117,8 +115,7 @@ export default function AccountingPage() {
 
           <div className="flex-1">
             <p className="py-8 text-center font-mono text-sm text-ink/50">
-              {activeDoc}
-              {activeDoc === 'ใบเสร็จรับเงิน' && ` — ${activeReceiptMethod}`} — {activeOwner} — ยังไม่มีเนื้อหาในหน้านี้
+              {activeDoc} — {activeMethod} — {activeOwner} — ยังไม่มีเนื้อหาในหน้านี้
             </p>
           </div>
         </div>
