@@ -2,10 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import type { Product } from '@/lib/types'
+import { OWNERS } from '@/lib/types'
+import type { Product, ProductOwner } from '@/lib/types'
 import { formatPrice, toDateInputStr } from '@/lib/utils'
 
 const BANK = 'TTB' as const
+
+type OwnerFilter = 'ทั้งหมด' | ProductOwner
 
 type LedgerEntry = {
   key: string
@@ -25,6 +28,7 @@ function defaultFrom(): string {
 export default function BankReconcileReport() {
   const [from, setFrom] = useState(defaultFrom())
   const [to, setTo] = useState(toDateInputStr(new Date()))
+  const [activeOwner, setActiveOwner] = useState<OwnerFilter>('ทั้งหมด')
   const [rows, setRows] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +54,8 @@ export default function BankReconcileReport() {
 
   const ledger = useMemo(() => {
     const entries: LedgerEntry[] = []
-    for (const p of rows) {
+    const ownerRows = activeOwner === 'ทั้งหมด' ? rows : rows.filter((p) => p.owner === activeOwner)
+    for (const p of ownerRows) {
       if (
         p.purchase_payment_method === 'โอน' &&
         p.purchase_bank === BANK &&
@@ -91,7 +96,7 @@ export default function BankReconcileReport() {
       running += e.amount
       return { ...e, balance: running }
     })
-  }, [rows, from, to])
+  }, [rows, from, to, activeOwner])
 
   const totalIn = ledger.filter((e) => e.type === 'ขาย').reduce((sum, e) => sum + e.amount, 0)
   const totalOut = ledger.filter((e) => e.type === 'ซื้อ').reduce((sum, e) => sum + Math.abs(e.amount), 0)
@@ -120,13 +125,33 @@ export default function BankReconcileReport() {
         </label>
       </div>
 
+      <div className="pill-row print:hidden">
+        {(['ทั้งหมด', ...OWNERS] as OwnerFilter[]).map((o) => (
+          <button
+            key={o}
+            type="button"
+            onClick={() => setActiveOwner(o)}
+            className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
+              activeOwner === o
+                ? 'border-amber-dark bg-amber-dark text-white'
+                : 'border-amber-dark bg-panel text-amber-dark'
+            }`}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+
       {loading && <p className="py-8 text-center font-mono text-sm text-ink/50 print:hidden">กำลังโหลดรายงาน…</p>}
 
       {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger print:hidden">{error}</p>}
 
       {!loading && !error && (
         <div className="hidden print:block">
-          <h1 className="font-display text-lg font-semibold text-ink">หลักฐานการซื้อขายธนาคาร {BANK}</h1>
+          <h1 className="font-display text-lg font-semibold text-ink">
+            หลักฐานการซื้อขายธนาคาร {BANK}
+            {activeOwner !== 'ทั้งหมด' && ` — เจ้าของทุน ${activeOwner}`}
+          </h1>
           <p className="font-mono text-xs text-ink/70">
             วันที่ {from} ถึง {to} · {ledger.length} รายการ
           </p>
