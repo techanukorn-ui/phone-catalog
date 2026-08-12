@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { OWNERS } from '@/lib/types'
 import type { Product, ProductOwner } from '@/lib/types'
@@ -41,6 +41,8 @@ export default function BankReconcileReport() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
+  const [savingPdf, setSavingPdf] = useState(false)
+  const printRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -95,6 +97,51 @@ export default function BankReconcileReport() {
   const totalOut = displayRows.reduce((sum, r) => sum + (r.buy?.amount ?? 0), 0)
   const totalIn = displayRows.reduce((sum, r) => sum + (r.sell?.amount ?? 0), 0)
   const net = totalIn - totalOut
+
+  async function handleSavePdf() {
+    const el = printRef.current
+    if (!el) return
+    setSavingPdf(true)
+    setError(null)
+    const prevDisplay = el.style.display
+    try {
+      // การ์ดนี้ปกติซ่อนไว้ (แสดงเฉพาะตอนพิมพ์) — เปิดให้แสดงชั่วคราวเพื่อถ่ายภาพ แล้วซ่อนกลับหลังเสร็จ
+      el.style.display = 'block'
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ])
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const imgWidth = pageWidth
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+      } else {
+        let heightLeft = imgHeight
+        let position = 0
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+        while (heightLeft > 0) {
+          position -= pageHeight
+          pdf.addPage()
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+          heightLeft -= pageHeight
+        }
+      }
+
+      pdf.save(`หลักฐานการซื้อขาย-TTB-${from}-ถึง-${to}.pdf`)
+    } catch (err: any) {
+      setError('บันทึก PDF ไม่สำเร็จ ลองใช้ปุ่มพิมพ์แล้วเลือก "บันทึกเป็น PDF" แทนได้')
+    } finally {
+      el.style.display = prevDisplay
+      setSavingPdf(false)
+    }
+  }
 
   return (
     <div className="space-y-3">
@@ -190,13 +237,23 @@ export default function BankReconcileReport() {
       )}
 
       {!loading && !error && displayRows.length > 0 && (
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="w-full rounded-tag bg-teal px-4 py-2.5 font-mono text-sm font-semibold text-white print:hidden"
-        >
-          พิมพ์ / บันทึกเป็น PDF
-        </button>
+        <div className="flex gap-2 print:hidden">
+          <button
+            type="button"
+            onClick={handleSavePdf}
+            disabled={savingPdf}
+            className="flex-1 rounded-tag border border-teal px-4 py-2.5 font-mono text-sm font-semibold text-teal disabled:opacity-60"
+          >
+            {savingPdf ? 'กำลังเซฟ…' : 'เซฟ'}
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex-1 rounded-tag bg-teal px-4 py-2.5 font-mono text-sm font-semibold text-white"
+          >
+            พิมพ์
+          </button>
+        </div>
       )}
 
       {!loading && !error && displayRows.length === 0 && (
@@ -305,7 +362,7 @@ export default function BankReconcileReport() {
       )}
 
       {!loading && !error && displayRows.length > 0 && (
-        <div className="hidden space-y-2 print:block">
+        <div ref={printRef} className="hidden space-y-2 print:block">
           {displayRows.map((r) => (
             <div
               key={r.key}
