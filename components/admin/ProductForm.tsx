@@ -160,6 +160,10 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       setError('กรุณาเลือกวันที่ซื้อเครื่อง')
       return
     }
+    if (fields.purchase_payment_method === 'โอน' && !fields.purchase_bank) {
+      setError('กรุณาเลือกธนาคาร')
+      return
+    }
 
     setSaving(true)
     try {

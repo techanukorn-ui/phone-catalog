@@ -118,6 +118,10 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
       setError('กรุณากรอกราคาขายจริงเป็นตัวเลข')
       return
     }
+    if (salePaymentMethod === 'โอน' && !saleBank) {
+      setError('กรุณาเลือกธนาคาร')
+      return
+    }
     if (!dividendMatches) {
       setError(
         `ผลรวมปันผล (${dividendSum.toLocaleString('th-TH')}) ต้องเท่ากับกำไรสุทธิ(ก่อนแบ่งปันผล) (${netProfit.toLocaleString('th-TH')})`
