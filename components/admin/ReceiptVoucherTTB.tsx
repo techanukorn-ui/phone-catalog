@@ -112,34 +112,62 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     setError(null)
   }
 
-  async function handleGenerate() {
+  function openEdit() {
+    if (!activeVoucher) return
+    setSellerName(activeVoucher.seller_name ?? '')
+    setSellerAccountNumber(activeVoucher.seller_account_number ?? '')
+    setTransferTime(activeVoucher.transfer_time ?? '')
+    setSlipReference(activeVoucher.slip_reference ?? '')
+    setError(null)
+    setView('form')
+  }
+
+  async function handleSave() {
     if (!selectedProduct) return
     setSaving(true)
     setError(null)
     try {
-      const doc_number = await nextDocNumber()
-      const { data, error: insertError } = await supabase
-        .from('receipt_vouchers')
-        .insert({
-          doc_number,
-          doc_type: 'ใบสำคัญรับเงิน',
-          owner,
-          product_id: selectedProduct.id,
-          method: 'TTB',
-          seller_name: sellerName.trim() || null,
-          seller_account_number: sellerAccountNumber.trim() || null,
-          transfer_time: transferTime.trim() || null,
-          slip_reference: slipReference.trim() || null,
-        })
-        .select()
-        .single()
-      if (insertError) throw insertError
-      const voucher = data as ReceiptVoucher
-      setVouchers((prev) => ({ ...prev, [selectedProduct.id]: voucher }))
-      setActiveVoucher(voucher)
-      setView('print')
+      const fields = {
+        seller_name: sellerName.trim() || null,
+        seller_account_number: sellerAccountNumber.trim() || null,
+        transfer_time: transferTime.trim() || null,
+        slip_reference: slipReference.trim() || null,
+      }
+
+      if (activeVoucher) {
+        const { data, error: updateError } = await supabase
+          .from('receipt_vouchers')
+          .update(fields)
+          .eq('id', activeVoucher.id)
+          .select()
+          .single()
+        if (updateError) throw updateError
+        const voucher = data as ReceiptVoucher
+        setVouchers((prev) => ({ ...prev, [selectedProduct.id]: voucher }))
+        setActiveVoucher(voucher)
+        setView('print')
+      } else {
+        const doc_number = await nextDocNumber()
+        const { data, error: insertError } = await supabase
+          .from('receipt_vouchers')
+          .insert({
+            doc_number,
+            doc_type: 'ใบสำคัญรับเงิน',
+            owner,
+            product_id: selectedProduct.id,
+            method: 'TTB',
+            ...fields,
+          })
+          .select()
+          .single()
+        if (insertError) throw insertError
+        const voucher = data as ReceiptVoucher
+        setVouchers((prev) => ({ ...prev, [selectedProduct.id]: voucher }))
+        setActiveVoucher(voucher)
+        setView('print')
+      }
     } catch (err: any) {
-      setError(err?.message ?? 'ออกเอกสารไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+      setError(err?.message ?? 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
     } finally {
       setSaving(false)
     }
@@ -224,7 +252,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
         <form
           onSubmit={(e) => {
             e.preventDefault()
-            handleGenerate()
+            handleSave()
           }}
           className="rounded-2xl border border-[#E4E6EF] bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)]"
         >
@@ -282,7 +310,9 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
 
           {selectedProduct.purchase_slip_url && (
             <div className="mt-4">
-              <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">สลิปโอนเงินที่แนบไว้</span>
+              <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">
+                สลิปโอนเงินที่แนบไว้ — ดูรายละเอียดจากรูปนี้มากรอกด้านบนได้
+              </span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={selectedProduct.purchase_slip_url}
@@ -300,7 +330,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
             disabled={saving}
             className="mt-5 rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
           >
-            {saving ? 'กำลังออกเอกสาร…' : 'ยืนยันออกเอกสาร'}
+            {saving ? 'กำลังบันทึก…' : activeVoucher ? 'บันทึกการแก้ไข' : 'ยืนยันออกเอกสาร'}
           </button>
         </form>
 
@@ -335,13 +365,22 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
           <button type="button" onClick={backToList} className="text-[13px] font-medium text-[#3B5BFF]">
             ‹ กลับไปรายการสินค้า
           </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
-            พิมพ์ / บันทึกเป็น PDF
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={openEdit}
+              className="rounded-lg border border-[#E4E6EF] px-4 py-2.5 text-sm font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8]"
+            >
+              แก้ไขข้อมูล
+            </button>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            >
+              พิมพ์ / บันทึกเป็น PDF
+            </button>
+          </div>
         </div>
 
         <div className="mx-auto max-w-3xl rounded-2xl border border-[#E4E6EF] bg-white p-8 text-[#1B1E2B] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)] print:rounded-none print:border-0 print:p-0 print:shadow-none">
