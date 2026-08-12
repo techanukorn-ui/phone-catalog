@@ -7,8 +7,9 @@ import OwnerReport from './OwnerReport'
 import StagnantStockReport from './StagnantStockReport'
 import SoldCleanupReport from './SoldCleanupReport'
 import PurchaseEvidenceReport from './PurchaseEvidenceReport'
+import BankReconcileReport from './BankReconcileReport'
 
-type ReportTab = 'sales' | 'dividend' | 'owner' | 'stagnant' | 'purchase-evidence' | 'cleanup'
+type ReportTab = 'sales' | 'dividend' | 'owner' | 'stagnant' | 'purchase-evidence' | 'bank-reconcile' | 'cleanup'
 
 const REPORT_TABS: { key: ReportTab; label: string; danger?: boolean }[] = [
   { key: 'sales', label: 'รายงานการขาย' },
@@ -16,6 +17,7 @@ const REPORT_TABS: { key: ReportTab; label: string; danger?: boolean }[] = [
   { key: 'owner', label: 'สต็อกคงเหลือตามเจ้าของทุน' },
   { key: 'stagnant', label: 'รายงานสินค้าค้างสต็อกเกิน 15 วัน' },
   { key: 'purchase-evidence', label: 'หลักฐานการซื้อเครื่อง' },
+  { key: 'bank-reconcile', label: 'หลักฐานการซื้อขายธนาคาร TTB' },
   { key: 'cleanup', label: 'ลบรูปสินค้าที่ขายแล้วเกิน 3 เดือน', danger: true },
 ]
 
@@ -51,6 +53,7 @@ export default function ReportSection({ onSelectProduct }: { onSelectProduct: (i
       {tab === 'owner' && <OwnerReport onSelectProduct={onSelectProduct} />}
       {tab === 'stagnant' && <StagnantStockReport />}
       {tab === 'purchase-evidence' && <PurchaseEvidenceReport />}
+      {tab === 'bank-reconcile' && <BankReconcileReport />}
       {tab === 'cleanup' && <SoldCleanupReport />}
     </div>
   )
