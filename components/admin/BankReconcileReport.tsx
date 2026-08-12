@@ -201,7 +201,7 @@ export default function BankReconcileReport() {
                 <th className="whitespace-nowrap px-3 py-2">ประเภท</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">จำนวนเงิน</th>
                 <th className="whitespace-nowrap px-3 py-2 text-right">ยอดคงเหลือสะสม</th>
-                <th className="whitespace-nowrap px-3 py-2 print:hidden">สลิป</th>
+                <th className="whitespace-nowrap px-3 py-2">สลิป</th>
               </tr>
             </thead>
             <tbody>
@@ -232,14 +232,14 @@ export default function BankReconcileReport() {
                     {formatPrice(e.amount)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{formatPrice(e.balance)}</td>
-                  <td className="whitespace-nowrap px-3 py-2 print:hidden">
+                  <td className="whitespace-nowrap px-3 py-2">
                     {e.slipUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={e.slipUrl}
                         alt="สลิปโอนเงิน"
                         onClick={() => setLightboxUrl(e.slipUrl)}
-                        className="h-10 w-10 cursor-zoom-in rounded-tag border border-line object-cover"
+                        className="h-14 w-14 cursor-zoom-in rounded-tag border border-line object-cover print:cursor-default print:break-inside-avoid"
                       />
                     ) : (
                       <span className="text-ink/30">ไม่มีสลิป</span>
@@ -255,7 +255,7 @@ export default function BankReconcileReport() {
                 </td>
                 <td className="whitespace-nowrap px-3 py-2 text-right text-ink">{formatPrice(net)}</td>
                 <td className="whitespace-nowrap px-3 py-2 text-right text-ink"></td>
-                <td className="whitespace-nowrap px-3 py-2 print:hidden"></td>
+                <td className="whitespace-nowrap px-3 py-2"></td>
               </tr>
             </tfoot>
           </table>
