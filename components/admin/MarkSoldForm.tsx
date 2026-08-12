@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import type { Product } from '@/lib/types'
+import type { Product, ProductBank, ProductPaymentMethod } from '@/lib/types'
 
 type Props = {
   product: Product
@@ -67,6 +67,10 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
   const [soldAt, setSoldAt] = useState(product.sold_at ?? todayStr())
   const [costOther, setCostOther] = useState(product.cost_other != null ? String(product.cost_other) : '')
   const [salePrice, setSalePrice] = useState(product.sale_price != null ? String(product.sale_price) : '')
+  const [salePaymentMethod, setSalePaymentMethod] = useState<ProductPaymentMethod>(
+    product.sale_payment_method ?? 'เงินสด'
+  )
+  const [saleBank, setSaleBank] = useState<ProductBank | ''>(product.sale_bank ?? '')
   const [divWallet, setDivWallet] = useState(product.dividend_wallet != null ? String(product.dividend_wallet) : '')
   const [divBow, setDivBow] = useState(product.dividend_bow != null ? String(product.dividend_bow) : '')
   const [divMagic, setDivMagic] = useState(product.dividend_magic != null ? String(product.dividend_magic) : '')
@@ -111,6 +115,8 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           sold_at: soldAt,
           cost_other: costOther ? parseNum(costOther) : null,
           sale_price: parseNum(salePrice),
+          sale_payment_method: salePaymentMethod,
+          sale_bank: salePaymentMethod === 'โอน' ? saleBank || null : null,
           dividend_wallet: divWallet ? parseNum(divWallet) : null,
           dividend_bow: divBow ? parseNum(divBow) : null,
           dividend_magic: divMagic ? parseNum(divMagic) : null,
@@ -185,6 +191,33 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">วิธีจ่ายเงินตอนขาย</span>
+        <select
+          value={salePaymentMethod}
+          onChange={(e) => setSalePaymentMethod(e.target.value as ProductPaymentMethod)}
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+        >
+          <option value="เงินสด">เงินสด</option>
+          <option value="โอน">โอน</option>
+        </select>
+      </label>
+
+      {salePaymentMethod === 'โอน' && (
+        <label className="block">
+          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ธนาคาร</span>
+          <select
+            value={saleBank}
+            onChange={(e) => setSaleBank(e.target.value as ProductBank)}
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+          >
+            <option value="">เลือกธนาคาร</option>
+            <option value="TTB">TTB</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </label>
+      )}
 
       <div>
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">กำไรสุทธิ(ก่อนแบ่งปันผล)</span>

@@ -213,6 +213,16 @@ alter table products add constraint products_purchase_bank_check
 alter table products add column if not exists purchase_date date default current_date;
 update products set purchase_date = listed_at where purchase_date is null;
 
+-- วิธีจ่ายเงินตอนขายเครื่อง (เงินสด/โอน) และธนาคาร (TTB/อื่นๆ ถ้าโอน) — กรอกตอนบันทึกการขาย
+alter table products add column if not exists sale_payment_method text;
+alter table products drop constraint if exists products_sale_payment_method_check;
+alter table products add constraint products_sale_payment_method_check
+  check (sale_payment_method in ('เงินสด','โอน'));
+alter table products add column if not exists sale_bank text;
+alter table products drop constraint if exists products_sale_bank_check;
+alter table products add constraint products_sale_bank_check
+  check (sale_bank in ('TTB','อื่นๆ'));
+
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------
