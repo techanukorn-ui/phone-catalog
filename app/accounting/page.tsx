@@ -5,9 +5,13 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 import LoginForm from '@/components/admin/LoginForm'
 
+const ACCOUNTING_OWNERS = ['วอลเล่', 'โบ๊ท', 'โบว์'] as const
+type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
+
 export default function AccountingPage() {
   const [session, setSession] = useState<Session | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
+  const [activeOwner, setActiveOwner] = useState<AccountingOwner>(ACCOUNTING_OWNERS[0])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -51,8 +55,25 @@ export default function AccountingPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-2xl px-4 py-10 lg:max-w-5xl">
-        <p className="py-8 text-center font-mono text-sm text-ink/50">กำลังเตรียมข้อมูล — ยังไม่มีเนื้อหาในหน้านี้</p>
+      <div className="mx-auto max-w-2xl px-4 py-4 lg:max-w-5xl">
+        <div className="pill-row">
+          {ACCOUNTING_OWNERS.map((o) => (
+            <button
+              key={o}
+              type="button"
+              onClick={() => setActiveOwner(o)}
+              className={`shrink-0 rounded-tag border px-3 py-2 font-mono text-xs uppercase tracking-wide transition-colors ${
+                activeOwner === o ? 'border-teal bg-teal text-white' : 'border-line bg-panel text-ink/70'
+              }`}
+            >
+              {o}
+            </button>
+          ))}
+        </div>
+
+        <p className="py-8 text-center font-mono text-sm text-ink/50">
+          กำลังเตรียมข้อมูลของ {activeOwner} — ยังไม่มีเนื้อหาในหน้านี้
+        </p>
       </div>
     </main>
   )
