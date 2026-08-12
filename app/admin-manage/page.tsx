@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 import StoreSettingsForm from '@/components/admin/StoreSettingsForm'
+import SoldCleanupReport from '@/components/admin/SoldCleanupReport'
 import ThemeSettingsForm from '@/components/admin/ThemeSettingsForm'
 import ProductForm from '@/components/admin/ProductForm'
 import ProductList from '@/components/admin/ProductList'
@@ -98,7 +99,12 @@ export default function AdminManagePage() {
       <div key={tab} className="animate-fade-in mx-auto max-w-2xl px-4 py-4 lg:max-w-5xl">
         {tab === 'overview' && <OverviewDashboard />}
 
-        {tab === 'settings' && <StoreSettingsForm />}
+        {tab === 'settings' && (
+          <div className="space-y-4">
+            <StoreSettingsForm />
+            <SoldCleanupReport />
+          </div>
+        )}
 
         {tab === 'theme' && <ThemeSettingsForm />}
 
