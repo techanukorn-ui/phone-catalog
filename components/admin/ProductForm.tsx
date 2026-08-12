@@ -47,6 +47,8 @@ type FieldState = {
   purchase_payment_method: ProductPaymentMethod
   purchase_bank: ProductBank | ''
   purchase_date: string
+  imei_serial: string
+  seller_name: string
 }
 
 function todayStr(): string {
@@ -75,6 +77,8 @@ function toFieldState(p?: Product): FieldState {
     purchase_payment_method: p?.purchase_payment_method ?? 'เงินสด',
     purchase_bank: p?.purchase_bank ?? '',
     purchase_date: p?.purchase_date ?? todayStr(),
+    imei_serial: p?.imei_serial ?? '',
+    seller_name: p?.seller_name ?? '',
   }
 }
 
@@ -88,6 +92,11 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
   const [slipFile, setSlipFile] = useState<File | null>(null)
   const [slipPreview, setSlipPreview] = useState<string | null>(initialProduct?.purchase_slip_url ?? null)
   const [removeSlip, setRemoveSlip] = useState(false)
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
+  const [evidencePreview, setEvidencePreview] = useState<string | null>(
+    initialProduct?.purchase_evidence_url ?? null
+  )
+  const [removeEvidence, setRemoveEvidence] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
@@ -130,6 +139,20 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
     setSlipFile(null)
     setSlipPreview(null)
     setRemoveSlip(true)
+  }
+
+  function handleEvidenceChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setEvidenceFile(file)
+    setEvidencePreview(URL.createObjectURL(file))
+    setRemoveEvidence(false)
+  }
+
+  function removeEvidenceImage() {
+    setEvidenceFile(null)
+    setEvidencePreview(null)
+    setRemoveEvidence(true)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -190,6 +213,12 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         slipUrl = null
       }
 
+      let evidenceUrl = removeEvidence ? null : initialProduct?.purchase_evidence_url ?? null
+      if (evidenceFile) {
+        const folder = initialProduct?.product_code ?? fields.category
+        evidenceUrl = await uploadImage('product-images', evidenceFile, folder)
+      }
+
       const payload = {
         category: fields.category,
         owner: fields.owner || null,
@@ -211,6 +240,9 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         purchase_bank: fields.purchase_payment_method === 'โอน' ? fields.purchase_bank || null : null,
         purchase_slip_url: slipUrl,
         purchase_date: fields.purchase_date || null,
+        imei_serial: fields.imei_serial.trim() || null,
+        seller_name: fields.seller_name.trim() || null,
+        purchase_evidence_url: evidenceUrl,
       }
 
       if (mode === 'add') {
@@ -277,6 +309,9 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         if (initialProduct.purchase_slip_url && initialProduct.purchase_slip_url !== slipUrl) {
           await deleteImageByUrl('product-images', initialProduct.purchase_slip_url)
         }
+        if (initialProduct.purchase_evidence_url && initialProduct.purchase_evidence_url !== evidenceUrl) {
+          await deleteImageByUrl('product-images', initialProduct.purchase_evidence_url)
+        }
       }
 
       onSaved()
@@ -289,6 +324,9 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         setSlipFile(null)
         setSlipPreview(null)
         setRemoveSlip(false)
+        setEvidenceFile(null)
+        setEvidencePreview(null)
+        setRemoveEvidence(false)
       }
     } catch (err: any) {
       setError(err?.message ?? 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
@@ -462,6 +500,16 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       </div>
 
       <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">IMEI / Serial Number</span>
+        <input
+          value={fields.imei_serial}
+          onChange={(e) => updateField('imei_serial', e.target.value)}
+          placeholder="ไม่บังคับ"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 font-mono text-base"
+        />
+      </label>
+
+      <label className="block">
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ราคา (บาท) *</span>
         <input
           value={fields.price}
@@ -483,6 +531,43 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ชื่อ-นามสกุล ผู้ขาย</span>
+        <input
+          value={fields.seller_name}
+          onChange={(e) => updateField('seller_name', e.target.value)}
+          placeholder="ไม่บังคับ"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+        />
+      </label>
+
+      <div>
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
+          หลักฐานการซื้อ (ไม่บังคับ)
+        </span>
+        <div className="flex items-center gap-3">
+          {evidencePreview && (
+            <div className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={evidencePreview}
+                alt="หลักฐานการซื้อ"
+                onClick={() => setLightboxUrl(evidencePreview)}
+                className="h-16 w-16 cursor-zoom-in rounded-tag border border-line object-cover"
+              />
+              <button
+                type="button"
+                onClick={removeEvidenceImage}
+                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+          <input type="file" accept="image/*" onChange={handleEvidenceChange} className="text-xs" />
+        </div>
+      </div>
 
       <label className="block">
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">

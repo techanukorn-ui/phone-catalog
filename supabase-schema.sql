@@ -224,6 +224,11 @@ alter table products add constraint products_sale_bank_check
   check (sale_bank in ('TTB','อื่นๆ'));
 alter table products add column if not exists sale_slip_url text;
 
+-- IMEI/Serial Number, ชื่อ-นามสกุลผู้ขาย, และรูปหลักฐานการซื้อเพิ่มเติม (ไม่บังคับกรอก) — กรอกตอนเพิ่มสินค้า
+alter table products add column if not exists imei_serial text;
+alter table products add column if not exists seller_name text;
+alter table products add column if not exists purchase_evidence_url text;
+
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------
