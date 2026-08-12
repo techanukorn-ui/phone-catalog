@@ -60,7 +60,7 @@ export default function AccountingPage() {
       </header>
 
       <div className="mx-auto max-w-2xl px-4 py-4 lg:max-w-5xl">
-        <div className="pill-row">
+        <div className="pill-row justify-center">
           {ACCOUNTING_OWNERS.map((o) => (
             <button
               key={o}
