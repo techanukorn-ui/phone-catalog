@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { OwnerProfile, Product, ReceiptVoucher } from '@/lib/types'
 import { formatPrice, formatThaiDate, thaiBahtText, toDateInputStr } from '@/lib/utils'
@@ -47,6 +47,9 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
+  const [pendingAction, setPendingAction] = useState<'print' | 'save' | null>(null)
+  const [savingPdf, setSavingPdf] = useState(false)
+  const docRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -93,13 +96,14 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     }
   }, [owner])
 
-  function openProduct(p: Product) {
+  function openProduct(p: Product, action?: 'print' | 'save') {
     setSelectedProduct(p)
     setError(null)
     const existing = vouchers[p.id]
     if (existing) {
       setActiveVoucher(existing)
       setView('print')
+      if (action) setPendingAction(action)
     } else {
       // ชื่อผู้ขาย: ถ้ากรอกไว้ตอนเพิ่มสินค้าแล้ว (p.seller_name) ให้ยึดตามนั้นเป็นอันดับแรกเสมอ
       // ถ้าไม่ได้กรอกไว้ (ว่าง) ค่อยเปิดให้กรอก/อ่านจากสลิปโอนเงินแทน — อย่าข้ามไปอ่านสลิปทั้งที่มีชื่อกรอกไว้แล้ว
@@ -107,6 +111,16 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
       setActiveVoucher(null)
       setView('form')
     }
+  }
+
+  function editFromList(p: Product) {
+    const existing = vouchers[p.id]
+    if (!existing) return
+    setSelectedProduct(p)
+    setActiveVoucher(existing)
+    setSellerName(existing.seller_name ?? '')
+    setError(null)
+    setView('form')
   }
 
   function backToList() {
@@ -131,6 +145,58 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     setError(null)
     setView('form')
   }
+
+  async function handleSavePdf() {
+    if (!docRef.current || !activeVoucher) return
+    setSavingPdf(true)
+    try {
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ])
+      const canvas = await html2canvas(docRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const imgWidth = pageWidth
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+      } else {
+        // เอกสารยาวเกินหน้าเดียว — ตัดแบ่งเป็นหลายหน้า
+        let heightLeft = imgHeight
+        let position = 0
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+        while (heightLeft > 0) {
+          position -= pageHeight
+          pdf.addPage()
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+          heightLeft -= pageHeight
+        }
+      }
+
+      pdf.save(`${activeVoucher.doc_number}.pdf`)
+    } catch (err: any) {
+      setError('บันทึก PDF ไม่สำเร็จ ลองใช้ปุ่มพิมพ์แล้วเลือก "บันทึกเป็น PDF" แทนได้')
+    } finally {
+      setSavingPdf(false)
+    }
+  }
+
+  useEffect(() => {
+    if (view !== 'print' || !pendingAction) return
+    const action = pendingAction
+    setPendingAction(null)
+    if (action === 'print') {
+      window.print()
+    } else {
+      handleSavePdf()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, pendingAction])
 
   async function handleSave() {
     if (!selectedProduct) return
@@ -267,17 +333,46 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                       {p.product_code} · {p.purchase_date} · {formatPrice(p.cost_device ?? 0)}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openProduct(p)}
-                    className={`shrink-0 rounded-lg px-3.5 py-2 text-xs font-medium transition-colors ${
-                      existing
-                        ? 'border border-[#E4E6EF] text-[#1B1E2B] hover:bg-[#F3F4F8]'
-                        : 'bg-[#3B5BFF] text-white hover:opacity-90'
-                    }`}
-                  >
-                    {existing ? `ดูเอกสาร (${existing.doc_number})` : 'สร้างใบสำคัญรับเงิน'}
-                  </button>
+                  {existing ? (
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => openProduct(p)}
+                        className="rounded-lg border border-[#E4E6EF] px-3 py-2 text-xs font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8]"
+                      >
+                        ดูเอกสาร ({existing.doc_number})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editFromList(p)}
+                        className="rounded-lg border border-[#E4E6EF] px-3 py-2 text-xs font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8]"
+                      >
+                        แก้ไข
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openProduct(p, 'save')}
+                        className="rounded-lg border border-[#E4E6EF] px-3 py-2 text-xs font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8]"
+                      >
+                        เซฟ
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openProduct(p, 'print')}
+                        className="rounded-lg bg-[#3B5BFF] px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
+                      >
+                        ปริ้น
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openProduct(p)}
+                      className="shrink-0 rounded-lg bg-[#3B5BFF] px-3.5 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
+                    >
+                      สร้างใบสำคัญรับเงิน
+                    </button>
+                  )}
                 </div>
               )
             })}
@@ -393,19 +488,30 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
               onClick={openEdit}
               className="rounded-lg border border-[#E4E6EF] px-4 py-2.5 text-sm font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8]"
             >
-              แก้ไขข้อมูล
+              แก้ไข
+            </button>
+            <button
+              type="button"
+              onClick={handleSavePdf}
+              disabled={savingPdf}
+              className="rounded-lg border border-[#E4E6EF] px-4 py-2.5 text-sm font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8] disabled:opacity-60"
+            >
+              {savingPdf ? 'กำลังเซฟ…' : 'เซฟ'}
             </button>
             <button
               type="button"
               onClick={() => window.print()}
               className="rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
-              พิมพ์ / บันทึกเป็น PDF
+              ปริ้น
             </button>
           </div>
         </div>
 
-        <div className="mx-auto max-w-3xl rounded-2xl border border-[#E4E6EF] bg-white p-8 text-[#1B1E2B] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)] print:rounded-none print:border-0 print:p-0 print:shadow-none">
+        <div
+          ref={docRef}
+          className="mx-auto max-w-3xl rounded-2xl border border-[#E4E6EF] bg-white p-8 text-[#1B1E2B] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)] print:rounded-none print:border-0 print:p-0 print:shadow-none"
+        >
           <div className="border-b-2 border-double border-black pb-3 text-center">
             <h1 className="text-lg font-semibold">ใบสำคัญรับเงิน / ใบรับซื้อสินค้า</h1>
             <p className="text-xs tracking-wide text-[#8A8FA3]">(RECEIVING VOUCHER)</p>
