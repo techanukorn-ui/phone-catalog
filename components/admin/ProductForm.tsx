@@ -44,6 +44,7 @@ type FieldState = {
   listed_at: string
   cost_device: string
   purchase_payment_method: ProductPaymentMethod
+  purchase_date: string
 }
 
 function todayStr(): string {
@@ -70,6 +71,7 @@ function toFieldState(p?: Product): FieldState {
     status: p?.status ?? 'พร้อมขาย',
     cost_device: p?.cost_device != null ? String(p.cost_device) : '',
     purchase_payment_method: p?.purchase_payment_method ?? 'เงินสด',
+    purchase_date: p?.purchase_date ?? todayStr(),
   }
 }
 
@@ -151,6 +153,10 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       setError('กรุณากรอกต้นทุนเครื่อง')
       return
     }
+    if (mode === 'add' && !fields.purchase_date) {
+      setError('กรุณาเลือกวันที่ซื้อเครื่อง')
+      return
+    }
 
     setSaving(true)
     try {
@@ -196,6 +202,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         cost_device: fields.cost_device ? Number(fields.cost_device) : null,
         purchase_payment_method: fields.purchase_payment_method,
         purchase_slip_url: slipUrl,
+        purchase_date: fields.purchase_date || null,
       }
 
       if (mode === 'add') {
@@ -453,6 +460,18 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           onChange={(e) => updateField('price', e.target.value)}
           inputMode="numeric"
           placeholder="เช่น 21900"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+        />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
+          วันที่ซื้อเครื่อง {mode === 'add' && '*'}
+        </span>
+        <input
+          type="date"
+          value={fields.purchase_date}
+          onChange={(e) => updateField('purchase_date', e.target.value)}
           className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>

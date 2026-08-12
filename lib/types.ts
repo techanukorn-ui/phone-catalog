@@ -49,6 +49,7 @@ export interface Product {
   total_cost: number | null
   purchase_payment_method: ProductPaymentMethod | null
   purchase_slip_url: string | null
+  purchase_date: string | null
   sale_price: number | null
   net_profit: number | null
   dividend_wallet: number | null

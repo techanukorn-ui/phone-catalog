@@ -202,6 +202,11 @@ alter table products add constraint products_purchase_payment_method_check
   check (purchase_payment_method in ('เงินสด','โอน'));
 alter table products add column if not exists purchase_slip_url text;
 
+-- วันที่ซื้อเครื่องจริง แยกจาก listed_at (วันที่ลงสินค้า) เพราะบางทีลงระบบช้ากว่าวันที่ซื้อจริง
+-- ใช้เป็นตัวกรองหลักในรายงานหลักฐานการซื้อ ให้ตรงกับวันที่บนสลิปจริง
+alter table products add column if not exists purchase_date date default current_date;
+update products set purchase_date = listed_at where purchase_date is null;
+
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------
