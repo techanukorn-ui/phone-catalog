@@ -149,7 +149,7 @@ export default function BankReconcileReport() {
       {!loading && !error && (
         <div className="hidden print:block">
           <h1 className="font-display text-lg font-semibold text-ink">
-            หลักฐานการซื้อขายธนาคาร {BANK}
+            หลักฐานการซื้อขาย
             {activeOwner !== 'ทั้งหมด' && ` — เจ้าของทุน ${activeOwner}`}
           </h1>
           <p className="font-mono text-xs text-ink/70">
@@ -192,7 +192,7 @@ export default function BankReconcileReport() {
       )}
 
       {!loading && !error && ledger.length > 0 && (
-        <div className="overflow-x-auto rounded-card border border-line bg-panel">
+        <div className="overflow-x-auto rounded-card border border-line bg-panel print:hidden">
           <table className="min-w-full border-collapse font-mono text-xs">
             <thead>
               <tr className="border-b border-line bg-paper text-left text-ink/60">
@@ -259,6 +259,53 @@ export default function BankReconcileReport() {
               </tr>
             </tfoot>
           </table>
+        </div>
+      )}
+
+      {!loading && !error && ledger.length > 0 && (
+        <div className="hidden space-y-2 print:block">
+          {ledger.map((e) => (
+            <div
+              key={e.key}
+              className="flex gap-3 rounded-card border border-line bg-panel p-3 print:break-inside-avoid print:border-black"
+            >
+              <div className="flex-1 space-y-1">
+                <p className="font-display text-sm font-semibold text-ink">
+                  {e.product.model_name} {e.product.capacity} {e.product.color}
+                  <span className="ml-1 font-mono text-xs text-ink/50">({e.product.product_code})</span>
+                </p>
+                <p className="font-mono text-xs text-ink/60">
+                  วันที่ {e.date} ·{' '}
+                  <span
+                    className={`rounded-tag border px-1.5 py-0.5 text-[10px] uppercase ${
+                      e.type === 'ขาย' ? 'border-teal-dark text-teal-dark' : 'border-danger text-danger'
+                    }`}
+                  >
+                    {e.type}
+                  </span>
+                </p>
+                <p className="font-mono text-xs text-ink">
+                  จำนวนเงิน {e.amount >= 0 ? '+' : ''}
+                  {formatPrice(e.amount)} · ยอดคงเหลือสะสม {formatPrice(e.balance)}
+                </p>
+              </div>
+              <div className="shrink-0">
+                {e.slipUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={e.slipUrl}
+                    alt="สลิปโอนเงิน"
+                    className="h-16 w-16 rounded-tag border border-line object-cover"
+                  />
+                ) : (
+                  <p className="flex h-16 w-16 items-center justify-center rounded-tag border border-dashed border-line text-center font-mono text-[10px] text-ink/40">
+                    ไม่มีสลิป
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+          <p className="pt-2 text-right font-mono text-xs font-semibold text-ink">รวมยอดสุทธิ {formatPrice(net)}</p>
         </div>
       )}
 
