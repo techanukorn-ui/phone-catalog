@@ -11,11 +11,15 @@ type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
 const DOC_TYPES = ['ใบสำคัญรับเงิน', 'ใบเสร็จรับเงิน'] as const
 type DocType = (typeof DOC_TYPES)[number]
 
+const RECEIPT_METHODS = ['TTB', 'เงินสด', 'อื่นๆ'] as const
+type ReceiptMethod = (typeof RECEIPT_METHODS)[number]
+
 export default function AccountingPage() {
   const [session, setSession] = useState<Session | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
   const [activeOwner, setActiveOwner] = useState<AccountingOwner>(ACCOUNTING_OWNERS[0])
   const [activeDoc, setActiveDoc] = useState<DocType>(DOC_TYPES[0])
+  const [activeReceiptMethod, setActiveReceiptMethod] = useState<ReceiptMethod>(RECEIPT_METHODS[0])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -78,22 +82,43 @@ export default function AccountingPage() {
         <div className="mt-4 flex flex-col gap-4 sm:flex-row">
           <div className="flex gap-2 overflow-x-auto sm:w-44 sm:shrink-0 sm:flex-col sm:overflow-visible">
             {DOC_TYPES.map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setActiveDoc(d)}
-                className={`shrink-0 rounded-tag border px-3 py-2 text-left font-mono text-xs uppercase tracking-wide transition-colors ${
-                  activeDoc === d ? 'border-amber-dark bg-amber-dark text-white' : 'border-line bg-panel text-ink/70'
-                }`}
-              >
-                {d}
-              </button>
+              <div key={d} className="contents sm:block">
+                <button
+                  type="button"
+                  onClick={() => setActiveDoc(d)}
+                  className={`shrink-0 rounded-tag border px-3 py-2 text-left font-mono text-xs uppercase tracking-wide transition-colors ${
+                    activeDoc === d ? 'border-amber-dark bg-amber-dark text-white' : 'border-line bg-panel text-ink/70'
+                  }`}
+                >
+                  {d}
+                </button>
+
+                {d === 'ใบเสร็จรับเงิน' && activeDoc === 'ใบเสร็จรับเงิน' && (
+                  <div className="flex gap-2 sm:mt-2 sm:flex-col sm:pl-3">
+                    {RECEIPT_METHODS.map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setActiveReceiptMethod(m)}
+                        className={`shrink-0 rounded-tag border px-3 py-1.5 text-left font-mono text-[11px] uppercase tracking-wide transition-colors ${
+                          activeReceiptMethod === m
+                            ? 'border-teal bg-teal text-white'
+                            : 'border-line bg-paper text-ink/60'
+                        }`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
 
           <div className="flex-1">
             <p className="py-8 text-center font-mono text-sm text-ink/50">
-              {activeDoc} — {activeOwner} — ยังไม่มีเนื้อหาในหน้านี้
+              {activeDoc}
+              {activeDoc === 'ใบเสร็จรับเงิน' && ` — ${activeReceiptMethod}`} — {activeOwner} — ยังไม่มีเนื้อหาในหน้านี้
             </p>
           </div>
         </div>
