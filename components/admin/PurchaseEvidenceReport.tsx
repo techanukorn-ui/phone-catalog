@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import type { Product, ProductPaymentMethod } from '@/lib/types'
+import { OWNERS } from '@/lib/types'
+import type { Product, ProductOwner, ProductPaymentMethod } from '@/lib/types'
 import { formatPrice, toDateInputStr } from '@/lib/utils'
 
 type MethodFilter = 'ทั้งหมด' | ProductPaymentMethod
+type OwnerFilter = 'ทั้งหมด' | ProductOwner
 
 function defaultFrom(): string {
   const d = new Date()
@@ -17,6 +19,7 @@ export default function PurchaseEvidenceReport() {
   const [from, setFrom] = useState(defaultFrom())
   const [to, setTo] = useState(toDateInputStr(new Date()))
   const [activeMethod, setActiveMethod] = useState<MethodFilter>('ทั้งหมด')
+  const [activeOwner, setActiveOwner] = useState<OwnerFilter>('ทั้งหมด')
   const [rows, setRows] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -42,7 +45,9 @@ export default function PurchaseEvidenceReport() {
     load()
   }, [from, to])
 
-  const filtered = activeMethod === 'ทั้งหมด' ? rows : rows.filter((p) => p.purchase_payment_method === activeMethod)
+  const filtered = rows
+    .filter((p) => activeMethod === 'ทั้งหมด' || p.purchase_payment_method === activeMethod)
+    .filter((p) => activeOwner === 'ทั้งหมด' || p.owner === activeOwner)
   const totalCost = filtered.reduce((sum, p) => sum + (p.cost_device ?? 0), 0)
 
   return (
@@ -85,12 +90,30 @@ export default function PurchaseEvidenceReport() {
         ))}
       </div>
 
+      <div className="pill-row print:hidden">
+        {(['ทั้งหมด', ...OWNERS] as OwnerFilter[]).map((o) => (
+          <button
+            key={o}
+            type="button"
+            onClick={() => setActiveOwner(o)}
+            className={`shrink-0 rounded-tag border px-3 py-1.5 font-mono text-xs uppercase tracking-wide transition-colors ${
+              activeOwner === o
+                ? 'border-amber-dark bg-amber-dark text-white'
+                : 'border-amber-dark bg-panel text-amber-dark'
+            }`}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+
       {loading && <p className="py-8 text-center font-mono text-sm text-ink/50">กำลังโหลดรายงาน…</p>}
 
       {error && <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>}
 
       {!loading && !error && (
         <p className="font-mono text-xs text-ink/50">
+          {activeOwner !== 'ทั้งหมด' && <>เจ้าของทุน {activeOwner} · </>}
           พบ {filtered.length} รายการ ({from} ถึง {to}) — ต้นทุนรวม {formatPrice(totalCost)}
         </p>
       )}
@@ -127,7 +150,7 @@ export default function PurchaseEvidenceReport() {
                   {p.model_name} {p.capacity} {p.color}
                 </p>
                 <p className="font-mono text-xs text-ink/60">
-                  {p.product_code} · ซื้อวันที่ {p.purchase_date ?? '-'}
+                  {p.product_code} · เจ้าของทุน {p.owner ?? 'ไม่ระบุ'} · ซื้อวันที่ {p.purchase_date ?? '-'}
                 </p>
                 <p className="font-mono text-xs text-ink">
                   ต้นทุน {formatPrice(p.cost_device ?? 0)} ·{' '}
