@@ -44,9 +44,6 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [activeVoucher, setActiveVoucher] = useState<ReceiptVoucher | null>(null)
   const [sellerName, setSellerName] = useState('')
-  const [sellerAccountNumber, setSellerAccountNumber] = useState('')
-  const [transferTime, setTransferTime] = useState('')
-  const [slipReference, setSlipReference] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
@@ -107,9 +104,6 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
       // ชื่อผู้ขาย: ถ้ากรอกไว้ตอนเพิ่มสินค้าแล้ว (p.seller_name) ให้ยึดตามนั้นเป็นอันดับแรกเสมอ
       // ถ้าไม่ได้กรอกไว้ (ว่าง) ค่อยเปิดให้กรอก/อ่านจากสลิปโอนเงินแทน — อย่าข้ามไปอ่านสลิปทั้งที่มีชื่อกรอกไว้แล้ว
       setSellerName(p.seller_name ?? '')
-      setSellerAccountNumber('')
-      setTransferTime('')
-      setSlipReference('')
       setActiveVoucher(null)
       setView('form')
     }
@@ -125,9 +119,6 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   function openEdit() {
     if (!activeVoucher) return
     setSellerName(activeVoucher.seller_name ?? '')
-    setSellerAccountNumber(activeVoucher.seller_account_number ?? '')
-    setTransferTime(activeVoucher.transfer_time ?? '')
-    setSlipReference(activeVoucher.slip_reference ?? '')
     setError(null)
     setView('form')
   }
@@ -139,9 +130,6 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     try {
       const fields = {
         seller_name: sellerName.trim() || null,
-        seller_account_number: sellerAccountNumber.trim() || null,
-        transfer_time: transferTime.trim() || null,
-        slip_reference: slipReference.trim() || null,
       }
 
       if (activeVoucher) {
@@ -322,38 +310,6 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                 className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
               />
             </label>
-
-            <label className="block">
-              <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">เลขที่บัญชีผู้ขาย (ไม่บังคับ)</span>
-              <input
-                value={sellerAccountNumber}
-                onChange={(e) => setSellerAccountNumber(e.target.value)}
-                placeholder="เช่น xxx-x-x1234-x (ดูจากสลิปได้)"
-                className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">วันเวลาที่โอน (ไม่บังคับ)</span>
-              <input
-                value={transferTime}
-                onChange={(e) => setTransferTime(e.target.value)}
-                placeholder="เช่น 13/08/2026 - 10:15 น."
-                className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">
-                เลขที่อ้างอิงสลิป / Transaction ID (ไม่บังคับ)
-              </span>
-              <input
-                value={slipReference}
-                onChange={(e) => setSlipReference(e.target.value)}
-                placeholder="ดูจากสลิปโอนเงิน"
-                className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
-              />
-            </label>
           </div>
 
           {selectedProduct.purchase_slip_url && (
@@ -402,9 +358,6 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
 
   if (view === 'print' && selectedProduct && activeVoucher) {
     const cost = selectedProduct.cost_device ?? 0
-    const accountTail = activeVoucher.seller_account_number
-      ? activeVoucher.seller_account_number.slice(-4)
-      : 'xxxx'
     // ลำดับความสำคัญ: ชื่อที่กรอก/แก้ไว้ในเอกสารก่อน (มาจากช่องกรอกตอนเพิ่มสินค้า หรือพิมพ์เพิ่มจากสลิปทีหลัง)
     // ตกมาที่ชื่อในข้อมูลสินค้าเป็นสำรอง ไม่ใช้ค่าจากสลิปเว้นแต่ทั้งสองช่องนี้ว่าง
     const sellerDisplayName = activeVoucher.seller_name || selectedProduct.seller_name || '-'
@@ -474,12 +427,6 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
               <span className="text-[#8A8FA3]">ชื่อ-นามสกุล ผู้ขาย: </span>
               {sellerDisplayName}
             </p>
-            <p>
-              <span className="text-[#8A8FA3]">บัญชีธนาคารปลายทาง: </span>
-              ธนาคารทหารไทยธนชาต (ttb) &nbsp;&nbsp;
-              <span className="text-[#8A8FA3]">เลขที่บัญชี: </span>
-              {activeVoucher.seller_account_number || '-'}
-            </p>
           </div>
 
           <div className="border-b border-[#E4E6EF] py-4">
@@ -524,13 +471,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
             <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
               รายละเอียดการชำระเงิน (Payment Method)
             </p>
-            <p>☑ โอนเงินผ่านธนาคาร ttb (เลขบัญชีท้าย {accountTail})</p>
-            <p className="pl-5 text-[#8A8FA3]">
-              - วันเวลาที่โอน: {activeVoucher.transfer_time || '-'}
-            </p>
-            <p className="pl-5 text-[#8A8FA3]">
-              - เลขที่อ้างอิงสลิป (Transaction ID): {activeVoucher.slip_reference || '-'}
-            </p>
+            <p>☑ โอนเงินผ่านธนาคาร (รายละเอียดตามสลิปที่แนบ)</p>
           </div>
 
           <div className="py-8 text-center text-[13px]">
@@ -540,8 +481,8 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
           </div>
 
           <p className="border-t border-[#E4E6EF] pt-3 text-[11px] text-[#8A8FA3]">
-            * เอกสารฉบับนี้จัดทำขึ้นโดยระบบ ยืนยันการชำระเงินสำเร็จผ่านหลักฐานสลิปโอนเงินธนาคาร
-            {activeVoucher.slip_reference && ` (Transaction ID: ${activeVoucher.slip_reference})`} แทนการลงลายมือชื่อสดของผู้ขาย
+            * เอกสารฉบับนี้จัดทำขึ้นโดยระบบ ยืนยันการชำระเงินสำเร็จผ่านหลักฐานสลิปโอนเงินธนาคารที่แนบไว้ท้ายเอกสาร
+            แทนการลงลายมือชื่อสดของผู้ขาย
           </p>
 
           {(selectedProduct.purchase_slip_url || selectedProduct.purchase_evidence_urls?.length > 0) && (
