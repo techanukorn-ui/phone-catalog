@@ -14,6 +14,34 @@ type DocType = (typeof DOC_TYPES)[number]
 const PAYMENT_METHODS = ['TTB', 'เงินสด', 'อื่นๆ'] as const
 type DocPaymentMethod = (typeof PAYMENT_METHODS)[number]
 
+function DocIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-[18px] w-[18px]" aria-hidden="true">
+      <path
+        d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M14 3.5V8h4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M9 12.5h6M9 15.5h6M9 9.5h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={`h-4 w-4 shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
+      aria-hidden="true"
+    >
+      <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function AccountingPage() {
   const [session, setSession] = useState<Session | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
@@ -45,81 +73,141 @@ export default function AccountingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-paper pb-10">
-      <header className="sticky top-0 z-30 border-b border-line bg-ink">
-        <div className="flex items-center justify-between gap-3 px-6 py-3">
-          <div>
-            <p className="font-display text-lg font-semibold text-white">บัญชี / ภาษี</p>
-            <p className="font-mono text-[11px] uppercase tracking-wide text-white/50">
-              หน้านี้เข้าถึงได้ผ่านลิงก์ตรงเท่านั้น — อย่าเผยแพร่ลิงก์นี้
-            </p>
+    <div className="flex min-h-screen bg-[#F3F4F8] text-[#1B1E2B]">
+      <aside className="flex w-64 shrink-0 flex-col bg-[#12152A]">
+        <div className="flex items-center gap-2.5 px-5 py-5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#3B5BFF] text-sm font-semibold text-white">
+            ฿
           </div>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="shrink-0 rounded-tag border border-white/30 px-3 py-1.5 font-mono text-xs text-white/80"
-          >
-            ออกจากระบบ
-          </button>
-        </div>
-      </header>
-
-      <div className="px-6 py-4">
-        <div className="pill-row justify-center">
-          {ACCOUNTING_OWNERS.map((o) => (
-            <button
-              key={o}
-              type="button"
-              onClick={() => setActiveOwner(o)}
-              className={`shrink-0 rounded-tag border px-3 py-2 font-mono text-xs uppercase tracking-wide transition-colors ${
-                activeOwner === o ? 'border-teal bg-teal text-white' : 'border-line bg-panel text-ink/70'
-              }`}
-            >
-              {o}
-            </button>
-          ))}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">บัญชี / ภาษี</p>
+            <p className="truncate text-[11px] text-slate-400">Marcuz Mobile</p>
+          </div>
         </div>
 
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row">
-          <div className="flex gap-2 overflow-x-auto sm:w-44 sm:shrink-0 sm:flex-col sm:overflow-visible">
-            {DOC_TYPES.map((d) => (
-              <div key={d} className="contents sm:block">
+        <div className="px-5 pb-4">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">เจ้าของทุน</p>
+          <div className="flex gap-1.5">
+            {ACCOUNTING_OWNERS.map((o) => (
+              <button
+                key={o}
+                type="button"
+                onClick={() => setActiveOwner(o)}
+                className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
+                  activeOwner === o
+                    ? 'bg-[#3B5BFF] text-white'
+                    : 'bg-white/[0.06] text-slate-300 hover:bg-white/[0.1]'
+                }`}
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mx-5 mb-2 h-px bg-white/10" />
+
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">เอกสาร</p>
+          {DOC_TYPES.map((d) => {
+            const isOpen = activeDoc === d
+            return (
+              <div key={d} className="mb-0.5">
                 <button
                   type="button"
                   onClick={() => setActiveDoc(d)}
-                  className={`shrink-0 rounded-tag border px-3 py-2 text-left font-mono text-xs uppercase tracking-wide transition-colors ${
-                    activeDoc === d ? 'border-amber-dark bg-amber-dark text-white' : 'border-line bg-panel text-ink/70'
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
+                    isOpen ? 'bg-white/[0.08] text-white' : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
                   }`}
                 >
-                  {d}
+                  <span className={isOpen ? 'text-[#7C93FF]' : 'text-slate-500'}>
+                    <DocIcon />
+                  </span>
+                  <span className="flex-1 truncate">{d}</span>
+                  <ChevronIcon open={isOpen} />
                 </button>
 
-                {d === activeDoc && (
-                  <div className="flex gap-2 sm:mt-2 sm:flex-col sm:pl-3">
+                {isOpen && (
+                  <div className="ml-[26px] mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
                     {PAYMENT_METHODS.map((m) => (
                       <button
                         key={m}
                         type="button"
                         onClick={() => setActiveMethod(m)}
-                        className={`shrink-0 rounded-tag border px-3 py-1.5 text-left font-mono text-[11px] uppercase tracking-wide transition-colors ${
-                          activeMethod === m ? 'border-teal bg-teal text-white' : 'border-line bg-paper text-ink/60'
+                        className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] transition-colors ${
+                          activeMethod === m
+                            ? 'bg-[#3B5BFF]/15 font-medium text-[#7C93FF]'
+                            : 'text-slate-400 hover:text-slate-200'
                         }`}
                       >
+                        <span
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                            activeMethod === m ? 'bg-[#7C93FF]' : 'bg-slate-600'
+                          }`}
+                        />
                         {m}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
-            ))}
-          </div>
+            )
+          })}
+        </nav>
 
-          <div className="flex-1">
-            <p className="py-8 text-center font-mono text-sm text-ink/50">
-              {activeDoc} — {activeMethod} — {activeOwner} — ยังไม่มีเนื้อหาในหน้านี้
+        <div className="border-t border-white/10 p-3">
+          <p className="px-2 pb-2 text-[10px] leading-relaxed text-slate-500">
+            หน้านี้เข้าถึงได้ผ่านลิงก์ตรงเท่านั้น — อย่าเผยแพร่ลิงก์นี้
+          </p>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="w-full rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-white/[0.06]"
+          >
+            ออกจากระบบ
+          </button>
+        </div>
+      </aside>
+
+      <div className="flex flex-1 flex-col">
+        <header className="flex items-center justify-between border-b border-[#E4E6EF] bg-white px-8 py-5">
+          <div>
+            <div className="flex items-center gap-1.5 text-[13px] text-[#8A8FA3]">
+              <span>{activeOwner}</span>
+              <span>/</span>
+              <span>{activeDoc}</span>
+              <span>/</span>
+              <span className="font-medium text-[#3B5BFF]">{activeMethod}</span>
+            </div>
+            <h1 className="mt-1 text-xl font-semibold text-[#1B1E2B]">
+              {activeDoc} · {activeMethod}
+            </h1>
+          </div>
+          <span className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-[11px] font-medium text-[#3B5BFF]">
+            {activeOwner}
+          </span>
+        </header>
+
+        <main className="flex-1 px-8 py-8">
+          <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-[#E4E6EF] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)]">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF1FF] text-[#3B5BFF]">
+              <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" aria-hidden="true">
+                <path
+                  d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+                <path d="M14 3.5V8h4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                <path d="M9 12.5h6M9 15.5h6M9 9.5h2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-[#1B1E2B]">ยังไม่มีข้อมูลในหมวดนี้</p>
+            <p className="mt-1 text-[13px] text-[#8A8FA3]">
+              {activeDoc} — {activeMethod} — เจ้าของทุน {activeOwner}
             </p>
           </div>
-        </div>
+        </main>
       </div>
-    </main>
+    </div>
   )
 }
