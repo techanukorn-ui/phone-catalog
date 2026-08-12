@@ -116,6 +116,15 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     setError(null)
   }
 
+  function cancelForm() {
+    setError(null)
+    if (activeVoucher) {
+      setView('print')
+    } else {
+      backToList()
+    }
+  }
+
   function openEdit() {
     if (!activeVoucher) return
     setSellerName(activeVoucher.seller_name ?? '')
@@ -329,13 +338,23 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
 
           {error && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-600">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="mt-5 rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-          >
-            {saving ? 'กำลังบันทึก…' : activeVoucher ? 'บันทึกการแก้ไข' : 'ยืนยันออกเอกสาร'}
-          </button>
+          <div className="mt-5 flex gap-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {saving ? 'กำลังบันทึก…' : activeVoucher ? 'บันทึกการแก้ไข' : 'ยืนยันออกเอกสาร'}
+            </button>
+            <button
+              type="button"
+              onClick={cancelForm}
+              disabled={saving}
+              className="rounded-lg border border-[#E4E6EF] px-4 py-2.5 text-sm font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8] disabled:opacity-60"
+            >
+              ยกเลิก
+            </button>
+          </div>
         </form>
 
         {lightboxUrl && (
