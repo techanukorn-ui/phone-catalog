@@ -96,6 +96,8 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
       setActiveVoucher(existing)
       setView('print')
     } else {
+      // ชื่อผู้ขาย: ถ้ากรอกไว้ตอนเพิ่มสินค้าแล้ว (p.seller_name) ให้ยึดตามนั้นเป็นอันดับแรกเสมอ
+      // ถ้าไม่ได้กรอกไว้ (ว่าง) ค่อยเปิดให้กรอก/อ่านจากสลิปโอนเงินแทน — อย่าข้ามไปอ่านสลิปทั้งที่มีชื่อกรอกไว้แล้ว
       setSellerName(p.seller_name ?? '')
       setSellerAccountNumber('')
       setTransferTime('')
@@ -357,6 +359,8 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     const accountTail = activeVoucher.seller_account_number
       ? activeVoucher.seller_account_number.slice(-4)
       : 'xxxx'
+    // ลำดับความสำคัญ: ชื่อที่กรอก/แก้ไว้ในเอกสารก่อน (มาจากช่องกรอกตอนเพิ่มสินค้า หรือพิมพ์เพิ่มจากสลิปทีหลัง)
+    // ตกมาที่ชื่อในข้อมูลสินค้าเป็นสำรอง ไม่ใช้ค่าจากสลิปเว้นแต่ทั้งสองช่องนี้ว่าง
     const sellerDisplayName = activeVoucher.seller_name || selectedProduct.seller_name || '-'
 
     return (
