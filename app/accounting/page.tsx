@@ -43,7 +43,7 @@ export default function AccountingPage() {
   return (
     <main className="min-h-screen bg-paper pb-10">
       <header className="sticky top-0 z-30 border-b border-line bg-ink">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3 lg:max-w-5xl">
+        <div className="flex items-center justify-between gap-3 px-6 py-3">
           <div>
             <p className="font-display text-lg font-semibold text-white">บัญชี / ภาษี</p>
             <p className="font-mono text-[11px] uppercase tracking-wide text-white/50">
@@ -59,7 +59,7 @@ export default function AccountingPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-2xl px-4 py-4 lg:max-w-5xl">
+      <div className="px-6 py-4">
         <div className="pill-row justify-center">
           {ACCOUNTING_OWNERS.map((o) => (
             <button
