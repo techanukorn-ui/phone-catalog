@@ -7,6 +7,7 @@ import {
   OWNERS,
   type Product,
   type ProductCategory,
+  type ProductBank,
   type ProductOwner,
   type ProductPaymentMethod,
   type ProductStatus,
@@ -44,6 +45,7 @@ type FieldState = {
   listed_at: string
   cost_device: string
   purchase_payment_method: ProductPaymentMethod
+  purchase_bank: ProductBank | ''
   purchase_date: string
 }
 
@@ -71,6 +73,7 @@ function toFieldState(p?: Product): FieldState {
     status: p?.status ?? 'พร้อมขาย',
     cost_device: p?.cost_device != null ? String(p.cost_device) : '',
     purchase_payment_method: p?.purchase_payment_method ?? 'เงินสด',
+    purchase_bank: p?.purchase_bank ?? '',
     purchase_date: p?.purchase_date ?? todayStr(),
   }
 }
@@ -201,6 +204,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         gallery_images: finalGallery,
         cost_device: fields.cost_device ? Number(fields.cost_device) : null,
         purchase_payment_method: fields.purchase_payment_method,
+        purchase_bank: fields.purchase_payment_method === 'โอน' ? fields.purchase_bank || null : null,
         purchase_slip_url: slipUrl,
         purchase_date: fields.purchase_date || null,
       }
@@ -500,6 +504,21 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           <option value="โอน">โอน</option>
         </select>
       </label>
+
+      {fields.purchase_payment_method === 'โอน' && (
+        <label className="block">
+          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ธนาคาร</span>
+          <select
+            value={fields.purchase_bank}
+            onChange={(e) => updateField('purchase_bank', e.target.value as ProductBank)}
+            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+          >
+            <option value="">เลือกธนาคาร</option>
+            <option value="TTB">TTB</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </label>
+      )}
 
       {fields.purchase_payment_method === 'โอน' && (
         <div>

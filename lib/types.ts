@@ -24,6 +24,9 @@ export const OWNERS: ProductOwner[] = ['โบ๊ท', 'วอลเล่', '�
 // วิธีจ่ายเงินตอนซื้อเครื่องเข้าร้าน — ใช้ตัดสินว่าต้องแนบสลิปหรือไม่
 export type ProductPaymentMethod = 'เงินสด' | 'โอน'
 
+// ธนาคารที่ใช้โอน — เลือกได้เฉพาะตอนวิธีจ่ายเงินเป็น "โอน"
+export type ProductBank = 'TTB' | 'อื่นๆ'
+
 export interface Product {
   id: string
   product_code: string
@@ -48,6 +51,7 @@ export interface Product {
   cost_other: number | null
   total_cost: number | null
   purchase_payment_method: ProductPaymentMethod | null
+  purchase_bank: ProductBank | null
   purchase_slip_url: string | null
   purchase_date: string | null
   sale_price: number | null

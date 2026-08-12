@@ -174,6 +174,11 @@ export default function PurchaseEvidenceReport() {
                   >
                     {p.purchase_payment_method ?? 'เงินสด'}
                   </span>
+                  {p.purchase_payment_method === 'โอน' && p.purchase_bank && (
+                    <span className="ml-1 rounded-tag border border-line px-1.5 py-0.5 text-[10px] uppercase text-ink/60">
+                      {p.purchase_bank}
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="shrink-0">

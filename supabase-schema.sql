@@ -202,6 +202,12 @@ alter table products add constraint products_purchase_payment_method_check
   check (purchase_payment_method in ('เงินสด','โอน'));
 alter table products add column if not exists purchase_slip_url text;
 
+-- ธนาคารที่ใช้โอน (เลือกตอนวิธีจ่ายเงินเป็น "โอน") — TTB หรืออื่นๆ
+alter table products add column if not exists purchase_bank text;
+alter table products drop constraint if exists products_purchase_bank_check;
+alter table products add constraint products_purchase_bank_check
+  check (purchase_bank in ('TTB','อื่นๆ'));
+
 -- วันที่ซื้อเครื่องจริง แยกจาก listed_at (วันที่ลงสินค้า) เพราะบางทีลงระบบช้ากว่าวันที่ซื้อจริง
 -- ใช้เป็นตัวกรองหลักในรายงานหลักฐานการซื้อ ให้ตรงกับวันที่บนสลิปจริง
 alter table products add column if not exists purchase_date date default current_date;
