@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { OwnerProfile, Product, ReceiptVoucher } from '@/lib/types'
-import { formatPrice, formatThaiDate, thaiBahtText } from '@/lib/utils'
+import { formatPrice, formatThaiDate, thaiBahtText, toDateInputStr } from '@/lib/utils'
 
 type Props = {
   owner: string
@@ -14,6 +14,12 @@ type View = 'list' | 'form' | 'print'
 function docNumberPrefix(): string {
   const now = new Date()
   return `RC-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
+function defaultFrom(): string {
+  const d = new Date()
+  d.setMonth(d.getMonth() - 3)
+  return toDateInputStr(d)
 }
 
 async function nextDocNumber(): Promise<string> {
@@ -30,6 +36,8 @@ async function nextDocNumber(): Promise<string> {
 export default function ReceiptVoucherTTB({ owner }: Props) {
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
+  const [fromDate, setFromDate] = useState(defaultFrom())
+  const [toDate, setToDate] = useState(toDateInputStr(new Date()))
   const [vouchers, setVouchers] = useState<Record<string, ReceiptVoucher>>({})
   const [ownerProfile, setOwnerProfile] = useState<OwnerProfile | null>(null)
   const [view, setView] = useState<View>('list')
@@ -187,6 +195,10 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     !ownerProfile?.full_name || !ownerProfile?.id_card_number || !ownerProfile?.address
 
   if (view === 'list') {
+    const displayProducts = products.filter(
+      (p) => p.purchase_date && p.purchase_date >= fromDate && p.purchase_date <= toDate
+    )
+
     return (
       <div className="space-y-4">
         {profileIncomplete && (
@@ -196,14 +208,48 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
           </div>
         )}
 
-        {products.length === 0 ? (
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">ตั้งแต่วันที่ซื้อ</span>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="rounded-lg border border-[#E4E6EF] bg-white px-3 py-2 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">ถึงวันที่</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="rounded-lg border border-[#E4E6EF] bg-white px-3 py-2 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={() => {
+              const today = toDateInputStr(new Date())
+              setFromDate(today)
+              setToDate(today)
+            }}
+            className="rounded-lg border border-[#E4E6EF] px-3.5 py-2 text-xs font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8]"
+          >
+            เฉพาะวันนี้
+          </button>
+        </div>
+
+        {displayProducts.length === 0 ? (
           <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-[#E4E6EF] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)]">
-            <p className="text-sm font-medium text-[#1B1E2B]">ยังไม่มีสินค้าที่ซื้อผ่าน TTB</p>
+            <p className="text-sm font-medium text-[#1B1E2B]">
+              {products.length === 0 ? 'ยังไม่มีสินค้าที่ซื้อผ่าน TTB' : 'ไม่มีสินค้าในช่วงวันที่ที่เลือก'}
+            </p>
             <p className="mt-1 text-[13px] text-[#8A8FA3]">ของเจ้าของทุน {owner}</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {products.map((p) => {
+            {displayProducts.map((p) => {
               const existing = vouchers[p.id]
               return (
                 <div
