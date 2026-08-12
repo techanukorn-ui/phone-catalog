@@ -615,7 +615,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
                 หลักฐานแนบประกอบ (Attachments)
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-4">
                 {selectedProduct.purchase_slip_url && (
                   <div>
                     <p className="mb-1 text-[11px] text-[#8A8FA3]">รูปสลิปโอนเงิน ttb</p>
@@ -624,7 +624,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                       src={selectedProduct.purchase_slip_url}
                       alt="สลิปโอนเงิน"
                       onClick={() => setLightboxUrl(selectedProduct.purchase_slip_url)}
-                      className="h-28 w-28 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-cover print:cursor-default"
+                      className="h-auto w-56 max-h-72 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-contain print:cursor-default"
                     />
                   </div>
                 )}
@@ -636,7 +636,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                       src={url}
                       alt="หลักฐานการซื้อ"
                       onClick={() => setLightboxUrl(url)}
-                      className="h-28 w-28 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-cover print:cursor-default"
+                      className="h-auto w-56 max-h-72 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-contain print:cursor-default"
                     />
                   </div>
                 ))}
