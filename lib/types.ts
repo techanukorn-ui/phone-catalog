@@ -57,6 +57,7 @@ export interface Product {
   sale_price: number | null
   sale_payment_method: ProductPaymentMethod | null
   sale_bank: ProductBank | null
+  sale_slip_url: string | null
   net_profit: number | null
   dividend_wallet: number | null
   dividend_bow: number | null

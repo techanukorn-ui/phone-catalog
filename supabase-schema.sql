@@ -222,6 +222,7 @@ alter table products add column if not exists sale_bank text;
 alter table products drop constraint if exists products_sale_bank_check;
 alter table products add constraint products_sale_bank_check
   check (sale_bank in ('TTB','อื่นๆ'));
+alter table products add column if not exists sale_slip_url text;
 
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)

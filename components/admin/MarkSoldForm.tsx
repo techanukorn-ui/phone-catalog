@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { Product, ProductBank, ProductPaymentMethod } from '@/lib/types'
+import { uploadImage } from '@/lib/utils'
 
 type Props = {
   product: Product
@@ -71,6 +72,10 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
     product.sale_payment_method ?? 'เงินสด'
   )
   const [saleBank, setSaleBank] = useState<ProductBank | ''>(product.sale_bank ?? '')
+  const [slipFile, setSlipFile] = useState<File | null>(null)
+  const [slipPreview, setSlipPreview] = useState<string | null>(product.sale_slip_url ?? null)
+  const [removeSlip, setRemoveSlip] = useState(false)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [divWallet, setDivWallet] = useState(product.dividend_wallet != null ? String(product.dividend_wallet) : '')
   const [divBow, setDivBow] = useState(product.dividend_bow != null ? String(product.dividend_bow) : '')
   const [divMagic, setDivMagic] = useState(product.dividend_magic != null ? String(product.dividend_magic) : '')
@@ -86,6 +91,20 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
     [divWallet, divBow, divMagic, divBoat, divNeng]
   )
   const dividendMatches = Math.abs(dividendSum - netProfit) < 0.01
+
+  function handleSlipChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSlipFile(file)
+    setSlipPreview(URL.createObjectURL(file))
+    setRemoveSlip(false)
+  }
+
+  function removeSlipImage() {
+    setSlipFile(null)
+    setSlipPreview(null)
+    setRemoveSlip(true)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -108,6 +127,13 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
 
     setSaving(true)
     try {
+      let slipUrl = removeSlip ? null : product.sale_slip_url ?? null
+      if (salePaymentMethod === 'โอน' && slipFile) {
+        slipUrl = await uploadImage('product-images', slipFile, product.product_code)
+      } else if (salePaymentMethod === 'เงินสด') {
+        slipUrl = null
+      }
+
       const { error: updateError } = await supabase
         .from('products')
         .update({
@@ -117,6 +143,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           sale_price: parseNum(salePrice),
           sale_payment_method: salePaymentMethod,
           sale_bank: salePaymentMethod === 'โอน' ? saleBank || null : null,
+          sale_slip_url: slipUrl,
           dividend_wallet: divWallet ? parseNum(divWallet) : null,
           dividend_bow: divBow ? parseNum(divBow) : null,
           dividend_magic: divMagic ? parseNum(divMagic) : null,
@@ -219,6 +246,35 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
         </label>
       )}
 
+      {salePaymentMethod === 'โอน' && (
+        <div>
+          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
+            สลิปโอนเงิน (ไม่บังคับ)
+          </span>
+          <div className="flex items-center gap-3">
+            {slipPreview && (
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={slipPreview}
+                  alt="สลิปโอนเงิน"
+                  onClick={() => setLightboxUrl(slipPreview)}
+                  className="h-16 w-16 cursor-zoom-in rounded-tag border border-line object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removeSlipImage}
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            <input type="file" accept="image/*" onChange={handleSlipChange} className="text-xs" />
+          </div>
+        </div>
+      )}
+
       <div>
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">กำไรสุทธิ(ก่อนแบ่งปันผล)</span>
         <p className="rounded-tag border border-line bg-line/20 px-3 py-2 font-mono text-sm font-semibold text-teal-dark">
@@ -256,6 +312,29 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           ยกเลิก
         </button>
       </div>
+
+      {lightboxUrl && (
+        <div
+          onClick={() => setLightboxUrl(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 p-6"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxUrl}
+            alt="ดูรูปขยาย"
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-full max-w-full rounded-card object-contain"
+          />
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="ปิด"
+            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-ink/70 text-white"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </form>
   )
 }
