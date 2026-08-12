@@ -104,9 +104,13 @@ export default function BankReconcileReport() {
     setSavingPdf(true)
     setError(null)
     const prevDisplay = el.style.display
+    const prevWidth = el.style.width
     try {
       // การ์ดนี้ปกติซ่อนไว้ (แสดงเฉพาะตอนพิมพ์) — เปิดให้แสดงชั่วคราวเพื่อถ่ายภาพ แล้วซ่อนกลับหลังเสร็จ
+      // ล็อกความกว้างเท่าหน้ากระดาษ A4 ไว้ด้วย ไม่งั้นตอนเซฟจากมือถือมันจะถ่ายภาพที่ความกว้างจอมือถือ (แคบมาก)
+      // ทำให้เนื้อหาถูกยืดเต็มหน้าแนวนอนแต่เตี้ยติดขอบบนแล้วเหลือพื้นที่ว่างเยอะด้านล่าง
       el.style.display = 'block'
+      el.style.width = '780px'
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
         import('jspdf'),
         import('html2canvas'),
@@ -139,6 +143,7 @@ export default function BankReconcileReport() {
       setError('บันทึก PDF ไม่สำเร็จ ลองใช้ปุ่มพิมพ์แล้วเลือก "บันทึกเป็น PDF" แทนได้')
     } finally {
       el.style.display = prevDisplay
+      el.style.width = prevWidth
       setSavingPdf(false)
     }
   }
