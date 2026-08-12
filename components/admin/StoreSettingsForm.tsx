@@ -11,6 +11,7 @@ export default function StoreSettingsForm() {
   const [tagline, setTagline] = useState('')
   const [phone1, setPhone1] = useState('')
   const [phone2, setPhone2] = useState('')
+  const [address, setAddress] = useState('')
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -27,6 +28,7 @@ export default function StoreSettingsForm() {
       setTagline(s?.tagline ?? '')
       setPhone1(s?.phone1 ?? '')
       setPhone2(s?.phone2 ?? '')
+      setAddress(s?.address ?? '')
       setLogoPreview(s?.logo_url ?? null)
       setLoading(false)
     }
@@ -62,6 +64,7 @@ export default function StoreSettingsForm() {
           logo_url: logoUrl,
           phone1: phone1.trim() || null,
           phone2: phone2.trim() || null,
+          address: address.trim() || null,
         })
         .select()
         .single()
@@ -125,6 +128,17 @@ export default function StoreSettingsForm() {
           />
         </label>
       </div>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ที่อยู่ร้าน</span>
+        <textarea
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          rows={3}
+          placeholder="เช่น 123 ถ.สุขุมวิท แขวง... เขต... กรุงเทพฯ 10110"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+        />
+      </label>
 
       <div>
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">โลโก้ร้านค้า</span>

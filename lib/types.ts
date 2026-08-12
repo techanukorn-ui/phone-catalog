@@ -157,6 +157,7 @@ export interface StoreSettings {
   logo_url: string | null
   phone1: string | null
   phone2: string | null
+  address: string | null
   category_order: CategoryTab[] | null
   tagline: string | null
   theme: StoreTheme

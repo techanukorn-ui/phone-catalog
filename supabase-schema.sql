@@ -85,6 +85,9 @@ insert into store_settings (id, store_name)
 values (1, 'ร้านมือถือมือสอง')
 on conflict (id) do nothing;
 
+-- ที่อยู่ร้าน (ไม่บังคับ) — ใช้ในเอกสารบัญชี/ภาษี
+alter table store_settings add column if not exists address text;
+
 -- ----------------------------------------------------------
 -- ตาราง products
 -- ----------------------------------------------------------
