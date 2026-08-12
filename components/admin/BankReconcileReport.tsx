@@ -115,7 +115,14 @@ export default function BankReconcileReport() {
         import('jspdf'),
         import('html2canvas'),
       ])
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+      // ต้องกำหนด windowWidth ด้วย เพราะทั้งเว็บล็อก overflow-x/max-width ไว้เท่าความกว้างจอจริง
+      // ถ้าไม่กำหนด ตอนถ่ายภาพบนมือถือ เนื้อหาจะยังโดนบีบเท่าความกว้างจอมือถืออยู่ดี
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: 780,
+      })
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
       const pageWidth = pdf.internal.pageSize.getWidth()
