@@ -92,11 +92,11 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
   const [slipFile, setSlipFile] = useState<File | null>(null)
   const [slipPreview, setSlipPreview] = useState<string | null>(initialProduct?.purchase_slip_url ?? null)
   const [removeSlip, setRemoveSlip] = useState(false)
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
-  const [evidencePreview, setEvidencePreview] = useState<string | null>(
-    initialProduct?.purchase_evidence_url ?? null
+  const [existingEvidence, setExistingEvidence] = useState<string[]>(
+    initialProduct?.purchase_evidence_urls ?? []
   )
-  const [removeEvidence, setRemoveEvidence] = useState(false)
+  const [removedEvidence, setRemovedEvidence] = useState<string[]>([])
+  const [newEvidenceFiles, setNewEvidenceFiles] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
@@ -142,17 +142,18 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
   }
 
   function handleEvidenceChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setEvidenceFile(file)
-    setEvidencePreview(URL.createObjectURL(file))
-    setRemoveEvidence(false)
+    const files = Array.from(e.target.files ?? [])
+    setNewEvidenceFiles((prev) => [...prev, ...files])
+    e.target.value = ''
   }
 
-  function removeEvidenceImage() {
-    setEvidenceFile(null)
-    setEvidencePreview(null)
-    setRemoveEvidence(true)
+  function removeExistingEvidenceImage(url: string) {
+    setExistingEvidence((prev) => prev.filter((u) => u !== url))
+    setRemovedEvidence((prev) => [...prev, url])
+  }
+
+  function removeNewEvidenceFile(index: number) {
+    setNewEvidenceFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -213,11 +214,13 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         slipUrl = null
       }
 
-      let evidenceUrl = removeEvidence ? null : initialProduct?.purchase_evidence_url ?? null
-      if (evidenceFile) {
+      const uploadedEvidenceUrls: string[] = []
+      for (const file of newEvidenceFiles) {
         const folder = initialProduct?.product_code ?? fields.category
-        evidenceUrl = await uploadImage('product-images', evidenceFile, folder)
+        const url = await uploadImage('product-images', file, folder)
+        uploadedEvidenceUrls.push(url)
       }
+      const finalEvidence = [...existingEvidence, ...uploadedEvidenceUrls]
 
       const payload = {
         category: fields.category,
@@ -242,7 +245,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         purchase_date: fields.purchase_date || null,
         imei_serial: fields.imei_serial.trim() || null,
         seller_name: fields.seller_name.trim() || null,
-        purchase_evidence_url: evidenceUrl,
+        purchase_evidence_urls: finalEvidence,
       }
 
       if (mode === 'add') {
@@ -309,8 +312,8 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         if (initialProduct.purchase_slip_url && initialProduct.purchase_slip_url !== slipUrl) {
           await deleteImageByUrl('product-images', initialProduct.purchase_slip_url)
         }
-        if (initialProduct.purchase_evidence_url && initialProduct.purchase_evidence_url !== evidenceUrl) {
-          await deleteImageByUrl('product-images', initialProduct.purchase_evidence_url)
+        if (removedEvidence.length > 0) {
+          await deleteImagesByUrls('product-images', removedEvidence)
         }
       }
 
@@ -324,9 +327,8 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         setSlipFile(null)
         setSlipPreview(null)
         setRemoveSlip(false)
-        setEvidenceFile(null)
-        setEvidencePreview(null)
-        setRemoveEvidence(false)
+        setExistingEvidence([])
+        setNewEvidenceFiles([])
       }
     } catch (err: any) {
       setError(err?.message ?? 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
@@ -544,29 +546,50 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
 
       <div>
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
-          หลักฐานการซื้อ (ไม่บังคับ)
+          หลักฐานการซื้อ (ไม่บังคับ, แนบได้หลายรูป)
         </span>
-        <div className="flex items-center gap-3">
-          {evidencePreview && (
-            <div className="relative">
+        <div className="mb-2 flex flex-wrap gap-2">
+          {existingEvidence.map((url) => (
+            <div key={url} className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={evidencePreview}
+                src={url}
                 alt="หลักฐานการซื้อ"
-                onClick={() => setLightboxUrl(evidencePreview)}
+                onClick={() => setLightboxUrl(url)}
                 className="h-16 w-16 cursor-zoom-in rounded-tag border border-line object-cover"
               />
               <button
                 type="button"
-                onClick={removeEvidenceImage}
+                onClick={() => removeExistingEvidenceImage(url)}
                 className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
               >
                 ✕
               </button>
             </div>
-          )}
-          <input type="file" accept="image/*" onChange={handleEvidenceChange} className="text-xs" />
+          ))}
+          {newEvidenceFiles.map((file, i) => {
+            const previewUrl = URL.createObjectURL(file)
+            return (
+              <div key={i} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt="หลักฐานการซื้อใหม่"
+                  onClick={() => setLightboxUrl(previewUrl)}
+                  className="h-16 w-16 cursor-zoom-in rounded-tag border border-line object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeNewEvidenceFile(i)}
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
+                >
+                  ✕
+                </button>
+              </div>
+            )
+          })}
         </div>
+        <input type="file" accept="image/*" multiple onChange={handleEvidenceChange} className="text-xs" />
       </div>
 
       <label className="block">

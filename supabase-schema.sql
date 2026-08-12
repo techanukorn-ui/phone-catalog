@@ -227,7 +227,12 @@ alter table products add column if not exists sale_slip_url text;
 -- IMEI/Serial Number, ชื่อ-นามสกุลผู้ขาย, และรูปหลักฐานการซื้อเพิ่มเติม (ไม่บังคับกรอก) — กรอกตอนเพิ่มสินค้า
 alter table products add column if not exists imei_serial text;
 alter table products add column if not exists seller_name text;
-alter table products add column if not exists purchase_evidence_url text;
+
+-- หลักฐานการซื้อรองรับหลายรูป — ย้ายจากคอลัมน์เดี่ยว purchase_evidence_url (ถ้ามี) มาเป็น array
+alter table products add column if not exists purchase_evidence_urls text[] default '{}';
+update products set purchase_evidence_urls = array[purchase_evidence_url]
+  where purchase_evidence_url is not null and (purchase_evidence_urls is null or purchase_evidence_urls = '{}');
+alter table products drop column if exists purchase_evidence_url;
 
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)

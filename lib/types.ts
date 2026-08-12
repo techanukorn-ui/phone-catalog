@@ -56,7 +56,7 @@ export interface Product {
   purchase_date: string | null
   imei_serial: string | null
   seller_name: string | null
-  purchase_evidence_url: string | null
+  purchase_evidence_urls: string[]
   sale_price: number | null
   sale_payment_method: ProductPaymentMethod | null
   sale_bank: ProductBank | null
