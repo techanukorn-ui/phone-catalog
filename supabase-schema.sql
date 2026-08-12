@@ -194,6 +194,14 @@ alter table products add constraint products_owner_check
   check (owner in ('โบ๊ท','วอลเล่','โบว์','น้าเหน่ง'));
 create index if not exists products_owner_idx on products (owner);
 
+-- วิธีจ่ายเงินตอนซื้อเครื่องเข้าร้าน (เงินสด/โอน) และสลิปโอนเงิน (ถ้ามี)
+-- เก็บไว้เป็นหลักฐานการซื้อเผื่อสรรพากรขอดูย้อนหลัง — กรอกตอนเพิ่มสินค้า ไม่บังคับแนบสลิป
+alter table products add column if not exists purchase_payment_method text default 'เงินสด';
+alter table products drop constraint if exists products_purchase_payment_method_check;
+alter table products add constraint products_purchase_payment_method_check
+  check (purchase_payment_method in ('เงินสด','โอน'));
+alter table products add column if not exists purchase_slip_url text;
+
 -- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------

@@ -65,7 +65,6 @@ function DividendField({
 
 export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
   const [soldAt, setSoldAt] = useState(product.sold_at ?? todayStr())
-  const [costDevice, setCostDevice] = useState(product.cost_device != null ? String(product.cost_device) : '')
   const [costOther, setCostOther] = useState(product.cost_other != null ? String(product.cost_other) : '')
   const [salePrice, setSalePrice] = useState(product.sale_price != null ? String(product.sale_price) : '')
   const [divWallet, setDivWallet] = useState(product.dividend_wallet != null ? String(product.dividend_wallet) : '')
@@ -76,7 +75,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const totalCost = useMemo(() => parseNum(costDevice) + parseNum(costOther), [costDevice, costOther])
+  const totalCost = useMemo(() => (product.cost_device ?? 0) + parseNum(costOther), [product.cost_device, costOther])
   const netProfit = useMemo(() => parseNum(salePrice) - totalCost, [salePrice, totalCost])
   const dividendSum = useMemo(
     () => parseNum(divWallet) + parseNum(divBow) + parseNum(divMagic) + parseNum(divBoat) + parseNum(divNeng),
@@ -110,7 +109,6 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
         .update({
           status: 'ขายแล้ว',
           sold_at: soldAt,
-          cost_device: costDevice ? parseNum(costDevice) : null,
           cost_other: costOther ? parseNum(costOther) : null,
           sale_price: parseNum(salePrice),
           dividend_wallet: divWallet ? parseNum(divWallet) : null,
@@ -145,17 +143,19 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
         />
       </label>
 
+      {product.cost_device == null && (
+        <p className="rounded-tag bg-danger/10 px-3 py-2 text-sm text-danger">
+          ⚠️ สินค้านี้ยังไม่มีข้อมูลต้นทุนเครื่อง กรุณาไปกรอกที่หน้า "แก้ไขสินค้า" ก่อนขาย เพื่อให้คำนวณกำไรถูกต้อง
+        </p>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
-        <label className="block">
+        <div>
           <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ต้นทุนเครื่อง</span>
-          <input
-            value={costDevice}
-            onChange={(e) => setCostDevice(e.target.value)}
-            inputMode="numeric"
-            placeholder="0"
-            className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
-          />
-        </label>
+          <p className="rounded-tag border border-line bg-line/20 px-3 py-2 font-mono text-sm text-ink/70">
+            {(product.cost_device ?? 0).toLocaleString('th-TH')}
+          </p>
+        </div>
         <label className="block">
           <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ค่าใช้จ่ายอื่นๆ</span>
           <input

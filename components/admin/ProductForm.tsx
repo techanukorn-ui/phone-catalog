@@ -2,7 +2,15 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { CATEGORIES, OWNERS, type Product, type ProductCategory, type ProductOwner, type ProductStatus } from '@/lib/types'
+import {
+  CATEGORIES,
+  OWNERS,
+  type Product,
+  type ProductCategory,
+  type ProductOwner,
+  type ProductPaymentMethod,
+  type ProductStatus,
+} from '@/lib/types'
 import {
   deleteImageByUrl,
   deleteImagesByUrls,
@@ -34,6 +42,8 @@ type FieldState = {
   defects: string
   status: ProductStatus
   listed_at: string
+  cost_device: string
+  purchase_payment_method: ProductPaymentMethod
 }
 
 function todayStr(): string {
@@ -58,6 +68,8 @@ function toFieldState(p?: Product): FieldState {
     defects: p?.defects ?? '',
     listed_at: p?.listed_at ?? todayStr(),
     status: p?.status ?? 'พร้อมขาย',
+    cost_device: p?.cost_device != null ? String(p.cost_device) : '',
+    purchase_payment_method: p?.purchase_payment_method ?? 'เงินสด',
   }
 }
 
@@ -68,6 +80,9 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
   const [existingGallery, setExistingGallery] = useState<string[]>(initialProduct?.gallery_images ?? [])
   const [removedGallery, setRemovedGallery] = useState<string[]>([])
   const [newGalleryFiles, setNewGalleryFiles] = useState<File[]>([])
+  const [slipFile, setSlipFile] = useState<File | null>(null)
+  const [slipPreview, setSlipPreview] = useState<string | null>(initialProduct?.purchase_slip_url ?? null)
+  const [removeSlip, setRemoveSlip] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
@@ -98,6 +113,20 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
     setNewGalleryFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
+  function handleSlipChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSlipFile(file)
+    setSlipPreview(URL.createObjectURL(file))
+    setRemoveSlip(false)
+  }
+
+  function removeSlipImage() {
+    setSlipFile(null)
+    setSlipPreview(null)
+    setRemoveSlip(true)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -118,6 +147,10 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       setError('กรุณากรอกรหัสสินค้า')
       return
     }
+    if (mode === 'add' && (!fields.cost_device || Number.isNaN(Number(fields.cost_device)))) {
+      setError('กรุณากรอกต้นทุนเครื่อง')
+      return
+    }
 
     setSaving(true)
     try {
@@ -136,6 +169,14 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
 
       const finalGallery = [...existingGallery, ...uploadedGalleryUrls]
 
+      let slipUrl = removeSlip ? null : initialProduct?.purchase_slip_url ?? null
+      if (fields.purchase_payment_method === 'โอน' && slipFile) {
+        const folder = initialProduct?.product_code ?? fields.category
+        slipUrl = await uploadImage('product-images', slipFile, folder)
+      } else if (fields.purchase_payment_method === 'เงินสด') {
+        slipUrl = null
+      }
+
       const payload = {
         category: fields.category,
         owner: fields.owner || null,
@@ -152,6 +193,9 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         listed_at: fields.listed_at || todayStr(),
         cover_image_url: coverUrl,
         gallery_images: finalGallery,
+        cost_device: fields.cost_device ? Number(fields.cost_device) : null,
+        purchase_payment_method: fields.purchase_payment_method,
+        purchase_slip_url: slipUrl,
       }
 
       if (mode === 'add') {
@@ -215,6 +259,9 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         if (coverFile && initialProduct.cover_image_url) {
           await deleteImageByUrl('product-images', initialProduct.cover_image_url)
         }
+        if (initialProduct.purchase_slip_url && initialProduct.purchase_slip_url !== slipUrl) {
+          await deleteImageByUrl('product-images', initialProduct.purchase_slip_url)
+        }
       }
 
       onSaved()
@@ -224,6 +271,9 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         setCoverPreview(null)
         setExistingGallery([])
         setNewGalleryFiles([])
+        setSlipFile(null)
+        setSlipPreview(null)
+        setRemoveSlip(false)
       }
     } catch (err: any) {
       setError(err?.message ?? 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง')
@@ -406,6 +456,60 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
+          ต้นทุนเครื่อง (บาท) {mode === 'add' && '*'}
+        </span>
+        <input
+          value={fields.cost_device}
+          onChange={(e) => updateField('cost_device', e.target.value)}
+          inputMode="numeric"
+          placeholder="เช่น 15000"
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+        />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">วิธีจ่ายเงินตอนซื้อเครื่อง</span>
+        <select
+          value={fields.purchase_payment_method}
+          onChange={(e) => updateField('purchase_payment_method', e.target.value as ProductPaymentMethod)}
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+        >
+          <option value="เงินสด">เงินสด</option>
+          <option value="โอน">โอน</option>
+        </select>
+      </label>
+
+      {fields.purchase_payment_method === 'โอน' && (
+        <div>
+          <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">
+            สลิปโอนเงิน (ไม่บังคับ)
+          </span>
+          <div className="flex items-center gap-3">
+            {slipPreview && (
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={slipPreview}
+                  alt="สลิปโอนเงิน"
+                  onClick={() => setLightboxUrl(slipPreview)}
+                  className="h-16 w-16 cursor-zoom-in rounded-tag border border-line object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removeSlipImage}
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            <input type="file" accept="image/*" onChange={handleSlipChange} className="text-xs" />
+          </div>
+        </div>
+      )}
 
       <label className="block">
         <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">แบตเตอรี่ %</span>

@@ -21,6 +21,9 @@ export type ProductOwner = 'โบ๊ท' | 'วอลเล่' | 'โบว์
 
 export const OWNERS: ProductOwner[] = ['โบ๊ท', 'วอลเล่', 'โบว์', 'น้าเหน่ง']
 
+// วิธีจ่ายเงินตอนซื้อเครื่องเข้าร้าน — ใช้ตัดสินว่าต้องแนบสลิปหรือไม่
+export type ProductPaymentMethod = 'เงินสด' | 'โอน'
+
 export interface Product {
   id: string
   product_code: string
@@ -44,6 +47,8 @@ export interface Product {
   cost_device: number | null
   cost_other: number | null
   total_cost: number | null
+  purchase_payment_method: ProductPaymentMethod | null
+  purchase_slip_url: string | null
   sale_price: number | null
   net_profit: number | null
   dividend_wallet: number | null
