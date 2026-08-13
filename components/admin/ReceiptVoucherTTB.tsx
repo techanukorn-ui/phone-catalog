@@ -612,7 +612,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
 
           {(selectedProduct.purchase_slip_url || selectedProduct.purchase_evidence_urls?.length > 0) && (
             <div className="mt-6 border-t border-[#E4E6EF] pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3] print:break-after-avoid">
                 หลักฐานแนบประกอบ (Attachments)
               </p>
               <div className="flex flex-col gap-4">
