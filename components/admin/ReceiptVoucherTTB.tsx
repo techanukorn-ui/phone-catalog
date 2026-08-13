@@ -189,20 +189,13 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   async function handlePrint() {
     // รูปหลักฐานแนบโหลดจากเน็ตแบบ async — ถ้าเรียก window.print() ทันทีที่สลับมาหน้านี้
     // (เช่นกดปุ่ม "ปริ้น" จากรายการ) รูปอาจยังโหลดไม่เสร็จ พิมพ์ออกมาแล้วรูปเลยหายไปเลย
+    // ใช้ img.decode() แทนแค่รอ event "load" เพราะ decode() รับประกันว่าข้อมูลภาพถอดรหัสพร้อมวาดแล้วจริงๆ
+    // (ไม่ใช่แค่เริ่มโหลดเสร็จ) แล้วรอเพิ่มอีก 2 เฟรมให้เบราว์เซอร์ได้ paint ภาพขึ้นจริงก่อนค่อยสั่งพิมพ์
     const imgs = docRef.current ? Array.from(docRef.current.querySelectorAll('img')) : []
     await Promise.all(
-      imgs.map(
-        (img) =>
-          new Promise<void>((resolve) => {
-            if (img.complete) {
-              resolve()
-              return
-            }
-            img.addEventListener('load', () => resolve(), { once: true })
-            img.addEventListener('error', () => resolve(), { once: true })
-          })
-      )
+      imgs.map((img) => (img.decode ? img.decode().catch(() => undefined) : Promise.resolve()))
     )
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
     window.print()
   }
 
