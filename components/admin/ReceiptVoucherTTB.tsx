@@ -186,12 +186,32 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     }
   }
 
+  async function handlePrint() {
+    // รูปหลักฐานแนบโหลดจากเน็ตแบบ async — ถ้าเรียก window.print() ทันทีที่สลับมาหน้านี้
+    // (เช่นกดปุ่ม "ปริ้น" จากรายการ) รูปอาจยังโหลดไม่เสร็จ พิมพ์ออกมาแล้วรูปเลยหายไปเลย
+    const imgs = docRef.current ? Array.from(docRef.current.querySelectorAll('img')) : []
+    await Promise.all(
+      imgs.map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete) {
+              resolve()
+              return
+            }
+            img.addEventListener('load', () => resolve(), { once: true })
+            img.addEventListener('error', () => resolve(), { once: true })
+          })
+      )
+    )
+    window.print()
+  }
+
   useEffect(() => {
     if (view !== 'print' || !pendingAction) return
     const action = pendingAction
     setPendingAction(null)
     if (action === 'print') {
-      window.print()
+      handlePrint()
     } else {
       handleSavePdf()
     }
@@ -500,7 +520,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
             </button>
             <button
               type="button"
-              onClick={() => window.print()}
+              onClick={handlePrint}
               className="rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
               ปริ้น
