@@ -35,6 +35,10 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [activeVoucher, setActiveVoucher] = useState<ReceiptVoucher | null>(null)
   const [sellerName, setSellerName] = useState('')
+  const [formFullName, setFormFullName] = useState('')
+  const [formIdCard, setFormIdCard] = useState('')
+  const [formAddress, setFormAddress] = useState('')
+  const [formPhone, setFormPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
@@ -100,6 +104,11 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
       // ชื่อผู้ขาย: ถ้ากรอกไว้ตอนเพิ่มสินค้าแล้ว (p.seller_name) ให้ยึดตามนั้นเป็นอันดับแรกเสมอ
       // ถ้าไม่ได้กรอกไว้ (ว่าง) ค่อยเปิดให้กรอก/อ่านจากสลิปโอนเงินแทน — อย่าข้ามไปอ่านสลิปทั้งที่มีชื่อกรอกไว้แล้ว
       setSellerName(p.seller_name ?? '')
+      // เอกสารยังไม่เคยออก — เอาข้อมูลส่วนตัวปัจจุบันมาเป็นค่าเริ่มต้นให้แก้ไขก่อนออกเอกสารจริง
+      setFormFullName(ownerProfile?.full_name ?? '')
+      setFormIdCard(ownerProfile?.id_card_number ?? '')
+      setFormAddress(ownerProfile?.address ?? '')
+      setFormPhone(ownerProfile?.phone ?? '')
       setActiveVoucher(null)
       setView('form')
     }
@@ -111,6 +120,11 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     setSelectedProduct(p)
     setActiveVoucher(existing)
     setSellerName(existing.seller_name ?? '')
+    // เอกสารเก่าก่อนมีระบบแช่แข็งข้อมูล ยังไม่มีสำเนาเก็บไว้ → ใช้ข้อมูลปัจจุบันเป็นค่าเริ่มต้นไปก่อน
+    setFormFullName(existing.owner_full_name ?? ownerProfile?.full_name ?? '')
+    setFormIdCard(existing.owner_id_card_number ?? ownerProfile?.id_card_number ?? '')
+    setFormAddress(existing.owner_address ?? ownerProfile?.address ?? '')
+    setFormPhone(existing.owner_phone ?? ownerProfile?.phone ?? '')
     setError(null)
     setView('form')
   }
@@ -134,6 +148,10 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   function openEdit() {
     if (!activeVoucher) return
     setSellerName(activeVoucher.seller_name ?? '')
+    setFormFullName(activeVoucher.owner_full_name ?? ownerProfile?.full_name ?? '')
+    setFormIdCard(activeVoucher.owner_id_card_number ?? ownerProfile?.id_card_number ?? '')
+    setFormAddress(activeVoucher.owner_address ?? ownerProfile?.address ?? '')
+    setFormPhone(activeVoucher.owner_phone ?? ownerProfile?.phone ?? '')
     setError(null)
     setView('form')
   }
@@ -208,6 +226,10 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     try {
       const fields = {
         seller_name: sellerName.trim() || null,
+        owner_full_name: formFullName.trim() || null,
+        owner_id_card_number: formIdCard.trim() || null,
+        owner_address: formAddress.trim() || null,
+        owner_phone: formPhone.trim() || null,
       }
 
       if (activeVoucher) {
@@ -410,6 +432,47 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                 className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
               />
             </label>
+
+            <div className="border-t border-[#E4E6EF] pt-4">
+              <p className="mb-3 text-[13px] font-medium text-[#1B1E2B]">
+                ข้อมูลผู้รับซื้อในเอกสารนี้ — บันทึกไว้เฉพาะใบนี้ ไม่เปลี่ยนตามหน้า &quot;ข้อมูลส่วนตัว&quot;
+                ในภายหลังอัตโนมัติ
+              </p>
+              <div className="space-y-3">
+                <label className="block">
+                  <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">ชื่อร้าน/ผู้รับซื้อ</span>
+                  <input
+                    value={formFullName}
+                    onChange={(e) => setFormFullName(e.target.value)}
+                    className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">เลขประจำตัวผู้เสียภาษี</span>
+                  <input
+                    value={formIdCard}
+                    onChange={(e) => setFormIdCard(e.target.value)}
+                    className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">ที่อยู่</span>
+                  <input
+                    value={formAddress}
+                    onChange={(e) => setFormAddress(e.target.value)}
+                    className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-[13px] font-medium text-[#1B1E2B]">เบอร์โทรศัพท์</span>
+                  <input
+                    value={formPhone}
+                    onChange={(e) => setFormPhone(e.target.value)}
+                    className="w-full rounded-lg border border-[#E4E6EF] bg-white px-3 py-2.5 text-sm text-[#1B1E2B] outline-none transition-colors focus:border-[#3B5BFF]"
+                  />
+                </label>
+              </div>
+            </div>
           </div>
 
           {selectedProduct.purchase_slip_url && (
@@ -507,7 +570,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
           <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 border-b border-[#E4E6EF] py-4 text-[13px]">
             <p>
               <span className="text-[#8A8FA3]">ชื่อร้าน/ผู้รับซื้อ: </span>
-              {ownerProfile?.full_name || owner}
+              {activeVoucher.owner_full_name ?? ownerProfile?.full_name ?? owner}
             </p>
             <p>
               <span className="text-[#8A8FA3]">เลขที่เอกสาร: </span>
@@ -515,7 +578,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
             </p>
             <p>
               <span className="text-[#8A8FA3]">เลขประจำตัวผู้เสียภาษี: </span>
-              {ownerProfile?.id_card_number || '-'}
+              {activeVoucher.owner_id_card_number ?? ownerProfile?.id_card_number ?? '-'}
             </p>
             <p>
               <span className="text-[#8A8FA3]">วันที่ทำรายการ: </span>
@@ -523,11 +586,11 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
             </p>
             <p>
               <span className="text-[#8A8FA3]">ที่อยู่: </span>
-              {ownerProfile?.address || '-'}
+              {activeVoucher.owner_address ?? ownerProfile?.address ?? '-'}
             </p>
             <p>
               <span className="text-[#8A8FA3]">เบอร์โทรศัพท์: </span>
-              {ownerProfile?.phone || '-'}
+              {activeVoucher.owner_phone ?? ownerProfile?.phone ?? '-'}
             </p>
           </div>
 
@@ -588,7 +651,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
 
           <div className="py-8 text-center text-[13px]">
             <p className="mb-1">ลงชื่อ.........................................ผู้รับซื้อ/ผู้จ่ายเงิน</p>
-            <p>({ownerProfile?.full_name || owner})</p>
+            <p>({activeVoucher.owner_full_name ?? ownerProfile?.full_name ?? owner})</p>
             <p className="mt-1 text-[#8A8FA3]">
               วันที่ {formatThaiDateNumeric(selectedProduct.purchase_date ?? activeVoucher.created_at)}
             </p>

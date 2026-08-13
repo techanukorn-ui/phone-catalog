@@ -296,6 +296,12 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         // ซื้อผ่านโอน TTB → ออกใบสำคัญรับเงินให้อัตโนมัติเลย ไม่ต้องรอกดสร้างเองทีหลังในหน้าบัญชี/ภาษี
         if (newProductId && payload.purchase_payment_method === 'โอน' && payload.purchase_bank === 'TTB') {
           const doc_number = await nextReceiptDocNumber()
+          // ก็อปข้อมูลส่วนตัวเจ้าของทุน ณ ตอนนี้แช่แข็งไว้ในเอกสาร ไม่ให้เปลี่ยนย้อนหลังถ้าไปแก้ข้อมูลส่วนตัวทีหลัง
+          const { data: ownerProfile } = await supabase
+            .from('owner_profiles')
+            .select('full_name, id_card_number, address, phone')
+            .eq('owner', payload.owner)
+            .maybeSingle()
           await supabase.from('receipt_vouchers').insert({
             doc_number,
             doc_type: 'ใบสำคัญรับเงิน',
@@ -303,6 +309,10 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
             product_id: newProductId,
             method: 'TTB',
             seller_name: payload.seller_name,
+            owner_full_name: ownerProfile?.full_name ?? null,
+            owner_id_card_number: ownerProfile?.id_card_number ?? null,
+            owner_address: ownerProfile?.address ?? null,
+            owner_phone: ownerProfile?.phone ?? null,
           })
         }
       } else if (initialProduct) {

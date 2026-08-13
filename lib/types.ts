@@ -192,5 +192,9 @@ export interface ReceiptVoucher {
   seller_account_number: string | null
   transfer_time: string | null
   slip_reference: string | null
+  owner_full_name: string | null
+  owner_id_card_number: string | null
+  owner_address: string | null
+  owner_phone: string | null
   created_at: string
 }

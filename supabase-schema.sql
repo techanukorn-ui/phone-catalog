@@ -270,6 +270,12 @@ create table if not exists receipt_vouchers (
   seller_account_number text,
   transfer_time text,
   slip_reference text,
+  -- สำเนาข้อมูลส่วนตัวของเจ้าของทุน ณ ตอนออกเอกสาร (แช่แข็งไว้ ไม่ดึงสดจาก owner_profiles อีกต่อไป
+  -- กันเอกสารที่ออกไปแล้วเปลี่ยนย้อนหลังตามข้อมูลปัจจุบัน)
+  owner_full_name text,
+  owner_id_card_number text,
+  owner_address text,
+  owner_phone text,
   created_at timestamptz not null default now(),
   unique (product_id, doc_type)
 );
