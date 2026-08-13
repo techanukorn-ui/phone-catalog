@@ -107,7 +107,7 @@ create table if not exists products (
   defects text,
   cover_image_url text not null,
   gallery_images text[] not null default '{}',
-  status text not null default 'พร้อมขาย' check (status in ('พร้อมขาย','ขายแล้ว')),
+  status text not null default 'พร้อมขาย' check (status in ('พร้อมขาย','ขายแล้ว','ไม่พร้อมขาย')),
   listed_at date not null default current_date,
   sold_at date,
   cost_device numeric,
@@ -227,6 +227,11 @@ alter table products add constraint products_sale_bank_check
   check (sale_bank in ('TTB','อื่นๆ'));
 alter table products add column if not exists sale_slip_url text;
 alter table products add column if not exists buyer_name text;
+
+-- สถานะ "ไม่พร้อมขาย" — เพิ่มสินค้าไว้แล้วแต่ยังไม่พร้อมขาย ไม่แสดงที่หน้าบ้าน (แยกจาก "ขายแล้ว")
+alter table products drop constraint if exists products_status_check;
+alter table products add constraint products_status_check
+  check (status in ('พร้อมขาย','ขายแล้ว','ไม่พร้อมขาย'));
 
 -- IMEI/Serial Number, ชื่อ-นามสกุลผู้ขาย, และรูปหลักฐานการซื้อเพิ่มเติม (ไม่บังคับกรอก) — กรอกตอนเพิ่มสินค้า
 alter table products add column if not exists imei_serial text;
