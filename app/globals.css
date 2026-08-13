@@ -211,6 +211,18 @@ body {
   size: A4;
 }
 
+/* html,body ด้านบนตั้ง overflow-x:hidden ไว้ล็อกสกรอลแนวนอนบนมือถือ — ตามสเปก CSS
+   ถ้า overflow-x ไม่ใช่ visible แต่ overflow-y ไม่ได้กำหนด เบราว์เซอร์จะบังคับให้ overflow-y
+   กลายเป็น auto ไปด้วย (มีแถบเลื่อนแนวตั้งได้จริงเวลาเนื้อหาสูงเกินจอ) ทำให้ตอนกดพิมพ์จากหน้าจอที่
+   กำลังมีแถบเลื่อนแนวตั้งอยู่ โครมบางเวอร์ชันติดภาพแถบเลื่อนนั้นไปในหน้าพิมพ์ด้วย — ปิดทางนี้เฉพาะตอนพิมพ์ */
+@media print {
+  html,
+  body {
+    overflow: hidden;
+    height: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
