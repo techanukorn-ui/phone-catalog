@@ -33,7 +33,8 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [pendingAction, setPendingAction] = useState<'save' | null>(null)
   const [savingPdf, setSavingPdf] = useState(false)
-  const docRef = useRef<HTMLDivElement>(null)
+  const mainRef = useRef<HTMLDivElement>(null)
+  const attachRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -131,35 +132,47 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   }
 
   async function handleSavePdf() {
-    if (!docRef.current || !activeVoucher) return
+    if (!mainRef.current || !activeVoucher) return
     setSavingPdf(true)
     try {
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
         import('jspdf'),
         import('html2canvas'),
       ])
-      const canvas = await html2canvas(docRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
-      const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
-      const imgWidth = pageWidth
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
 
-      if (imgHeight <= pageHeight) {
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-      } else {
-        // เอกสารยาวเกินหน้าเดียว — ตัดแบ่งเป็นหลายหน้า
-        let heightLeft = imgHeight
-        let position = 0
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
-        while (heightLeft > 0) {
-          position -= pageHeight
-          pdf.addPage()
+      async function addSection(el: HTMLElement, startNewPage: boolean) {
+        const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+        const imgData = canvas.toDataURL('image/png')
+        const imgWidth = pageWidth
+        const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+        if (startNewPage) pdf.addPage()
+
+        if (imgHeight <= pageHeight) {
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+        } else {
+          // ส่วนนี้ยาวเกินหน้าเดียว — ตัดแบ่งเป็นหลายหน้า
+          let heightLeft = imgHeight
+          let position = 0
           pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
           heightLeft -= pageHeight
+          while (heightLeft > 0) {
+            position -= pageHeight
+            pdf.addPage()
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+            heightLeft -= pageHeight
+          }
         }
+      }
+
+      // แยกถ่ายภาพเป็น 2 ส่วน: เนื้อหาเอกสารหลัก (หน้า 1) กับหลักฐานแนบประกอบ (บังคับขึ้นหน้า 2 เสมอ)
+      // ไม่ปนกันในภาพเดียวแล้วตัดแบ่งหน้าตามความสูงแบบเดิม เพราะงั้นหน้า 1 จะมีแต่ข้อมูลเอกสารล้วนๆ เสมอ
+      await addSection(mainRef.current, false)
+      if (attachRef.current) {
+        await addSection(attachRef.current, true)
       }
 
       pdf.save(`${activeVoucher.doc_number}.pdf`)
@@ -473,10 +486,8 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
           </div>
         </div>
 
-        <div
-          ref={docRef}
-          className="mx-auto max-w-3xl rounded-2xl border border-[#E4E6EF] bg-white p-8 text-[#1B1E2B] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)] print:max-w-none print:rounded-none print:border-0 print:p-0 print:shadow-none"
-        >
+        <div className="mx-auto max-w-3xl rounded-2xl border border-[#E4E6EF] bg-white text-[#1B1E2B] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)] print:max-w-none print:rounded-none print:border-0 print:shadow-none">
+        <div ref={mainRef} className="p-8">
           <div className="border-b-2 border-double border-black pb-3 text-center">
             <h1 className="text-lg font-semibold">ใบสำคัญรับเงิน / ใบรับซื้อสินค้า</h1>
             <p className="text-xs tracking-wide text-[#8A8FA3]">(RECEIVING VOUCHER)</p>
@@ -574,44 +585,45 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
             * เอกสารฉบับนี้จัดทำขึ้นโดยระบบ ยืนยันการชำระเงินสำเร็จผ่านหลักฐานสลิปโอนเงินธนาคารที่แนบไว้ท้ายเอกสาร
             แทนการลงลายมือชื่อสดของผู้ขาย
           </p>
+        </div>
 
-          {(selectedProduct.purchase_slip_url || selectedProduct.purchase_evidence_urls?.length > 0) && (
-            <div className="mt-6 border-t border-[#E4E6EF] pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3] print:break-after-avoid">
-                หลักฐานแนบประกอบ (Attachments)
-              </p>
-              <div className="flex flex-col gap-4">
-                {selectedProduct.purchase_slip_url && (
-                  <div className="print:break-inside-avoid">
-                    <p className="mb-1 text-[11px] text-[#8A8FA3]">รูปสลิปโอนเงิน ttb</p>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={selectedProduct.purchase_slip_url}
-                      alt="สลิปโอนเงิน"
-                      onClick={() => setLightboxUrl(selectedProduct.purchase_slip_url)}
-                      className="h-auto w-56 max-h-72 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-contain print:cursor-default"
-                    />
-                  </div>
-                )}
-                {selectedProduct.purchase_evidence_urls?.length > 0 && (
-                  <div className="flex flex-wrap gap-4">
-                    {selectedProduct.purchase_evidence_urls.map((url) => (
-                      <div key={url} className="print:break-inside-avoid">
-                        <p className="mb-1 text-[11px] text-[#8A8FA3]">หลักฐานประกอบอื่นๆ</p>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={url}
-                          alt="หลักฐานการซื้อ"
-                          onClick={() => setLightboxUrl(url)}
-                          className="h-auto w-56 max-h-72 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-contain print:cursor-default"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+        {(selectedProduct.purchase_slip_url || selectedProduct.purchase_evidence_urls?.length > 0) && (
+          <div ref={attachRef} className="border-t border-[#E4E6EF] px-8 pb-8 pt-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
+              หลักฐานแนบประกอบ (Attachments)
+            </p>
+            <div className="flex flex-col gap-4">
+              {selectedProduct.purchase_slip_url && (
+                <div>
+                  <p className="mb-1 text-[11px] text-[#8A8FA3]">รูปสลิปโอนเงิน ttb</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={selectedProduct.purchase_slip_url}
+                    alt="สลิปโอนเงิน"
+                    onClick={() => setLightboxUrl(selectedProduct.purchase_slip_url)}
+                    className="h-auto w-56 max-h-72 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-contain"
+                  />
+                </div>
+              )}
+              {selectedProduct.purchase_evidence_urls?.length > 0 && (
+                <div className="flex flex-wrap gap-4">
+                  {selectedProduct.purchase_evidence_urls.map((url) => (
+                    <div key={url}>
+                      <p className="mb-1 text-[11px] text-[#8A8FA3]">หลักฐานประกอบอื่นๆ</p>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt="หลักฐานการซื้อ"
+                        onClick={() => setLightboxUrl(url)}
+                        className="h-auto w-72 max-h-72 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-contain"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        )}
         </div>
 
         {lightboxUrl && (
