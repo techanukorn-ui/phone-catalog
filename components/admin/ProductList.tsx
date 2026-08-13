@@ -150,6 +150,11 @@ export default function ProductList({ status, openProductId, onOpenedProduct }: 
 
     setDeletingId(product.id)
     try {
+      // สินค้าที่ซื้อผ่านโอน TTB จะมีใบสำคัญรับเงินผูกอยู่ (ออกให้อัตโนมัติตอนเพิ่มสินค้า)
+      // ฐานข้อมูลกันไม่ให้ลบสินค้าที่มีใบสำคัญรับเงินผูกอยู่ (product_id...on delete restrict)
+      // ลบใบสำคัญรับเงินทิ้งไปด้วยก่อนเสมอ ไม่งั้นลบสินค้าไม่ได้เลย
+      await supabase.from('receipt_vouchers').delete().eq('product_id', product.id)
+
       const { error } = await supabase.from('products').delete().eq('id', product.id)
       if (error) throw error
 
