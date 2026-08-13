@@ -113,7 +113,11 @@ export default function BankReconcileReport() {
         import('html2canvas'),
       ])
       const captureScale = 2
+      // eslint-disable-next-line no-console
+      console.log('[pdf-debug] el rect before capture', el.getBoundingClientRect(), 'window', window.innerWidth)
       const canvas = await html2canvas(el, { scale: captureScale, useCORS: true, backgroundColor: '#ffffff' })
+      // eslint-disable-next-line no-console
+      console.log('[pdf-debug] canvas', canvas.width, canvas.height)
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
       const pageWidth = pdf.internal.pageSize.getWidth()
@@ -132,6 +136,8 @@ export default function BankReconcileReport() {
       }
 
       const availableHeight = pageHeight - margin * 2
+      // eslint-disable-next-line no-console
+      console.log('[pdf-debug] img', imgWidth, imgHeight, 'page', pageWidth, pageHeight)
       if (imgHeight <= availableHeight) {
         pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight)
       } else {
