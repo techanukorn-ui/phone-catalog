@@ -112,6 +112,9 @@ export default function BankReconcileReport() {
         import('html2canvas'),
       ])
       const captureScale = 2
+      // รอให้ฟอนต์ที่ใช้ (IBM Plex Sans Thai ฯลฯ) โหลดเสร็จก่อนถ่ายภาพ
+      // ไม่งั้น html2canvas อาจถ่ายด้วยฟอนต์สำรองที่ความกว้างตัวอักษรไม่ตรงกับกรอบที่ browser จัดไว้จริง (เช่นตัวหนังสือล้นป้าย)
+      await document.fonts.ready
       // บังคับความกว้างตอนถ่ายภาพให้คงที่ (ไม่ผูกกับความกว้างจอจริงของอุปกรณ์ที่กดเซฟ)
       // เพราะบนมือถือความกว้างจอแคบกว่าเดสก์ท็อปมาก ถ่ายตามจอจริงแล้วภาพจะเล็กจิ๋วอยู่มุมกระดาษ
       // ทำผ่าน onclone (แก้ที่สำเนาที่ html2canvas สร้างไว้ถ่ายภาพโดยเฉพาะ) เพื่อไม่ให้โดน max-width ของ container แม่บีบกลับ
@@ -127,6 +130,13 @@ export default function BankReconcileReport() {
         },
       })
       const imgData = canvas.toDataURL('image/png')
+      if (new URLSearchParams(window.location.search).has('pdfdebug')) {
+        const debugImg = document.createElement('img')
+        debugImg.src = imgData
+        debugImg.style.cssText =
+          'position:fixed;top:0;left:0;z-index:9999;border:4px solid red;max-width:100vw;background:#fff'
+        document.body.appendChild(debugImg)
+      }
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
