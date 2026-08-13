@@ -510,7 +510,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
 
         <div
           ref={docRef}
-          className="mx-auto max-w-3xl rounded-2xl border border-[#E4E6EF] bg-white p-8 text-[#1B1E2B] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)] print:rounded-none print:border-0 print:p-0 print:shadow-none"
+          className="mx-auto max-w-3xl rounded-2xl border border-[#E4E6EF] bg-white p-8 text-[#1B1E2B] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)] print:max-w-none print:rounded-none print:border-0 print:p-0 print:shadow-none"
         >
           <div className="border-b-2 border-double border-black pb-3 text-center">
             <h1 className="text-lg font-semibold">ใบสำคัญรับเงิน / ใบรับซื้อสินค้า</h1>
