@@ -564,48 +564,48 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
         <div ref={mainRef} className="p-8">
           <div className="border-b-2 border-double border-black pb-3 text-center">
             <h1 className="text-lg font-semibold">ใบสำคัญรับเงิน / ใบรับซื้อสินค้า</h1>
-            <p className="text-xs tracking-wide text-[#8A8FA3]">(RECEIVING VOUCHER)</p>
+            <p className="text-xs tracking-wide text-[#4B4F5B]">(RECEIVING VOUCHER)</p>
           </div>
 
           <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 border-b border-[#E4E6EF] py-4 text-[13px]">
             <p>
-              <span className="text-[#8A8FA3]">ชื่อร้าน/ผู้รับซื้อ: </span>
+              <span className="text-[#4B4F5B]">ชื่อร้าน/ผู้รับซื้อ: </span>
               {activeVoucher.owner_full_name ?? ownerProfile?.full_name ?? owner}
             </p>
             <p>
-              <span className="text-[#8A8FA3]">เลขที่เอกสาร: </span>
+              <span className="text-[#4B4F5B]">เลขที่เอกสาร: </span>
               {activeVoucher.doc_number}
             </p>
             <p>
-              <span className="text-[#8A8FA3]">เลขประจำตัวผู้เสียภาษี: </span>
+              <span className="text-[#4B4F5B]">เลขประจำตัวผู้เสียภาษี: </span>
               {activeVoucher.owner_id_card_number ?? ownerProfile?.id_card_number ?? '-'}
             </p>
             <p>
-              <span className="text-[#8A8FA3]">วันที่ทำรายการ: </span>
+              <span className="text-[#4B4F5B]">วันที่ทำรายการ: </span>
               {formatThaiDate(selectedProduct.purchase_date ?? activeVoucher.created_at)}
             </p>
             <p>
-              <span className="text-[#8A8FA3]">ที่อยู่: </span>
+              <span className="text-[#4B4F5B]">ที่อยู่: </span>
               {activeVoucher.owner_address ?? ownerProfile?.address ?? '-'}
             </p>
             <p>
-              <span className="text-[#8A8FA3]">เบอร์โทรศัพท์: </span>
+              <span className="text-[#4B4F5B]">เบอร์โทรศัพท์: </span>
               {activeVoucher.owner_phone ?? ownerProfile?.phone ?? '-'}
             </p>
           </div>
 
           <div className="space-y-1.5 border-b border-[#E4E6EF] py-4 text-[13px]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#4B4F5B]">
               ข้อมูลผู้ขาย (Seller Details)
             </p>
             <p>
-              <span className="text-[#8A8FA3]">ชื่อ-นามสกุล ผู้ขาย: </span>
+              <span className="text-[#4B4F5B]">ชื่อ-นามสกุล ผู้ขาย: </span>
               {sellerDisplayName}
             </p>
           </div>
 
           <div className="border-b border-[#E4E6EF] py-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#4B4F5B]">
               รายการสินค้า (Item Details)
             </p>
             <table className="w-full table-fixed border-collapse text-[13px]">
@@ -623,7 +623,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                   <td className="break-words py-2 align-top">
                     {selectedProduct.model_name} {selectedProduct.capacity} {selectedProduct.color}
                     {selectedProduct.accessories && (
-                      <p className="mt-0.5 text-xs text-[#8A8FA3]">(อุปกรณ์: {selectedProduct.accessories})</p>
+                      <p className="mt-0.5 text-xs text-[#4B4F5B]">(อุปกรณ์: {selectedProduct.accessories})</p>
                     )}
                   </td>
                   <td className="break-all py-2 align-top">{selectedProduct.imei_serial || '-'}</td>
@@ -635,7 +635,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E4E6EF] py-4 text-[13px]">
             <p>
-              <span className="text-[#8A8FA3]">จำนวนเงินตัวอักษร: </span>({thaiBahtText(cost)})
+              <span className="text-[#4B4F5B]">จำนวนเงินตัวอักษร: </span>({thaiBahtText(cost)})
             </p>
             <p className="font-semibold">
               จำนวนเงินรวมทั้งสิ้น: {formatPrice(cost)}
@@ -643,7 +643,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
           </div>
 
           <div className="space-y-1.5 border-b border-[#E4E6EF] py-4 text-[13px]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#4B4F5B]">
               รายละเอียดการชำระเงิน (Payment Method)
             </p>
             <p>☑ โอนเงินผ่านธนาคาร (รายละเอียดตามสลิปที่แนบ)</p>
@@ -652,12 +652,12 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
           <div className="py-8 text-center text-[13px]">
             <p className="mb-1">ลงชื่อ.........................................ผู้รับซื้อ/ผู้จ่ายเงิน</p>
             <p>({activeVoucher.owner_full_name ?? ownerProfile?.full_name ?? owner})</p>
-            <p className="mt-1 text-[#8A8FA3]">
+            <p className="mt-1 text-[#4B4F5B]">
               วันที่ {formatThaiDateNumeric(selectedProduct.purchase_date ?? activeVoucher.created_at)}
             </p>
           </div>
 
-          <p className="border-t border-[#E4E6EF] pt-3 text-[11px] text-[#8A8FA3]">
+          <p className="border-t border-[#E4E6EF] pt-3 text-[11px] text-[#4B4F5B]">
             * เอกสารฉบับนี้จัดทำขึ้นโดยระบบ ยืนยันการชำระเงินสำเร็จผ่านหลักฐานสลิปโอนเงินธนาคารที่แนบไว้ท้ายเอกสาร
             แทนการลงลายมือชื่อสดของผู้ขาย
           </p>
@@ -665,13 +665,13 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
 
         {(selectedProduct.purchase_slip_url || selectedProduct.purchase_evidence_urls?.length > 0) && (
           <div ref={attachRef} className="border-t border-[#E4E6EF] px-8 pb-8 pt-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#4B4F5B]">
               หลักฐานแนบประกอบ (Attachments)
             </p>
             <div className="flex flex-col gap-4">
               {selectedProduct.purchase_slip_url && (
                 <div>
-                  <p className="mb-1 text-[11px] text-[#8A8FA3]">รูปสลิปโอนเงิน ttb</p>
+                  <p className="mb-1 text-[11px] text-[#4B4F5B]">รูปสลิปโอนเงิน ttb</p>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={selectedProduct.purchase_slip_url}
@@ -685,7 +685,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                 <div className="flex flex-wrap gap-4">
                   {selectedProduct.purchase_evidence_urls.map((url) => (
                     <div key={url}>
-                      <p className="mb-1 text-[11px] text-[#8A8FA3]">หลักฐานประกอบอื่นๆ</p>
+                      <p className="mb-1 text-[11px] text-[#4B4F5B]">หลักฐานประกอบอื่นๆ</p>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={url}
