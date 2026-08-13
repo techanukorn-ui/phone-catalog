@@ -394,7 +394,7 @@ export default function BankReconcileReport() {
       )}
 
       {!loading && !error && displayRows.length > 0 && (
-        <div ref={printRef} className="hidden space-y-2 print:block">
+        <div ref={printRef} className="hidden space-y-2 p-2 print:block">
           {displayRows.map((r) => (
             <div
               key={r.key}
