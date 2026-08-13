@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { OwnerProfile, Product, ReceiptVoucher } from '@/lib/types'
-import { formatPrice, formatThaiDate, nextReceiptDocNumber, thaiBahtText, toDateInputStr } from '@/lib/utils'
+import {
+  formatPrice,
+  formatThaiDate,
+  formatThaiDateNumeric,
+  nextReceiptDocNumber,
+  thaiBahtText,
+  toDateInputStr,
+} from '@/lib/utils'
 
 type Props = {
   owner: string
@@ -152,7 +159,9 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
         if (startNewPage) pdf.addPage()
 
         if (imgHeight <= pageHeight) {
-          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+          // เนื้อหาสั้นกว่าหน้ากระดาษ — จัดกึ่งกลางแนวตั้งแทนชนขอบบนแล้วเหลือที่ว่างด้านล่างเยอะ
+          const y = (pageHeight - imgHeight) / 2
+          pdf.addImage(imgData, 'PNG', 0, y, imgWidth, imgHeight)
         } else {
           // ส่วนนี้ยาวเกินหน้าเดียว — ตัดแบ่งเป็นหลายหน้า
           let heightLeft = imgHeight
@@ -578,7 +587,9 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
           <div className="py-8 text-center text-[13px]">
             <p className="mb-1">ลงชื่อ.........................................ผู้รับซื้อ/ผู้จ่ายเงิน</p>
             <p>({ownerProfile?.full_name || owner})</p>
-            <p className="mt-1 text-[#8A8FA3]">วันที่ ..... / ..... / ..........</p>
+            <p className="mt-1 text-[#8A8FA3]">
+              วันที่ {formatThaiDateNumeric(selectedProduct.purchase_date ?? activeVoucher.created_at)}
+            </p>
           </div>
 
           <p className="border-t border-[#E4E6EF] pt-3 text-[11px] text-[#8A8FA3]">

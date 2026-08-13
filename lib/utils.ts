@@ -122,6 +122,14 @@ export function formatThaiDate(dateStr: string): string {
   return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear()}`
 }
 
+/** วันที่แบบตัวเลข วัน/เดือน/ปี เช่น "13 / 08 / 2026" — ใช้เติมช่องวันที่ในเอกสารแทนเว้นว่างให้เขียนเอง */
+export function formatThaiDateNumeric(dateStr: string): string {
+  const d = new Date(dateStr)
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dd} / ${mm} / ${d.getFullYear()}`
+}
+
 const THAI_DIGIT_NAMES = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า']
 const THAI_PLACE_NAMES = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน']
 
