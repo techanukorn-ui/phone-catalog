@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { Product, ProductBank, ProductPaymentMethod } from '@/lib/types'
-import { uploadImage } from '@/lib/utils'
+import { nextReceiptSaleDocNumber, uploadImage } from '@/lib/utils'
 
 type Props = {
   product: Product
@@ -158,6 +158,37 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
         })
         .eq('id', product.id)
       if (updateError) throw updateError
+
+      // ขายผ่านโอน TTB → ออกใบเสร็จรับเงินให้อัตโนมัติเลย (ถ้ายังไม่เคยออกให้สินค้าชิ้นนี้)
+      if (product.owner && salePaymentMethod === 'โอน' && saleBank === 'TTB') {
+        const { data: existingReceipt } = await supabase
+          .from('receipt_vouchers')
+          .select('id')
+          .eq('product_id', product.id)
+          .eq('doc_type', 'ใบเสร็จรับเงิน')
+          .maybeSingle()
+        if (!existingReceipt) {
+          const { data: ownerProfile } = await supabase
+            .from('owner_profiles')
+            .select('full_name, id_card_number, address, phone')
+            .eq('owner', product.owner)
+            .maybeSingle()
+          const doc_number = await nextReceiptSaleDocNumber()
+          await supabase.from('receipt_vouchers').insert({
+            doc_number,
+            doc_type: 'ใบเสร็จรับเงิน',
+            owner: product.owner,
+            product_id: product.id,
+            method: 'TTB',
+            customer_name: buyerName.trim() || null,
+            owner_full_name: ownerProfile?.full_name ?? null,
+            owner_id_card_number: ownerProfile?.id_card_number ?? null,
+            owner_address: ownerProfile?.address ?? null,
+            owner_phone: ownerProfile?.phone ?? null,
+          })
+        }
+      }
+
       onSaved()
     } catch (err: any) {
       setError(err?.message ?? 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
