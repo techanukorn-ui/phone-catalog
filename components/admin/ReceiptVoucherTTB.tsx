@@ -558,25 +558,25 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
               รายการสินค้า (Item Details)
             </p>
-            <table className="w-full border-collapse text-[13px]">
+            <table className="w-full table-fixed border-collapse text-[13px]">
               <thead>
                 <tr className="border-b border-black/70 text-left">
-                  <th className="w-10 pb-1.5">ลำดับ</th>
-                  <th className="pb-1.5">รายการสินค้า / สเปก</th>
-                  <th className="pb-1.5">เลข IMEI / Serial</th>
+                  <th className="w-8 pb-1.5">ลำดับ</th>
+                  <th className="w-[34%] pb-1.5">รายการสินค้า / สเปก</th>
+                  <th className="w-[28%] pb-1.5">เลข IMEI / Serial</th>
                   <th className="pb-1.5 text-right">จำนวนเงิน (บาท)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td className="py-2 align-top">1.</td>
-                  <td className="py-2 align-top">
+                  <td className="break-words py-2 align-top">
                     {selectedProduct.model_name} {selectedProduct.capacity} {selectedProduct.color}
                     {selectedProduct.accessories && (
                       <p className="mt-0.5 text-xs text-[#8A8FA3]">(อุปกรณ์: {selectedProduct.accessories})</p>
                     )}
                   </td>
-                  <td className="py-2 align-top">{selectedProduct.imei_serial || '-'}</td>
+                  <td className="break-all py-2 align-top">{selectedProduct.imei_serial || '-'}</td>
                   <td className="py-2 text-right align-top">{cost.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</td>
                 </tr>
               </tbody>
