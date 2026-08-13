@@ -615,7 +615,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#8A8FA3]">
                 หลักฐานแนบประกอบ (Attachments)
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col gap-4">
                 {selectedProduct.purchase_slip_url && (
                   <div className="print:break-inside-avoid">
                     <p className="mb-1 text-[11px] text-[#8A8FA3]">รูปสลิปโอนเงิน ttb</p>
