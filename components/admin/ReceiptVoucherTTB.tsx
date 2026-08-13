@@ -159,8 +159,10 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
         if (startNewPage) pdf.addPage()
 
         if (imgHeight <= pageHeight) {
-          // เนื้อหาสั้นกว่าหน้ากระดาษ — จัดกึ่งกลางแนวตั้งแทนชนขอบบนแล้วเหลือที่ว่างด้านล่างเยอะ
-          const y = (pageHeight - imgHeight) / 2
+          // เนื้อหาสั้นกว่าหน้ากระดาษ — เว้นระยะขอบบนคงที่พอประมาณแบบเอกสารทั่วไป (ไม่ชนขอบเป๊ะ ไม่กึ่งกลางเป๊ะ)
+          // ที่เหลือปล่อยเป็นที่ว่างด้านล่างแทน
+          const topMargin = 40
+          const y = Math.min(topMargin, (pageHeight - imgHeight) / 2)
           pdf.addImage(imgData, 'PNG', 0, y, imgWidth, imgHeight)
         } else {
           // ส่วนนี้ยาวเกินหน้าเดียว — ตัดแบ่งเป็นหลายหน้า
