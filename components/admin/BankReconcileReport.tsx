@@ -106,18 +106,26 @@ export default function BankReconcileReport() {
     const prevDisplay = el.style.display
     try {
       // การ์ดนี้ปกติซ่อนไว้ (แสดงเฉพาะตอนพิมพ์) — เปิดให้แสดงชั่วคราวเพื่อถ่ายภาพ แล้วซ่อนกลับหลังเสร็จ
-      // ไม่ล็อกความกว้างหน้าจอ — ถ่ายภาพตามความกว้างจริงที่เห็นบนอุปกรณ์ แล้วค่อยจัดวางลงหน้ากระดาษแบบคงสัดส่วน
       el.style.display = 'block'
       const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
         import('jspdf'),
         import('html2canvas'),
       ])
       const captureScale = 2
-      // eslint-disable-next-line no-console
-      console.log('[pdf-debug] el rect before capture', el.getBoundingClientRect(), 'window', window.innerWidth)
-      const canvas = await html2canvas(el, { scale: captureScale, useCORS: true, backgroundColor: '#ffffff' })
-      // eslint-disable-next-line no-console
-      console.log('[pdf-debug] canvas', canvas.width, canvas.height)
+      // บังคับความกว้างตอนถ่ายภาพให้คงที่ (ไม่ผูกกับความกว้างจอจริงของอุปกรณ์ที่กดเซฟ)
+      // เพราะบนมือถือความกว้างจอแคบกว่าเดสก์ท็อปมาก ถ่ายตามจอจริงแล้วภาพจะเล็กจิ๋วอยู่มุมกระดาษ
+      // ทำผ่าน onclone (แก้ที่สำเนาที่ html2canvas สร้างไว้ถ่ายภาพโดยเฉพาะ) เพื่อไม่ให้โดน max-width ของ container แม่บีบกลับ
+      const PRINT_WIDTH = 720
+      const canvas = await html2canvas(el, {
+        scale: captureScale,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: PRINT_WIDTH + 200,
+        onclone: (_doc, clonedEl) => {
+          clonedEl.style.width = `${PRINT_WIDTH}px`
+          clonedEl.style.maxWidth = `${PRINT_WIDTH}px`
+        },
+      })
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
       const pageWidth = pdf.internal.pageSize.getWidth()
@@ -136,8 +144,6 @@ export default function BankReconcileReport() {
       }
 
       const availableHeight = pageHeight - margin * 2
-      // eslint-disable-next-line no-console
-      console.log('[pdf-debug] img', imgWidth, imgHeight, 'page', pageWidth, pageHeight)
       if (imgHeight <= availableHeight) {
         pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight)
       } else {
