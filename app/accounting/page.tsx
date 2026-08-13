@@ -18,7 +18,7 @@ const PERSONAL_INFO = 'ข้อมูลส่วนตัว' as const
 const SECTIONS = [PERSONAL_INFO, ...DOC_TYPES] as const
 type Section = (typeof SECTIONS)[number]
 
-const PAYMENT_METHODS = ['TTB', 'เงินสด', 'อื่นๆ'] as const
+const PAYMENT_METHODS = ['TTB'] as const
 type DocPaymentMethod = (typeof PAYMENT_METHODS)[number]
 
 function ProfileIcon() {
