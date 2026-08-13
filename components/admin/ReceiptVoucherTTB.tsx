@@ -628,18 +628,22 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                     />
                   </div>
                 )}
-                {selectedProduct.purchase_evidence_urls?.map((url) => (
-                  <div key={url} className="print:break-inside-avoid">
-                    <p className="mb-1 text-[11px] text-[#8A8FA3]">หลักฐานประกอบอื่นๆ</p>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={url}
-                      alt="หลักฐานการซื้อ"
-                      onClick={() => setLightboxUrl(url)}
-                      className="h-auto w-56 max-h-72 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-contain print:cursor-default"
-                    />
+                {selectedProduct.purchase_evidence_urls?.length > 0 && (
+                  <div className="flex flex-wrap gap-4">
+                    {selectedProduct.purchase_evidence_urls.map((url) => (
+                      <div key={url} className="print:break-inside-avoid">
+                        <p className="mb-1 text-[11px] text-[#8A8FA3]">หลักฐานประกอบอื่นๆ</p>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt="หลักฐานการซื้อ"
+                          onClick={() => setLightboxUrl(url)}
+                          className="h-auto w-56 max-h-72 cursor-zoom-in rounded-lg border border-[#E4E6EF] object-contain print:cursor-default"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
