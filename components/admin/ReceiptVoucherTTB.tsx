@@ -47,7 +47,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
-  const [pendingAction, setPendingAction] = useState<'print' | 'save' | null>(null)
+  const [pendingAction, setPendingAction] = useState<'save' | null>(null)
   const [savingPdf, setSavingPdf] = useState(false)
   const docRef = useRef<HTMLDivElement>(null)
 
@@ -96,7 +96,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     }
   }, [owner])
 
-  function openProduct(p: Product, action?: 'print' | 'save') {
+  function openProduct(p: Product, action?: 'save') {
     setSelectedProduct(p)
     setError(null)
     const existing = vouchers[p.id]
@@ -186,28 +186,10 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
     }
   }
 
-  async function handlePrint() {
-    // รูปหลักฐานแนบโหลดจากเน็ตแบบ async — ถ้าเรียก window.print() ทันทีที่สลับมาหน้านี้
-    // (เช่นกดปุ่ม "ปริ้น" จากรายการ) รูปอาจยังโหลดไม่เสร็จ พิมพ์ออกมาแล้วรูปเลยหายไปเลย
-    // ใช้ img.decode() แทนแค่รอ event "load" เพราะ decode() รับประกันว่าข้อมูลภาพถอดรหัสพร้อมวาดแล้วจริงๆ
-    // (ไม่ใช่แค่เริ่มโหลดเสร็จ) แล้วรอเพิ่มอีก 2 เฟรมให้เบราว์เซอร์ได้ paint ภาพขึ้นจริงก่อนค่อยสั่งพิมพ์
-    const imgs = docRef.current ? Array.from(docRef.current.querySelectorAll('img')) : []
-    await Promise.all(
-      imgs.map((img) => (img.decode ? img.decode().catch(() => undefined) : Promise.resolve()))
-    )
-    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
-    window.print()
-  }
-
   useEffect(() => {
     if (view !== 'print' || !pendingAction) return
-    const action = pendingAction
     setPendingAction(null)
-    if (action === 'print') {
-      handlePrint()
-    } else {
-      handleSavePdf()
-    }
+    handleSavePdf()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, pendingAction])
 
@@ -369,13 +351,6 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                       >
                         เซฟ
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => openProduct(p, 'print')}
-                        className="rounded-lg bg-[#3B5BFF] px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
-                      >
-                        ปริ้น
-                      </button>
                     </div>
                   ) : (
                     <button
@@ -507,16 +482,9 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
               type="button"
               onClick={handleSavePdf}
               disabled={savingPdf}
-              className="rounded-lg border border-[#E4E6EF] px-4 py-2.5 text-sm font-medium text-[#1B1E2B] transition-colors hover:bg-[#F3F4F8] disabled:opacity-60"
+              className="rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
             >
               {savingPdf ? 'กำลังเซฟ…' : 'เซฟ'}
-            </button>
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="rounded-lg bg-[#3B5BFF] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            >
-              ปริ้น
             </button>
           </div>
         </div>
