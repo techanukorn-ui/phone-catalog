@@ -226,6 +226,7 @@ alter table products drop constraint if exists products_sale_bank_check;
 alter table products add constraint products_sale_bank_check
   check (sale_bank in ('TTB','อื่นๆ'));
 alter table products add column if not exists sale_slip_url text;
+alter table products add column if not exists buyer_name text;
 
 -- IMEI/Serial Number, ชื่อ-นามสกุลผู้ขาย, และรูปหลักฐานการซื้อเพิ่มเติม (ไม่บังคับกรอก) — กรอกตอนเพิ่มสินค้า
 alter table products add column if not exists imei_serial text;
@@ -267,6 +268,7 @@ create table if not exists receipt_vouchers (
   product_id uuid not null references products(id) on delete restrict,
   method text not null check (method in ('TTB','เงินสด','อื่นๆ')),
   seller_name text,
+  customer_name text,
   seller_account_number text,
   transfer_time text,
   slip_reference text,

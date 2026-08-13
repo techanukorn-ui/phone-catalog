@@ -61,6 +61,7 @@ export interface Product {
   sale_payment_method: ProductPaymentMethod | null
   sale_bank: ProductBank | null
   sale_slip_url: string | null
+  buyer_name: string | null
   net_profit: number | null
   dividend_wallet: number | null
   dividend_bow: number | null
@@ -189,6 +190,7 @@ export interface ReceiptVoucher {
   product_id: string
   method: ReceiptMethod
   seller_name: string | null
+  customer_name: string | null
   seller_account_number: string | null
   transfer_time: string | null
   slip_reference: string | null

@@ -66,6 +66,7 @@ function DividendField({
 
 export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
   const [soldAt, setSoldAt] = useState(product.sold_at ?? todayStr())
+  const [buyerName, setBuyerName] = useState(product.buyer_name ?? '')
   const [costOther, setCostOther] = useState(product.cost_other != null ? String(product.cost_other) : '')
   const [salePrice, setSalePrice] = useState(product.sale_price != null ? String(product.sale_price) : '')
   const [salePaymentMethod, setSalePaymentMethod] = useState<ProductPaymentMethod>(
@@ -148,6 +149,7 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           sale_payment_method: salePaymentMethod,
           sale_bank: salePaymentMethod === 'โอน' ? saleBank || null : null,
           sale_slip_url: slipUrl,
+          buyer_name: buyerName.trim() || null,
           dividend_wallet: divWallet ? parseNum(divWallet) : null,
           dividend_bow: divBow ? parseNum(divBow) : null,
           dividend_magic: divMagic ? parseNum(divMagic) : null,
@@ -176,6 +178,16 @@ export default function MarkSoldForm({ product, onSaved, onCancel }: Props) {
           type="date"
           value={soldAt}
           onChange={(e) => setSoldAt(e.target.value)}
+          className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
+        />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block font-mono text-xs uppercase tracking-wide text-ink/60">ชื่อ-นามสกุล ลูกค้า</span>
+        <input
+          value={buyerName}
+          onChange={(e) => setBuyerName(e.target.value)}
+          placeholder="ไม่ระบุ — กรอกทีหลังได้ตอนออกใบเสร็จ"
           className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
         />
       </label>

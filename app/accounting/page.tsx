@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import LoginForm from '@/components/admin/LoginForm'
 import OwnerProfileForm from '@/components/admin/OwnerProfileForm'
 import ReceiptVoucherTTB from '@/components/admin/ReceiptVoucherTTB'
+import ReceiptSaleTTB from '@/components/admin/ReceiptSaleTTB'
 
 const ACCOUNTING_OWNERS = ['วอลเล่', 'โบ๊ท', 'โบว์'] as const
 type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
@@ -255,6 +256,8 @@ export default function AccountingPage() {
             <OwnerProfileForm owner={activeOwner} />
           ) : activeSection === 'ใบสำคัญรับเงิน' && activeMethod === 'TTB' ? (
             <ReceiptVoucherTTB owner={activeOwner} />
+          ) : activeSection === 'ใบเสร็จรับเงิน' && activeMethod === 'TTB' ? (
+            <ReceiptSaleTTB owner={activeOwner} />
           ) : (
           <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-[#E4E6EF] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)]">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF1FF] text-[#3B5BFF]">
