@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { OWNERS } from '@/lib/types'
 import type { Product, ProductOwner } from '@/lib/types'
@@ -41,8 +41,6 @@ export default function BankReconcileReport() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
-  const [savingPdf, setSavingPdf] = useState(false)
-  const printRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -97,79 +95,6 @@ export default function BankReconcileReport() {
   const totalOut = displayRows.reduce((sum, r) => sum + (r.buy?.amount ?? 0), 0)
   const totalIn = displayRows.reduce((sum, r) => sum + (r.sell?.amount ?? 0), 0)
   const net = totalIn - totalOut
-
-  async function handleSavePdf() {
-    const el = printRef.current
-    if (!el) return
-    setSavingPdf(true)
-    setError(null)
-    const prevDisplay = el.style.display
-    try {
-      // การ์ดนี้ปกติซ่อนไว้ (แสดงเฉพาะตอนพิมพ์) — เปิดให้แสดงชั่วคราวเพื่อถ่ายภาพ แล้วซ่อนกลับหลังเสร็จ
-      el.style.display = 'block'
-      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import('jspdf'),
-        import('html2canvas'),
-      ])
-      const captureScale = 2
-      // รอให้ฟอนต์ที่ใช้ (IBM Plex Sans Thai ฯลฯ) โหลดเสร็จก่อนถ่ายภาพ
-      // ไม่งั้น html2canvas อาจถ่ายด้วยฟอนต์สำรองที่ความกว้างตัวอักษรไม่ตรงกับกรอบที่ browser จัดไว้จริง (เช่นตัวหนังสือล้นป้าย)
-      await document.fonts.ready
-      // บังคับความกว้างตอนถ่ายภาพให้คงที่ (ไม่ผูกกับความกว้างจอจริงของอุปกรณ์ที่กดเซฟ)
-      // เพราะบนมือถือความกว้างจอแคบกว่าเดสก์ท็อปมาก ถ่ายตามจอจริงแล้วภาพจะเล็กจิ๋วอยู่มุมกระดาษ
-      // ทำผ่าน onclone (แก้ที่สำเนาที่ html2canvas สร้างไว้ถ่ายภาพโดยเฉพาะ) เพื่อไม่ให้โดน max-width ของ container แม่บีบกลับ
-      const PRINT_WIDTH = 720
-      const canvas = await html2canvas(el, {
-        scale: captureScale,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: PRINT_WIDTH + 200,
-        onclone: (_doc, clonedEl) => {
-          clonedEl.style.width = `${PRINT_WIDTH}px`
-          clonedEl.style.maxWidth = `${PRINT_WIDTH}px`
-        },
-      })
-      const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
-      const pageWidth = pdf.internal.pageSize.getWidth()
-      const pageHeight = pdf.internal.pageSize.getHeight()
-      const margin = 24
-
-      // แปลงขนาดภาพจาก px จริงเป็น pt ตามสัดส่วนเดิม (ไม่ยืดเต็มความกว้างหน้ากระดาษ)
-      // แล้วค่อยย่อลงถ้ากว้างเกินพื้นที่พิมพ์ ป้องกันเนื้อหาน้อยแล้วโดนขยายจนดูเป็นแถบว่างเปล่า
-      let imgWidth = (canvas.width / captureScale) * 0.75
-      let imgHeight = (canvas.height / captureScale) * 0.75
-      const maxWidth = pageWidth - margin * 2
-      if (imgWidth > maxWidth) {
-        const ratio = maxWidth / imgWidth
-        imgWidth = maxWidth
-        imgHeight *= ratio
-      }
-
-      const availableHeight = pageHeight - margin * 2
-      if (imgHeight <= availableHeight) {
-        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight)
-      } else {
-        let heightLeft = imgHeight
-        let offset = 0
-        pdf.addImage(imgData, 'PNG', margin, margin - offset, imgWidth, imgHeight)
-        heightLeft -= availableHeight
-        while (heightLeft > 0) {
-          offset += availableHeight
-          pdf.addPage()
-          pdf.addImage(imgData, 'PNG', margin, margin - offset, imgWidth, imgHeight)
-          heightLeft -= availableHeight
-        }
-      }
-
-      pdf.save(`หลักฐานการซื้อขาย-TTB-${from}-ถึง-${to}.pdf`)
-    } catch (err: any) {
-      setError('บันทึก PDF ไม่สำเร็จ ลองใช้ปุ่มพิมพ์แล้วเลือก "บันทึกเป็น PDF" แทนได้')
-    } finally {
-      el.style.display = prevDisplay
-      setSavingPdf(false)
-    }
-  }
 
   return (
     <div className="space-y-3">
@@ -265,23 +190,13 @@ export default function BankReconcileReport() {
       )}
 
       {!loading && !error && displayRows.length > 0 && (
-        <div className="flex gap-2 print:hidden">
-          <button
-            type="button"
-            onClick={handleSavePdf}
-            disabled={savingPdf}
-            className="flex-1 rounded-tag border border-teal px-4 py-2.5 font-mono text-sm font-semibold text-teal disabled:opacity-60"
-          >
-            {savingPdf ? 'กำลังเซฟ…' : 'เซฟ'}
-          </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="flex-1 rounded-tag bg-teal px-4 py-2.5 font-mono text-sm font-semibold text-white"
-          >
-            พิมพ์
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="w-full rounded-tag bg-teal px-4 py-2.5 font-mono text-sm font-semibold text-white print:hidden"
+        >
+          พิมพ์ / บันทึกเป็น PDF
+        </button>
       )}
 
       {!loading && !error && displayRows.length === 0 && (
@@ -390,7 +305,7 @@ export default function BankReconcileReport() {
       )}
 
       {!loading && !error && displayRows.length > 0 && (
-        <div ref={printRef} className="hidden space-y-2 p-2 print:block">
+        <div className="hidden space-y-2 p-2 print:block">
           {displayRows.map((r) => (
             <div
               key={r.key}
