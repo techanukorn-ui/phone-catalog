@@ -18,6 +18,7 @@ import {
   generateProductCode,
   getNextCategorySortOrder,
   getNextSortOrder,
+  nextReceiptDocNumber,
   uploadImage,
 } from '@/lib/utils'
 
@@ -252,25 +253,32 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         const sort_order = await getNextSortOrder()
         const category_sort_order = await getNextCategorySortOrder(fields.category)
         const manualCode = fields.product_code.trim().toUpperCase()
+        let newProductId: string | null = null
         if (manualCode) {
-          const { error: insertError } = await supabase
+          const { data: inserted, error: insertError } = await supabase
             .from('products')
             .insert([{ ...payload, product_code: manualCode, sort_order, category_sort_order }])
+            .select('id')
+            .single()
           if (insertError) {
             if (insertError.code === '23505') {
               throw new Error(`รหัสสินค้า "${manualCode}" ถูกใช้ไปแล้ว กรุณาใช้รหัสอื่น`)
             }
             throw insertError
           }
+          newProductId = inserted.id
         } else {
           let attempt = 0
           let lastError: any = null
           while (attempt < 5) {
             const product_code = generateProductCode(fields.category)
-            const { error: insertError } = await supabase
+            const { data: inserted, error: insertError } = await supabase
               .from('products')
               .insert([{ ...payload, product_code, sort_order, category_sort_order }])
+              .select('id')
+              .single()
             if (!insertError) {
+              newProductId = inserted.id
               lastError = null
               break
             }
@@ -283,6 +291,19 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
             attempt++
           }
           if (lastError) throw lastError
+        }
+
+        // ซื้อผ่านโอน TTB → ออกใบสำคัญรับเงินให้อัตโนมัติเลย ไม่ต้องรอกดสร้างเองทีหลังในหน้าบัญชี/ภาษี
+        if (newProductId && payload.purchase_payment_method === 'โอน' && payload.purchase_bank === 'TTB') {
+          const doc_number = await nextReceiptDocNumber()
+          await supabase.from('receipt_vouchers').insert({
+            doc_number,
+            doc_type: 'ใบสำคัญรับเงิน',
+            owner: payload.owner,
+            product_id: newProductId,
+            method: 'TTB',
+            seller_name: payload.seller_name,
+          })
         }
       } else if (initialProduct) {
         const newCode = fields.product_code.trim().toUpperCase()

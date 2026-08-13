@@ -43,6 +43,23 @@ export async function getNextCategorySortOrder(category: ProductCategory): Promi
   return (data?.category_sort_order ?? 0) - 1
 }
 
+function receiptDocNumberPrefix(): string {
+  const now = new Date()
+  return `RC-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
+/** เลขที่เอกสารถัดไปของใบสำคัญรับเงิน (รูปแบบ RC-YYYYMM-NNN นับใหม่ทุกเดือน) */
+export async function nextReceiptDocNumber(): Promise<string> {
+  const prefix = receiptDocNumberPrefix()
+  const { count } = await supabase
+    .from('receipt_vouchers')
+    .select('id', { count: 'exact', head: true })
+    .eq('doc_type', 'ใบสำคัญรับเงิน')
+    .ilike('doc_number', `${prefix}-%`)
+  const next = (count ?? 0) + 1
+  return `${prefix}-${String(next).padStart(3, '0')}`
+}
+
 /** จำนวนวันที่ค้างสต็อกถึงจะถือว่า "ค้างนาน" (ใช้ทั้งในรายงานและป้ายเตือนที่หน้าสต็อก) */
 export const STAGNANT_DAYS = 15
 

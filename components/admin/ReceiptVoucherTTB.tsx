@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { OwnerProfile, Product, ReceiptVoucher } from '@/lib/types'
-import { formatPrice, formatThaiDate, thaiBahtText, toDateInputStr } from '@/lib/utils'
+import { formatPrice, formatThaiDate, nextReceiptDocNumber, thaiBahtText, toDateInputStr } from '@/lib/utils'
 
 type Props = {
   owner: string
@@ -11,26 +11,10 @@ type Props = {
 
 type View = 'list' | 'form' | 'print'
 
-function docNumberPrefix(): string {
-  const now = new Date()
-  return `RC-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`
-}
-
 function defaultFrom(): string {
   const d = new Date()
   d.setMonth(d.getMonth() - 3)
   return toDateInputStr(d)
-}
-
-async function nextDocNumber(): Promise<string> {
-  const prefix = docNumberPrefix()
-  const { count } = await supabase
-    .from('receipt_vouchers')
-    .select('id', { count: 'exact', head: true })
-    .eq('doc_type', 'ใบสำคัญรับเงิน')
-    .ilike('doc_number', `${prefix}-%`)
-  const next = (count ?? 0) + 1
-  return `${prefix}-${String(next).padStart(3, '0')}`
 }
 
 export default function ReceiptVoucherTTB({ owner }: Props) {
@@ -215,7 +199,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
         setActiveVoucher(voucher)
         setView('print')
       } else {
-        const doc_number = await nextDocNumber()
+        const doc_number = await nextReceiptDocNumber()
         const { data, error: insertError } = await supabase
           .from('receipt_vouchers')
           .insert({
