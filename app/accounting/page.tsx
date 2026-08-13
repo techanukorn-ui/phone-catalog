@@ -197,14 +197,14 @@ export default function AccountingPage() {
                         type="button"
                         onClick={() => selectMethod(d, m)}
                         className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] transition-colors ${
-                          activeMethod === m
+                          activeSection === d && activeMethod === m
                             ? 'bg-[#3B5BFF]/15 font-medium text-[#7C93FF]'
                             : 'text-slate-400 hover:text-slate-200'
                         }`}
                       >
                         <span
                           className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                            activeMethod === m ? 'bg-[#7C93FF]' : 'bg-slate-600'
+                            activeSection === d && activeMethod === m ? 'bg-[#7C93FF]' : 'bg-slate-600'
                           }`}
                         />
                         {m}
