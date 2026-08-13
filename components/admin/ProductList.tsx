@@ -176,11 +176,13 @@ export default function ProductList({ status, openProductId, onOpenedProduct }: 
   }
 
   if (products.length === 0) {
-    return (
-      <p className="py-8 text-center font-mono text-sm text-ink/50">
-        {status === 'พร้อมขาย' ? 'ยังไม่มีสินค้าพร้อมขาย' : 'ยังไม่มีสินค้าที่ขายแล้ว'}
-      </p>
-    )
+    const emptyMessage =
+      status === 'พร้อมขาย'
+        ? 'ยังไม่มีสินค้าพร้อมขาย'
+        : status === 'ไม่พร้อมขาย'
+          ? 'ยังไม่มีสินค้าที่ตั้งเป็นไม่พร้อมขาย'
+          : 'ยังไม่มีสินค้าที่ขายแล้ว'
+    return <p className="py-8 text-center font-mono text-sm text-ink/50">{emptyMessage}</p>
   }
 
   const activeId = editingId ?? sellingId
@@ -261,6 +263,14 @@ export default function ProductList({ status, openProductId, onOpenedProduct }: 
                     {togglingId === product.id ? 'กำลังบันทึก…' : 'คืนเป็นพร้อมขาย'}
                   </button>
                 </>
+              ) : product.status === 'ไม่พร้อมขาย' ? (
+                <button
+                  onClick={() => handleRevertToAvailable(product)}
+                  disabled={togglingId === product.id}
+                  className="rounded-tag border border-teal px-3 py-1.5 font-mono text-xs text-teal-dark disabled:opacity-50"
+                >
+                  {togglingId === product.id ? 'กำลังบันทึก…' : 'ตั้งเป็นพร้อมขาย'}
+                </button>
               ) : (
                 <button
                   onClick={() => setSellingId(product.id)}

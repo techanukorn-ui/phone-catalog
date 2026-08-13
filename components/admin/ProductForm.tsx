@@ -458,6 +458,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
             className="w-full rounded-tag border border-line bg-paper px-3 py-2 text-base"
           >
             <option value="พร้อมขาย">พร้อมขาย</option>
+            <option value="ไม่พร้อมขาย">ไม่พร้อมขาย</option>
             <option value="ขายแล้ว">ขายแล้ว</option>
           </select>
         </label>

@@ -12,11 +12,12 @@ import ReportSection from '@/components/admin/ReportSection'
 import OverviewDashboard from '@/components/admin/OverviewDashboard'
 import LoginForm from '@/components/admin/LoginForm'
 
-type Tab = 'overview' | 'settings' | 'theme' | 'add' | 'stock-available' | 'stock-sold' | 'report'
+type Tab = 'overview' | 'settings' | 'theme' | 'add' | 'stock-available' | 'stock-unavailable' | 'stock-sold' | 'report'
 
 const TABS: { key: Tab; shortLabel: string; icon: string }[] = [
   { key: 'overview', shortLabel: 'ภาพรวม', icon: '📊' },
   { key: 'stock-available', shortLabel: 'พร้อมขาย', icon: '📦' },
+  { key: 'stock-unavailable', shortLabel: 'ไม่พร้อมขาย', icon: '🚫' },
   { key: 'stock-sold', shortLabel: 'ขายแล้ว', icon: '✅' },
   { key: 'add', shortLabel: 'เพิ่มสินค้า', icon: '➕' },
   { key: 'report', shortLabel: 'รายงาน', icon: '📈' },
@@ -125,6 +126,8 @@ export default function AdminManagePage() {
             onOpenedProduct={() => setJumpToProductId(null)}
           />
         )}
+
+        {tab === 'stock-unavailable' && <ProductList key={refreshKey} status="ไม่พร้อมขาย" />}
 
         {tab === 'stock-sold' && <ProductList key={refreshKey} status="ขายแล้ว" />}
 
