@@ -617,7 +617,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
               </p>
               <div className="flex flex-wrap gap-4">
                 {selectedProduct.purchase_slip_url && (
-                  <div>
+                  <div className="print:break-inside-avoid">
                     <p className="mb-1 text-[11px] text-[#8A8FA3]">รูปสลิปโอนเงิน ttb</p>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -629,7 +629,7 @@ export default function ReceiptVoucherTTB({ owner }: Props) {
                   </div>
                 )}
                 {selectedProduct.purchase_evidence_urls?.map((url) => (
-                  <div key={url}>
+                  <div key={url} className="print:break-inside-avoid">
                     <p className="mb-1 text-[11px] text-[#8A8FA3]">หลักฐานประกอบอื่นๆ</p>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
