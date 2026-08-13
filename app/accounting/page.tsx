@@ -79,13 +79,19 @@ export default function AccountingPage() {
   const [activeMethod, setActiveMethod] = useState<DocPaymentMethod>(PAYMENT_METHODS[0])
 
   function toggleDoc(d: DocType) {
+    // กดหัวข้อใหญ่ = แค่กาง/ยุบหัวข้อย่อยเท่านั้น ไม่เปลี่ยนหน้าที่กำลังดูอยู่
+    // ต้องกดเลือกหัวข้อย่อย (เช่น TTB) เองถึงจะเปลี่ยนหน้า
     if (expandedDocs.includes(d)) {
       // ยุบเฉพาะหัวข้อที่กด ไม่ไปยุ่งกับหัวข้อใหญ่อื่นที่เปิดค้างอยู่
       setExpandedDocs((prev) => prev.filter((x) => x !== d))
     } else {
       setExpandedDocs((prev) => [...prev, d])
-      setActiveSection(d)
     }
+  }
+
+  function selectMethod(d: DocType, m: DocPaymentMethod) {
+    setActiveSection(d)
+    setActiveMethod(m)
   }
 
   useEffect(() => {
@@ -189,7 +195,7 @@ export default function AccountingPage() {
                       <button
                         key={m}
                         type="button"
-                        onClick={() => setActiveMethod(m)}
+                        onClick={() => selectMethod(d, m)}
                         className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] transition-colors ${
                           activeMethod === m
                             ? 'bg-[#3B5BFF]/15 font-medium text-[#7C93FF]'
