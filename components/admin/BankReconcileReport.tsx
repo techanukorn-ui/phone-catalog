@@ -127,13 +127,6 @@ export default function BankReconcileReport() {
         },
       })
       const imgData = canvas.toDataURL('image/png')
-      if (new URLSearchParams(window.location.search).has('pdfdebug')) {
-        const debugImg = document.createElement('img')
-        debugImg.src = imgData
-        debugImg.style.cssText =
-          'position:fixed;top:0;left:0;z-index:9999;border:4px solid red;max-width:100vw;background:#fff'
-        document.body.appendChild(debugImg)
-      }
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
