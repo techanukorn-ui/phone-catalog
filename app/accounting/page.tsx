@@ -75,14 +75,15 @@ export default function AccountingPage() {
   const [checkingSession, setCheckingSession] = useState(true)
   const [activeOwner, setActiveOwner] = useState<AccountingOwner>(ACCOUNTING_OWNERS[0])
   const [activeSection, setActiveSection] = useState<Section>(PERSONAL_INFO)
-  const [expandedDoc, setExpandedDoc] = useState<DocType | null>(null)
+  const [expandedDocs, setExpandedDocs] = useState<DocType[]>([])
   const [activeMethod, setActiveMethod] = useState<DocPaymentMethod>(PAYMENT_METHODS[0])
 
   function toggleDoc(d: DocType) {
-    if (expandedDoc === d) {
-      setExpandedDoc(null)
+    if (expandedDocs.includes(d)) {
+      // ยุบเฉพาะหัวข้อที่กด ไม่ไปยุ่งกับหัวข้อใหญ่อื่นที่เปิดค้างอยู่
+      setExpandedDocs((prev) => prev.filter((x) => x !== d))
     } else {
-      setExpandedDoc(d)
+      setExpandedDocs((prev) => [...prev, d])
       setActiveSection(d)
     }
   }
@@ -149,10 +150,7 @@ export default function AccountingPage() {
           <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">ทั่วไป</p>
           <button
             type="button"
-            onClick={() => {
-              setActiveSection(PERSONAL_INFO)
-              setExpandedDoc(null)
-            }}
+            onClick={() => setActiveSection(PERSONAL_INFO)}
             className={`mb-2 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
               activeSection === PERSONAL_INFO
                 ? 'bg-white/[0.08] text-white'
@@ -168,7 +166,7 @@ export default function AccountingPage() {
           <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">เอกสาร</p>
           {DOC_TYPES.map((d) => {
             const isSelected = activeSection === d
-            const isOpen = expandedDoc === d
+            const isOpen = expandedDocs.includes(d)
             return (
               <div key={d} className="mb-0.5">
                 <button
