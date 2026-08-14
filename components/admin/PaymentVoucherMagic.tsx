@@ -123,6 +123,24 @@ export default function PaymentVoucherMagic({ owner }: Props) {
     }
   }
 
+  async function handleCancel() {
+    if (!existingVoucher) return
+    if (!window.confirm(`ยกเลิกใบสำคัญจ่าย ${existingVoucher.doc_number} ใช่หรือไม่? เครื่องในใบนี้จะกลับไปให้เลือกออกเอกสารใหม่ได้อีกครั้ง`)) {
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      const { error: deleteError } = await supabase.from('payment_vouchers').delete().eq('id', existingVoucher.id)
+      if (deleteError) throw deleteError
+      setVouchers((prev) => prev.filter((v) => v.id !== existingVoucher.id))
+    } catch (err: any) {
+      setError(err?.message ?? 'ยกเลิกเอกสารไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-[#E4E6EF] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)]">
@@ -231,7 +249,17 @@ export default function PaymentVoucherMagic({ owner }: Props) {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex justify-end print:hidden">
+          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-600 print:hidden">{error}</p>}
+
+          <div className="flex justify-end gap-2 print:hidden">
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={saving}
+              className="rounded-lg border border-red-200 px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
+            >
+              {saving ? 'กำลังยกเลิก…' : 'ยกเลิกเอกสาร'}
+            </button>
             <button
               type="button"
               onClick={() => window.print()}
