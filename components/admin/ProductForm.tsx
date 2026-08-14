@@ -185,6 +185,10 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
       setError('กรุณาเลือกวันที่ซื้อเครื่อง')
       return
     }
+    if (mode === 'add' && !fields.product_code.trim() && !fields.owner) {
+      setError('กรุณาเลือกเจ้าของทุนก่อน เพื่อออกรหัสสินค้าอัตโนมัติ (หรือกรอกรหัสเอง)')
+      return
+    }
     if (fields.purchase_payment_method === 'โอน' && !fields.purchase_bank) {
       setError('กรุณาเลือกธนาคาร')
       return
@@ -271,7 +275,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
           let attempt = 0
           let lastError: any = null
           while (attempt < 5) {
-            const product_code = generateProductCode(fields.category)
+            const product_code = generateProductCode(fields.owner as ProductOwner)
             const { data: inserted, error: insertError } = await supabase
               .from('products')
               .insert([{ ...payload, product_code, sort_order, category_sort_order }])
@@ -487,7 +491,7 @@ export default function ProductForm({ mode, initialProduct, onSaved, onCancel }:
         <input
           value={fields.product_code}
           onChange={(e) => updateField('product_code', e.target.value)}
-          placeholder="เช่น IP-7F3K9A"
+          placeholder="เช่น V-7F3K9A (เว้นว่าง = สุ่มตามตัวหน้าเจ้าของทุน)"
           className="w-full rounded-tag border border-line bg-paper px-3 py-2 font-mono text-base uppercase"
         />
       </label>

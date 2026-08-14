@@ -1,23 +1,22 @@
 import { supabase } from './supabaseClient'
-import type { ProductCategory } from './types'
+import type { ProductCategory, ProductOwner } from './types'
 
-const CODE_PREFIX: Record<ProductCategory, string> = {
-  IPHONE: 'IP',
-  IPAD: 'PD',
-  MACBOOK: 'MC',
-  'APPLE PENCIL': 'AP',
-  'APPLE WATCH': 'AW',
-  อื่นๆ: 'OT',
+// ตัวหน้ารหัสสินค้าบอกเจ้าของทุน ใช้ดูด้วยตาว่าใครเป็นเจ้าของเครื่องนี้
+const OWNER_CODE_PREFIX: Record<ProductOwner, string> = {
+  วอลเล่: 'V',
+  โบ๊ท: 'BO',
+  โบว์: 'B',
+  น้าเหน่ง: 'M',
 }
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // ตัดตัวที่อ่านสับสน (0,O,1,I)
 
-export function generateProductCode(category: ProductCategory): string {
+export function generateProductCode(owner: ProductOwner): string {
   let random = ''
   for (let i = 0; i < 6; i++) {
     random += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]
   }
-  return `${CODE_PREFIX[category]}-${random}`
+  return `${OWNER_CODE_PREFIX[owner]}-${random}`
 }
 
 /** ค่า sort_order สำหรับสินค้าใหม่ ให้ขึ้นแสดงบนสุดเสมอ (เหมือนพฤติกรรมเดิมของ "ล่าสุด") */
