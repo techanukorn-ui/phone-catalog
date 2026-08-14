@@ -68,6 +68,17 @@ async function nextDocNumberFor(codePrefix: string, docType: string): Promise<st
   return `${prefix}-${String(next).padStart(3, '0')}`
 }
 
+/** เลขที่เอกสารถัดไปของใบสำคัญจ่าย (รูปแบบ PV-YYYYMM-NNN นับใหม่ทุกเดือน) */
+export async function nextPaymentVoucherDocNumber(): Promise<string> {
+  const prefix = docNumberPrefix('PV')
+  const { count } = await supabase
+    .from('payment_vouchers')
+    .select('id', { count: 'exact', head: true })
+    .ilike('doc_number', `${prefix}-%`)
+  const next = (count ?? 0) + 1
+  return `${prefix}-${String(next).padStart(3, '0')}`
+}
+
 /** จำนวนวันที่ค้างสต็อกถึงจะถือว่า "ค้างนาน" (ใช้ทั้งในรายงานและป้ายเตือนที่หน้าสต็อก) */
 export const STAGNANT_DAYS = 15
 

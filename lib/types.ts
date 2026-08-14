@@ -200,3 +200,15 @@ export interface ReceiptVoucher {
   owner_phone: string | null
   created_at: string
 }
+
+// ใบสำคัญจ่าย — เอกสารจ่ายปันผลเมจิรวมเป็นก้อนรายเดือน (ไม่ผูกกับสินค้าชิ้นเดียวเหมือน receipt_vouchers)
+export interface PaymentVoucher {
+  id: string
+  doc_number: string
+  doc_type: 'ใบสำคัญจ่าย'
+  payee: string
+  period_month: string // 'YYYY-MM'
+  total_amount: number
+  product_ids: string[]
+  created_at: string
+}

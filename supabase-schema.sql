@@ -294,6 +294,28 @@ create policy "authenticated all receipt_vouchers" on receipt_vouchers
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
 -- ----------------------------------------------------------
+-- ตาราง payment_vouchers (ใบสำคัญจ่าย — จ่ายปันผลเมจิรวมเป็นก้อนรายเดือน ไม่ผูกกับสินค้าทีละชิ้นเหมือน receipt_vouchers
+-- product_ids เก็บรายการเครื่องที่รวมอยู่ในยอดจ่ายก้อนนี้ ใช้กันจ่ายซ้ำเดือนถัดไปด้วย)
+-- ----------------------------------------------------------
+create table if not exists payment_vouchers (
+  id uuid primary key default gen_random_uuid(),
+  doc_number text not null unique,
+  doc_type text not null default 'ใบสำคัญจ่าย' check (doc_type in ('ใบสำคัญจ่าย')),
+  payee text not null,
+  period_month text not null,
+  total_amount numeric not null,
+  product_ids uuid[] not null default '{}',
+  created_at timestamptz not null default now(),
+  unique (payee, period_month)
+);
+
+alter table payment_vouchers enable row level security;
+
+drop policy if exists "authenticated all payment_vouchers" on payment_vouchers;
+create policy "authenticated all payment_vouchers" on payment_vouchers
+  for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- ----------------------------------------------------------
 -- Storage buckets (public read เพื่อให้ลูกค้าดูรูปได้โดยไม่ต้อง login)
 -- ----------------------------------------------------------
 insert into storage.buckets (id, name, public)

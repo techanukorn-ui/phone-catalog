@@ -7,6 +7,7 @@ import LoginForm from '@/components/admin/LoginForm'
 import OwnerProfileForm from '@/components/admin/OwnerProfileForm'
 import ReceiptVoucherTTB from '@/components/admin/ReceiptVoucherTTB'
 import ReceiptSaleTTB from '@/components/admin/ReceiptSaleTTB'
+import PaymentVoucherMagic from '@/components/admin/PaymentVoucherMagic'
 
 const ACCOUNTING_OWNERS = ['วอลเล่', 'โบ๊ท', 'โบว์'] as const
 type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
@@ -15,8 +16,10 @@ const DOC_TYPES = ['ใบสำคัญรับเงิน', 'ใบเส�
 type DocType = (typeof DOC_TYPES)[number]
 
 const PERSONAL_INFO = 'ข้อมูลส่วนตัว' as const
+// ใบสำคัญจ่ายเมจิไม่ผูกกับเจ้าของทุนคนไหน (เมจิไม่ได้ลงทุน) เลยแยกเป็นหัวข้อทั่วไปเหมือนข้อมูลส่วนตัว ไม่อยู่ใต้ "เอกสาร" ที่ผูกกับ activeOwner
+const PAYMENT_VOUCHER_MAGIC = 'ใบสำคัญจ่าย (เมจิ)' as const
 
-const SECTIONS = [PERSONAL_INFO, ...DOC_TYPES] as const
+const SECTIONS = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, ...DOC_TYPES] as const
 type Section = (typeof SECTIONS)[number]
 
 const PAYMENT_METHODS = ['TTB'] as const
@@ -169,6 +172,21 @@ export default function AccountingPage() {
             <span className="flex-1 truncate">{PERSONAL_INFO}</span>
           </button>
 
+          <button
+            type="button"
+            onClick={() => setActiveSection(PAYMENT_VOUCHER_MAGIC)}
+            className={`mb-2 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
+              activeSection === PAYMENT_VOUCHER_MAGIC
+                ? 'bg-white/[0.08] text-white'
+                : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
+            }`}
+          >
+            <span className={activeSection === PAYMENT_VOUCHER_MAGIC ? 'text-[#7C93FF]' : 'text-slate-500'}>
+              <DocIcon />
+            </span>
+            <span className="flex-1 truncate">{PAYMENT_VOUCHER_MAGIC}</span>
+          </button>
+
           <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">เอกสาร</p>
           {DOC_TYPES.map((d) => {
             const isSelected = activeSection === d
@@ -234,12 +252,12 @@ export default function AccountingPage() {
         <header className="flex items-center justify-between border-b border-[#E4E6EF] bg-white px-8 py-5 print:hidden">
           <div>
             <div className="flex items-center gap-1.5 text-[13px] text-[#8A8FA3]">
-              <span>{activeOwner}</span>
-              <span>/</span>
-              {activeSection === PERSONAL_INFO ? (
+              {activeSection === PERSONAL_INFO || activeSection === PAYMENT_VOUCHER_MAGIC ? (
                 <span className="font-medium text-[#3B5BFF]">{activeSection}</span>
               ) : (
                 <>
+                  <span>{activeOwner}</span>
+                  <span>/</span>
                   <span>{activeSection}</span>
                   <span>/</span>
                   <span className="font-medium text-[#3B5BFF]">{activeMethod}</span>
@@ -247,17 +265,23 @@ export default function AccountingPage() {
               )}
             </div>
             <h1 className="mt-1 text-xl font-semibold text-[#1B1E2B]">
-              {activeSection === PERSONAL_INFO ? activeSection : `${activeSection} · ${activeMethod}`}
+              {activeSection === PERSONAL_INFO || activeSection === PAYMENT_VOUCHER_MAGIC
+                ? activeSection
+                : `${activeSection} · ${activeMethod}`}
             </h1>
           </div>
-          <span className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-[11px] font-medium text-[#3B5BFF]">
-            {activeOwner}
-          </span>
+          {activeSection !== PAYMENT_VOUCHER_MAGIC && (
+            <span className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-[11px] font-medium text-[#3B5BFF]">
+              {activeOwner}
+            </span>
+          )}
         </header>
 
         <main className="flex-1 px-8 py-8 print:px-0 print:py-0">
           {activeSection === PERSONAL_INFO ? (
             <OwnerProfileForm owner={activeOwner} />
+          ) : activeSection === PAYMENT_VOUCHER_MAGIC ? (
+            <PaymentVoucherMagic />
           ) : activeSection === 'ใบสำคัญรับเงิน' && activeMethod === 'TTB' ? (
             <ReceiptVoucherTTB owner={activeOwner} />
           ) : activeSection === 'ใบเสร็จรับเงิน' && activeMethod === 'TTB' ? (
