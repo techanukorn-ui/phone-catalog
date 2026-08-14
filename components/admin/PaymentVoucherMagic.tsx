@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import type { PaymentVoucher, Product } from '@/lib/types'
+import type { OwnerProfile, PaymentVoucher, Product } from '@/lib/types'
 import {
   buildLastMonths,
   formatPrice,
@@ -13,6 +13,7 @@ import {
 } from '@/lib/utils'
 
 const PAYEE = 'เมจิ' as const
+const PAYEE_FULL_NAME = 'ลักษมณ ลิขิตพรวงศ์'
 
 type Props = {
   owner: string
@@ -24,6 +25,7 @@ export default function PaymentVoucherMagic({ owner }: Props) {
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
   const [vouchers, setVouchers] = useState<PaymentVoucher[]>([])
+  const [ownerProfile, setOwnerProfile] = useState<OwnerProfile | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -34,7 +36,7 @@ export default function PaymentVoucherMagic({ owner }: Props) {
     let cancelled = false
     async function load() {
       setLoading(true)
-      const [productsRes, vouchersRes] = await Promise.all([
+      const [productsRes, vouchersRes, profileRes] = await Promise.all([
         supabase
           .from('products')
           .select('*')
@@ -43,10 +45,12 @@ export default function PaymentVoucherMagic({ owner }: Props) {
           .not('dividend_magic', 'is', null)
           .gte('sold_at', toDateInputStr(oldestStart)),
         supabase.from('payment_vouchers').select('*').eq('payee', PAYEE).eq('owner', owner),
+        supabase.from('owner_profiles').select('*').eq('owner', owner).maybeSingle(),
       ])
       if (cancelled) return
       setProducts((productsRes.data as Product[]) ?? [])
       setVouchers((vouchersRes.data as PaymentVoucher[]) ?? [])
+      setOwnerProfile(profileRes.data as OwnerProfile | null)
       setLoading(false)
     }
     load()
@@ -277,7 +281,8 @@ export default function PaymentVoucherMagic({ owner }: Props) {
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 border-b border-[#E4E6EF] py-4 text-[13px]">
               <p>
-                <span className="text-[#4B4F5B]">ผู้จ่ายเงิน: </span>Marcuz Mobile ({existingVoucher.owner})
+                <span className="text-[#4B4F5B]">ผู้จ่ายเงิน: </span>
+                {ownerProfile?.full_name || existingVoucher.owner}
               </p>
               <p>
                 <span className="text-[#4B4F5B]">เลขที่เอกสาร: </span>
@@ -285,7 +290,7 @@ export default function PaymentVoucherMagic({ owner }: Props) {
               </p>
               <p>
                 <span className="text-[#4B4F5B]">ผู้รับเงิน: </span>
-                {existingVoucher.payee}
+                {PAYEE_FULL_NAME}
               </p>
               <p>
                 <span className="text-[#4B4F5B]">งวดจ่าย: </span>
@@ -339,11 +344,11 @@ export default function PaymentVoucherMagic({ owner }: Props) {
             <div className="grid grid-cols-2 gap-8 py-8 text-center text-[13px]">
               <div>
                 <p className="mb-1">ลงชื่อ.........................................ผู้จ่ายเงิน</p>
-                <p>(Marcuz Mobile)</p>
+                <p>({ownerProfile?.full_name || existingVoucher.owner})</p>
               </div>
               <div>
                 <p className="mb-1">ลงชื่อ.........................................ผู้รับเงิน</p>
-                <p>({existingVoucher.payee})</p>
+                <p>({PAYEE_FULL_NAME})</p>
               </div>
             </div>
           </div>
