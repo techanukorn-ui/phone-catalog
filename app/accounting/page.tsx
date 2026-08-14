@@ -8,6 +8,7 @@ import OwnerProfileForm from '@/components/admin/OwnerProfileForm'
 import ReceiptVoucherTTB from '@/components/admin/ReceiptVoucherTTB'
 import ReceiptSaleTTB from '@/components/admin/ReceiptSaleTTB'
 import PaymentVoucherMagic from '@/components/admin/PaymentVoucherMagic'
+import CashLedgerReport from '@/components/admin/CashLedgerReport'
 
 const ACCOUNTING_OWNERS = ['วอลเล่', 'โบ๊ท', 'โบว์'] as const
 type AccountingOwner = (typeof ACCOUNTING_OWNERS)[number]
@@ -16,11 +17,16 @@ const DOC_TYPES = ['ใบสำคัญรับเงิน', 'ใบเส�
 type DocType = (typeof DOC_TYPES)[number]
 
 const PERSONAL_INFO = 'ข้อมูลส่วนตัว' as const
-// ใบสำคัญจ่ายเมจิไม่ผูกกับเจ้าของทุนคนไหน (เมจิไม่ได้ลงทุน) เลยแยกเป็นหัวข้อทั่วไปเหมือนข้อมูลส่วนตัว ไม่อยู่ใต้ "เอกสาร" ที่ผูกกับ activeOwner
+// ใบสำคัญจ่ายเมจิ กับ รายงานเงินสดรับ-จ่าย ไม่มี method submenu (TTB) เหมือน DOC_TYPES แต่ยังคงต้องแยกตาม
+// activeOwner เสมอ (มาตรฐานหน้านี้ — บัญชี/ภาษีของใครของมัน) เลยขึ้นเป็นหัวข้อทั่วไปแทนที่จะซ้อนใต้ "เอกสาร"
 const PAYMENT_VOUCHER_MAGIC = 'ใบสำคัญจ่าย (เมจิ)' as const
+const CASH_LEDGER = 'รายงานเงินสดรับ-จ่าย' as const
 
-const SECTIONS = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, ...DOC_TYPES] as const
+const SECTIONS = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, CASH_LEDGER, ...DOC_TYPES] as const
 type Section = (typeof SECTIONS)[number]
+
+// หัวข้อที่ไม่มี method submenu (TTB) — แสดงแค่ owner/section ในหัวเรื่อง ไม่มี "· TTB" ต่อท้าย
+const NO_METHOD_SECTIONS: Section[] = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, CASH_LEDGER]
 
 const PAYMENT_METHODS = ['TTB'] as const
 type DocPaymentMethod = (typeof PAYMENT_METHODS)[number]
@@ -187,6 +193,21 @@ export default function AccountingPage() {
             <span className="flex-1 truncate">{PAYMENT_VOUCHER_MAGIC}</span>
           </button>
 
+          <button
+            type="button"
+            onClick={() => setActiveSection(CASH_LEDGER)}
+            className={`mb-2 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
+              activeSection === CASH_LEDGER
+                ? 'bg-white/[0.08] text-white'
+                : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
+            }`}
+          >
+            <span className={activeSection === CASH_LEDGER ? 'text-[#7C93FF]' : 'text-slate-500'}>
+              <DocIcon />
+            </span>
+            <span className="flex-1 truncate">{CASH_LEDGER}</span>
+          </button>
+
           <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">เอกสาร</p>
           {DOC_TYPES.map((d) => {
             const isSelected = activeSection === d
@@ -254,7 +275,7 @@ export default function AccountingPage() {
             <div className="flex items-center gap-1.5 text-[13px] text-[#8A8FA3]">
               <span>{activeOwner}</span>
               <span>/</span>
-              {activeSection === PERSONAL_INFO || activeSection === PAYMENT_VOUCHER_MAGIC ? (
+              {NO_METHOD_SECTIONS.includes(activeSection) ? (
                 <span className="font-medium text-[#3B5BFF]">{activeSection}</span>
               ) : (
                 <>
@@ -265,9 +286,7 @@ export default function AccountingPage() {
               )}
             </div>
             <h1 className="mt-1 text-xl font-semibold text-[#1B1E2B]">
-              {activeSection === PERSONAL_INFO || activeSection === PAYMENT_VOUCHER_MAGIC
-                ? activeSection
-                : `${activeSection} · ${activeMethod}`}
+              {NO_METHOD_SECTIONS.includes(activeSection) ? activeSection : `${activeSection} · ${activeMethod}`}
             </h1>
           </div>
           <span className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-[11px] font-medium text-[#3B5BFF]">
@@ -280,6 +299,8 @@ export default function AccountingPage() {
             <OwnerProfileForm owner={activeOwner} />
           ) : activeSection === PAYMENT_VOUCHER_MAGIC ? (
             <PaymentVoucherMagic owner={activeOwner} />
+          ) : activeSection === CASH_LEDGER ? (
+            <CashLedgerReport owner={activeOwner} />
           ) : activeSection === 'ใบสำคัญรับเงิน' && activeMethod === 'TTB' ? (
             <ReceiptVoucherTTB owner={activeOwner} />
           ) : activeSection === 'ใบเสร็จรับเงิน' && activeMethod === 'TTB' ? (
