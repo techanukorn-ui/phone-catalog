@@ -252,12 +252,12 @@ export default function AccountingPage() {
         <header className="flex items-center justify-between border-b border-[#E4E6EF] bg-white px-8 py-5 print:hidden">
           <div>
             <div className="flex items-center gap-1.5 text-[13px] text-[#8A8FA3]">
+              <span>{activeOwner}</span>
+              <span>/</span>
               {activeSection === PERSONAL_INFO || activeSection === PAYMENT_VOUCHER_MAGIC ? (
                 <span className="font-medium text-[#3B5BFF]">{activeSection}</span>
               ) : (
                 <>
-                  <span>{activeOwner}</span>
-                  <span>/</span>
                   <span>{activeSection}</span>
                   <span>/</span>
                   <span className="font-medium text-[#3B5BFF]">{activeMethod}</span>
@@ -270,18 +270,16 @@ export default function AccountingPage() {
                 : `${activeSection} · ${activeMethod}`}
             </h1>
           </div>
-          {activeSection !== PAYMENT_VOUCHER_MAGIC && (
-            <span className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-[11px] font-medium text-[#3B5BFF]">
-              {activeOwner}
-            </span>
-          )}
+          <span className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-[11px] font-medium text-[#3B5BFF]">
+            {activeOwner}
+          </span>
         </header>
 
         <main className="flex-1 px-8 py-8 print:px-0 print:py-0">
           {activeSection === PERSONAL_INFO ? (
             <OwnerProfileForm owner={activeOwner} />
           ) : activeSection === PAYMENT_VOUCHER_MAGIC ? (
-            <PaymentVoucherMagic />
+            <PaymentVoucherMagic owner={activeOwner} />
           ) : activeSection === 'ใบสำคัญรับเงิน' && activeMethod === 'TTB' ? (
             <ReceiptVoucherTTB owner={activeOwner} />
           ) : activeSection === 'ใบเสร็จรับเงิน' && activeMethod === 'TTB' ? (

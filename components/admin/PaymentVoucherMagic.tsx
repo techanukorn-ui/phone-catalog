@@ -14,7 +14,11 @@ import {
 
 const PAYEE = 'เมจิ' as const
 
-export default function PaymentVoucherMagic() {
+type Props = {
+  owner: string
+}
+
+export default function PaymentVoucherMagic({ owner }: Props) {
   const months = useMemo(() => buildLastMonths(12), [])
   const [selectedKey, setSelectedKey] = useState(months[0].key)
   const [loading, setLoading] = useState(true)
@@ -35,9 +39,10 @@ export default function PaymentVoucherMagic() {
           .from('products')
           .select('*')
           .eq('status', 'ขายแล้ว')
+          .eq('owner', owner)
           .not('dividend_magic', 'is', null)
           .gte('sold_at', toDateInputStr(oldestStart)),
-        supabase.from('payment_vouchers').select('*').eq('payee', PAYEE),
+        supabase.from('payment_vouchers').select('*').eq('payee', PAYEE).eq('owner', owner),
       ])
       if (cancelled) return
       setProducts((productsRes.data as Product[]) ?? [])
@@ -50,7 +55,7 @@ export default function PaymentVoucherMagic() {
     }
     // oldestStart มาจาก months ซึ่ง stable อยู่แล้วผ่าน useMemo
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [owner])
 
   const selectedMonth = months.find((m) => m.key === selectedKey)!
   const existingVoucher = vouchers.find((v) => v.period_month === selectedKey) ?? null
@@ -97,6 +102,7 @@ export default function PaymentVoucherMagic() {
           doc_number,
           doc_type: 'ใบสำคัญจ่าย',
           payee: PAYEE,
+          owner,
           period_month: selectedKey,
           total_amount: total,
           product_ids: selected.map((p) => p.id),
@@ -243,7 +249,7 @@ export default function PaymentVoucherMagic() {
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 border-b border-[#E4E6EF] py-4 text-[13px]">
               <p>
-                <span className="text-[#4B4F5B]">ผู้จ่ายเงิน: </span>Marcuz Mobile
+                <span className="text-[#4B4F5B]">ผู้จ่ายเงิน: </span>Marcuz Mobile ({existingVoucher.owner})
               </p>
               <p>
                 <span className="text-[#4B4F5B]">เลขที่เอกสาร: </span>

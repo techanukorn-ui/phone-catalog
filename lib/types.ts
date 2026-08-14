@@ -207,6 +207,7 @@ export interface PaymentVoucher {
   doc_number: string
   doc_type: 'ใบสำคัญจ่าย'
   payee: string
+  owner: string
   period_month: string // 'YYYY-MM'
   total_amount: number
   product_ids: string[]
