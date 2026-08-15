@@ -32,7 +32,7 @@ const CAPITAL_DIVIDEND_PAYEES: Record<AccountingOwner, { payee: AccountingOwner;
     { payee: 'วอลเล่', dividendField: 'dividend_wallet' },
     { payee: 'โบว์', dividendField: 'dividend_bow' },
   ],
-  โบว์: [],
+  โบว์: [{ payee: 'วอลเล่', dividendField: 'dividend_wallet' }],
 }
 
 function capitalDividendSection(payee: AccountingOwner) {
