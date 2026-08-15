@@ -17,18 +17,35 @@ const DOC_TYPES = ['ใบสำคัญรับเงิน', 'ใบเส�
 type DocType = (typeof DOC_TYPES)[number]
 
 const PERSONAL_INFO = 'ข้อมูลส่วนตัว' as const
-// ใบสำคัญจ่ายเมจิ/โบว์ กับ รายงานเงินสดรับ-จ่าย ไม่มี method submenu (TTB) เหมือน DOC_TYPES แต่ยังคงต้องแยกตาม
+// ใบสำคัญจ่ายเมจิ กับ รายงานเงินสดรับ-จ่าย ไม่มี method submenu (TTB) เหมือน DOC_TYPES แต่ยังคงต้องแยกตาม
 // activeOwner เสมอ (มาตรฐานหน้านี้ — บัญชี/ภาษีของใครของมัน) เลยขึ้นเป็นหัวข้อทั่วไปแทนที่จะซ้อนใต้ "เอกสาร"
 const PAYMENT_VOUCHER_MAGIC = 'ใบสำคัญจ่าย (เมจิ)' as const
-// จ่ายปันผลให้โบว์ จากยอดขายเครื่องที่ owner=วอลเล่ เท่านั้น (ข้อตกลงเฉพาะวอลเล่-โบว์ ไม่ใช่ทุกเจ้าของทุน)
-const PAYMENT_VOUCHER_DIVIDEND_BOW = 'ใบสำคัญจ่าย (โบว์)' as const
 const CASH_LEDGER = 'รายงานเงินสดรับ-จ่าย' as const
 
-const SECTIONS = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, PAYMENT_VOUCHER_DIVIDEND_BOW, CASH_LEDGER, ...DOC_TYPES] as const
-type Section = (typeof SECTIONS)[number]
+type CapitalDividendField = 'dividend_wallet' | 'dividend_bow' | 'dividend_boat'
+
+// แต่ละเจ้าของทุนจ่ายปันผลให้ใครบ้าง จากยอดขายเครื่องที่ตัวเองเป็นเจ้าของทุน (ยืนยันทีละเจ้าของทุนโดยผู้ใช้ —
+// ไม่ใช่ทุกคู่จะมีข้อตกลงแบ่งปันผลกัน จึงไม่ generate ครบทุก combination อัตโนมัติ)
+const CAPITAL_DIVIDEND_PAYEES: Record<AccountingOwner, { payee: AccountingOwner; dividendField: CapitalDividendField }[]> = {
+  วอลเล่: [{ payee: 'โบว์', dividendField: 'dividend_bow' }],
+  โบ๊ท: [
+    { payee: 'วอลเล่', dividendField: 'dividend_wallet' },
+    { payee: 'โบว์', dividendField: 'dividend_bow' },
+  ],
+  โบว์: [],
+}
+
+function capitalDividendSection(payee: AccountingOwner) {
+  return `ใบสำคัญจ่าย (${payee})` as const
+}
+
+const SECTIONS = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, CASH_LEDGER, ...DOC_TYPES] as const
+type Section = (typeof SECTIONS)[number] | `ใบสำคัญจ่าย (${AccountingOwner})`
 
 // หัวข้อที่ไม่มี method submenu (TTB) — แสดงแค่ owner/section ในหัวเรื่อง ไม่มี "· TTB" ต่อท้าย
-const NO_METHOD_SECTIONS: Section[] = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, PAYMENT_VOUCHER_DIVIDEND_BOW, CASH_LEDGER]
+function hasMethodSubmenu(section: Section): section is DocType {
+  return (DOC_TYPES as readonly string[]).includes(section)
+}
 
 const PAYMENT_METHODS = ['TTB'] as const
 type DocPaymentMethod = (typeof PAYMENT_METHODS)[number]
@@ -128,6 +145,10 @@ export default function AccountingPage() {
     return <LoginForm />
   }
 
+  const activeDividendEntry = CAPITAL_DIVIDEND_PAYEES[activeOwner].find(
+    (d) => capitalDividendSection(d.payee) === activeSection
+  )
+
   return (
     <div className="flex min-h-screen bg-[#F3F4F8] text-[#1B1E2B]">
       <aside className="flex w-64 shrink-0 flex-col bg-[#12152A] print:hidden">
@@ -149,10 +170,18 @@ export default function AccountingPage() {
                 key={o}
                 type="button"
                 onClick={() => {
+                  const previousOwner = activeOwner
                   setActiveOwner(o)
-                  // ใบสำคัญจ่ายโบว์ มีแค่แท็บวอลเล่ — สลับแท็บออกไปแล้วต้องเด้งกลับหน้าอื่นไม่งั้นจะค้างอยู่หน้าที่เลือกไม่ได้
-                  if (o !== 'วอลเล่' && activeSection === PAYMENT_VOUCHER_DIVIDEND_BOW) {
-                    setActiveSection(PERSONAL_INFO)
+                  // หัวข้อใบสำคัญจ่ายปันผล มีเฉพาะบางเจ้าของทุน — สลับแท็บออกไปแล้วถ้าหัวข้อเดิมไม่มีในแท็บใหม่
+                  // ต้องเด้งกลับหน้าอื่นไม่งั้นจะค้างอยู่หน้าที่เลือกไม่ได้แล้ว
+                  const wasCapitalDividendSection = CAPITAL_DIVIDEND_PAYEES[previousOwner].some(
+                    (d) => capitalDividendSection(d.payee) === activeSection
+                  )
+                  if (wasCapitalDividendSection) {
+                    const stillValid = CAPITAL_DIVIDEND_PAYEES[o].some(
+                      (d) => capitalDividendSection(d.payee) === activeSection
+                    )
+                    if (!stillValid) setActiveSection(PERSONAL_INFO)
                   }
                 }}
                 className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
@@ -201,22 +230,26 @@ export default function AccountingPage() {
             <span className="flex-1 truncate">{PAYMENT_VOUCHER_MAGIC}</span>
           </button>
 
-          {activeOwner === 'วอลเล่' && (
-            <button
-              type="button"
-              onClick={() => setActiveSection(PAYMENT_VOUCHER_DIVIDEND_BOW)}
-              className={`mb-2 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
-                activeSection === PAYMENT_VOUCHER_DIVIDEND_BOW
-                  ? 'bg-white/[0.08] text-white'
-                  : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
-              }`}
-            >
-              <span className={activeSection === PAYMENT_VOUCHER_DIVIDEND_BOW ? 'text-[#7C93FF]' : 'text-slate-500'}>
-                <DocIcon />
-              </span>
-              <span className="flex-1 truncate">{PAYMENT_VOUCHER_DIVIDEND_BOW}</span>
-            </button>
-          )}
+          {CAPITAL_DIVIDEND_PAYEES[activeOwner].map(({ payee }) => {
+            const section = capitalDividendSection(payee)
+            return (
+              <button
+                key={section}
+                type="button"
+                onClick={() => setActiveSection(section)}
+                className={`mb-2 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
+                  activeSection === section
+                    ? 'bg-white/[0.08] text-white'
+                    : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
+                }`}
+              >
+                <span className={activeSection === section ? 'text-[#7C93FF]' : 'text-slate-500'}>
+                  <DocIcon />
+                </span>
+                <span className="flex-1 truncate">{section}</span>
+              </button>
+            )
+          })}
 
           <button
             type="button"
@@ -300,7 +333,7 @@ export default function AccountingPage() {
             <div className="flex items-center gap-1.5 text-[13px] text-[#8A8FA3]">
               <span>{activeOwner}</span>
               <span>/</span>
-              {NO_METHOD_SECTIONS.includes(activeSection) ? (
+              {!hasMethodSubmenu(activeSection) ? (
                 <span className="font-medium text-[#3B5BFF]">{activeSection}</span>
               ) : (
                 <>
@@ -311,7 +344,7 @@ export default function AccountingPage() {
               )}
             </div>
             <h1 className="mt-1 text-xl font-semibold text-[#1B1E2B]">
-              {NO_METHOD_SECTIONS.includes(activeSection) ? activeSection : `${activeSection} · ${activeMethod}`}
+              {!hasMethodSubmenu(activeSection) ? activeSection : `${activeSection} · ${activeMethod}`}
             </h1>
           </div>
           <span className="rounded-full bg-[#EEF1FF] px-3 py-1.5 text-[11px] font-medium text-[#3B5BFF]">
@@ -329,8 +362,12 @@ export default function AccountingPage() {
               dividendField="dividend_magic"
               payeeFullNameFallback="ลักษมณ ลิขิตพรวงศ์"
             />
-          ) : activeSection === PAYMENT_VOUCHER_DIVIDEND_BOW ? (
-            <PaymentVoucherDividend owner={activeOwner} payee="โบว์" dividendField="dividend_bow" />
+          ) : activeDividendEntry ? (
+            <PaymentVoucherDividend
+              owner={activeOwner}
+              payee={activeDividendEntry.payee}
+              dividendField={activeDividendEntry.dividendField}
+            />
           ) : activeSection === CASH_LEDGER ? (
             <CashLedgerReport owner={activeOwner} />
           ) : activeSection === 'ใบสำคัญรับเงิน' && activeMethod === 'TTB' ? (
