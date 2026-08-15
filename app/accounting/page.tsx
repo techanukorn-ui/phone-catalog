@@ -7,7 +7,7 @@ import LoginForm from '@/components/admin/LoginForm'
 import OwnerProfileForm from '@/components/admin/OwnerProfileForm'
 import ReceiptVoucherTTB from '@/components/admin/ReceiptVoucherTTB'
 import ReceiptSaleTTB from '@/components/admin/ReceiptSaleTTB'
-import PaymentVoucherMagic from '@/components/admin/PaymentVoucherMagic'
+import PaymentVoucherDividend from '@/components/admin/PaymentVoucherDividend'
 import CashLedgerReport from '@/components/admin/CashLedgerReport'
 
 const ACCOUNTING_OWNERS = ['วอลเล่', 'โบ๊ท', 'โบว์'] as const
@@ -17,16 +17,18 @@ const DOC_TYPES = ['ใบสำคัญรับเงิน', 'ใบเส�
 type DocType = (typeof DOC_TYPES)[number]
 
 const PERSONAL_INFO = 'ข้อมูลส่วนตัว' as const
-// ใบสำคัญจ่ายเมจิ กับ รายงานเงินสดรับ-จ่าย ไม่มี method submenu (TTB) เหมือน DOC_TYPES แต่ยังคงต้องแยกตาม
+// ใบสำคัญจ่ายเมจิ/โบว์ กับ รายงานเงินสดรับ-จ่าย ไม่มี method submenu (TTB) เหมือน DOC_TYPES แต่ยังคงต้องแยกตาม
 // activeOwner เสมอ (มาตรฐานหน้านี้ — บัญชี/ภาษีของใครของมัน) เลยขึ้นเป็นหัวข้อทั่วไปแทนที่จะซ้อนใต้ "เอกสาร"
 const PAYMENT_VOUCHER_MAGIC = 'ใบสำคัญจ่าย (เมจิ)' as const
+// จ่ายปันผลให้โบว์ จากยอดขายเครื่องที่ owner=วอลเล่ เท่านั้น (ข้อตกลงเฉพาะวอลเล่-โบว์ ไม่ใช่ทุกเจ้าของทุน)
+const PAYMENT_VOUCHER_DIVIDEND_BOW = 'ใบสำคัญจ่าย (โบว์)' as const
 const CASH_LEDGER = 'รายงานเงินสดรับ-จ่าย' as const
 
-const SECTIONS = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, CASH_LEDGER, ...DOC_TYPES] as const
+const SECTIONS = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, PAYMENT_VOUCHER_DIVIDEND_BOW, CASH_LEDGER, ...DOC_TYPES] as const
 type Section = (typeof SECTIONS)[number]
 
 // หัวข้อที่ไม่มี method submenu (TTB) — แสดงแค่ owner/section ในหัวเรื่อง ไม่มี "· TTB" ต่อท้าย
-const NO_METHOD_SECTIONS: Section[] = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, CASH_LEDGER]
+const NO_METHOD_SECTIONS: Section[] = [PERSONAL_INFO, PAYMENT_VOUCHER_MAGIC, PAYMENT_VOUCHER_DIVIDEND_BOW, CASH_LEDGER]
 
 const PAYMENT_METHODS = ['TTB'] as const
 type DocPaymentMethod = (typeof PAYMENT_METHODS)[number]
@@ -146,7 +148,13 @@ export default function AccountingPage() {
               <button
                 key={o}
                 type="button"
-                onClick={() => setActiveOwner(o)}
+                onClick={() => {
+                  setActiveOwner(o)
+                  // ใบสำคัญจ่ายโบว์ มีแค่แท็บวอลเล่ — สลับแท็บออกไปแล้วต้องเด้งกลับหน้าอื่นไม่งั้นจะค้างอยู่หน้าที่เลือกไม่ได้
+                  if (o !== 'วอลเล่' && activeSection === PAYMENT_VOUCHER_DIVIDEND_BOW) {
+                    setActiveSection(PERSONAL_INFO)
+                  }
+                }}
                 className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
                   activeOwner === o
                     ? 'bg-[#3B5BFF] text-white'
@@ -192,6 +200,23 @@ export default function AccountingPage() {
             </span>
             <span className="flex-1 truncate">{PAYMENT_VOUCHER_MAGIC}</span>
           </button>
+
+          {activeOwner === 'วอลเล่' && (
+            <button
+              type="button"
+              onClick={() => setActiveSection(PAYMENT_VOUCHER_DIVIDEND_BOW)}
+              className={`mb-2 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors ${
+                activeSection === PAYMENT_VOUCHER_DIVIDEND_BOW
+                  ? 'bg-white/[0.08] text-white'
+                  : 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
+              }`}
+            >
+              <span className={activeSection === PAYMENT_VOUCHER_DIVIDEND_BOW ? 'text-[#7C93FF]' : 'text-slate-500'}>
+                <DocIcon />
+              </span>
+              <span className="flex-1 truncate">{PAYMENT_VOUCHER_DIVIDEND_BOW}</span>
+            </button>
+          )}
 
           <button
             type="button"
@@ -298,7 +323,14 @@ export default function AccountingPage() {
           {activeSection === PERSONAL_INFO ? (
             <OwnerProfileForm owner={activeOwner} />
           ) : activeSection === PAYMENT_VOUCHER_MAGIC ? (
-            <PaymentVoucherMagic owner={activeOwner} />
+            <PaymentVoucherDividend
+              owner={activeOwner}
+              payee="เมจิ"
+              dividendField="dividend_magic"
+              payeeFullNameFallback="ลักษมณ ลิขิตพรวงศ์"
+            />
+          ) : activeSection === PAYMENT_VOUCHER_DIVIDEND_BOW ? (
+            <PaymentVoucherDividend owner={activeOwner} payee="โบว์" dividendField="dividend_bow" />
           ) : activeSection === CASH_LEDGER ? (
             <CashLedgerReport owner={activeOwner} />
           ) : activeSection === 'ใบสำคัญรับเงิน' && activeMethod === 'TTB' ? (
