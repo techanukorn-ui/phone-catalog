@@ -110,15 +110,34 @@ function publicUrl(bucket, objectPath) {
   return data.publicUrl
 }
 
+// รายชื่อโฟลเดอร์บางอันที่ listAllObjects() รายงานตัวพิมพ์มาไม่ตรงกับ object key จริง
+// (เช่นโฟลเดอร์ที่เคยตั้งชื่อจากค่า category ตอนยังสะกดไม่ตรงกัน) ทำให้ download() ด้วย path ตามที่ list()
+// รายงานมาแล้วไม่เจอไฟล์ (Object not found) ทั้งที่ไฟล์จริงมีอยู่ — ลองสลับตัวพิมพ์ของโฟลเดอร์บนสุดเป็นตัวใหญ่ทั้งหมดซ้ำอีกที
+async function downloadWithCaseFallback(bucket, objectPath) {
+  const direct = await supabase.storage.from(bucket).download(objectPath)
+  if (!direct.error) return { blob: direct.data, path: objectPath }
+
+  const segments = objectPath.split('/')
+  if (segments.length > 1) {
+    const altPath = [segments[0].toUpperCase(), ...segments.slice(1)].join('/')
+    if (altPath !== objectPath) {
+      const retry = await supabase.storage.from(bucket).download(altPath)
+      if (!retry.error) return { blob: retry.data, path: altPath }
+    }
+  }
+  return { blob: null, error: direct.error, path: objectPath }
+}
+
 async function compressOne(bucket, objectPath) {
   const ext = objectPath.split('.').pop()?.toLowerCase() ?? ''
   if (SKIP_EXT.has(ext)) return null
 
-  const { data: blob, error: dlErr } = await supabase.storage.from(bucket).download(objectPath)
+  const { blob, error: dlErr, path: realPath } = await downloadWithCaseFallback(bucket, objectPath)
   if (dlErr) {
     console.warn(`  ⚠ ดาวน์โหลดไม่สำเร็จ: ${objectPath} (${dlErr.message})`)
     return null
   }
+  objectPath = realPath // ใช้ path จริงที่ดาวน์โหลดสำเร็จ (เผื่อสลับตัวพิมพ์ไปแล้ว) ต่อจากนี้
   const inputBuffer = Buffer.from(await blob.arrayBuffer())
   const { maxDimension, quality } = BUCKET_CONFIG[bucket]
 
