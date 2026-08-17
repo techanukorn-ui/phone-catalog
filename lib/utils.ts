@@ -215,16 +215,80 @@ function sanitizeFolder(folder: string): string {
   return safe || 'other'
 }
 
-/** อัปโหลดไฟล์รูปขึ้น Supabase Storage แล้วคืนค่า public URL */
+function loadImageElement(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('อ่านไฟล์รูปไม่สำเร็จ'))
+    }
+    img.src = url
+  })
+}
+
+type CompressOptions = {
+  maxDimension?: number
+  quality?: number
+}
+
+/**
+ * ย่อขนาด + บีบอัดไฟล์รูปฝั่ง browser ก่อนอัปโหลด (resize ด้านยาวสุดไม่เกิน maxDimension แล้วแปลงเป็น WebP)
+ * ถ้าบีบอัดแล้วไม่ได้ช่วยลดขนาด หรือมีปัญหาระหว่างประมวลผล จะคืนไฟล์ต้นฉบับแทนเพื่อความปลอดภัย
+ */
+async function compressImage(file: File, { maxDimension = 1600, quality = 0.82 }: CompressOptions = {}): Promise<File> {
+  // ไม่แตะไฟล์ที่ไม่ใช่รูป หรือ gif (กันเคส animated gif เสียเฟรม)
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return file
+
+  let objectUrl: string | null = null
+  try {
+    const img = await loadImageElement(file)
+    objectUrl = img.src
+    const { naturalWidth: width, naturalHeight: height } = img
+    if (!width || !height) return file
+
+    const scale = Math.min(1, maxDimension / Math.max(width, height))
+    const targetW = Math.max(1, Math.round(width * scale))
+    const targetH = Math.max(1, Math.round(height * scale))
+
+    const canvas = document.createElement('canvas')
+    canvas.width = targetW
+    canvas.height = targetH
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return file
+    ctx.drawImage(img, 0, 0, targetW, targetH)
+
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', quality))
+    // เบราว์เซอร์บางตัวไม่รองรับ encode เป็น webp → ได้ null กลับมา ใช้ไฟล์เดิมแทน
+    if (!blob) return file
+    // ถ้าบีบอัดแล้วไม่เล็กลง (เช่นรูปเล็ก/บีบอัดมาแล้ว) ให้ใช้ไฟล์ต้นฉบับ
+    if (blob.size >= file.size) return file
+
+    const newName = `${file.name.replace(/\.[^./]+$/, '')}.webp`
+    return new File([blob], newName, { type: 'image/webp' })
+  } catch {
+    return file
+  } finally {
+    if (objectUrl) URL.revokeObjectURL(objectUrl)
+  }
+}
+
+/** อัปโหลดไฟล์รูปขึ้น Supabase Storage แล้วคืนค่า public URL (บีบอัด/ย่อขนาดรูปให้อัตโนมัติก่อนอัปโหลด) */
 export async function uploadImage(
   bucket: 'product-images' | 'store-assets',
   file: File,
   folder?: string
 ): Promise<string> {
+  // โลโก้ร้านไม่จำเป็นต้องใหญ่มาก ย่อเข้มกว่ารูปสินค้าที่ต้องดูรายละเอียดเครื่องได้
+  const compressOptions: CompressOptions =
+    bucket === 'store-assets' ? { maxDimension: 800, quality: 0.85 } : { maxDimension: 1600, quality: 0.82 }
+  const uploadFile = await compressImage(file, compressOptions)
+
   const path = folder
-    ? `${sanitizeFolder(folder)}/${sanitizeFileName(file.name)}`
-    : sanitizeFileName(file.name)
-  const { error } = await supabase.storage.from(bucket).upload(path, file, {
+    ? `${sanitizeFolder(folder)}/${sanitizeFileName(uploadFile.name)}`
+    : sanitizeFileName(uploadFile.name)
+  const { error } = await supabase.storage.from(bucket).upload(path, uploadFile, {
     cacheControl: '3600',
     upsert: false,
   })
