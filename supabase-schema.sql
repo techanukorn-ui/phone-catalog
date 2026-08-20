@@ -197,6 +197,11 @@ alter table products add constraint products_owner_check
   check (owner in ('โบ๊ท','วอลเล่','โบว์','น้าเหน่ง'));
 create index if not exists products_owner_idx on products (owner);
 
+-- เพิ่ม "โบ๊ทและวอลเล่" (เจ้าของทุนร่วม) เข้าไปในตัวเลือกเจ้าของทุน
+alter table products drop constraint if exists products_owner_check;
+alter table products add constraint products_owner_check
+  check (owner in ('โบ๊ท','วอลเล่','โบว์','น้าเหน่ง','โบ๊ทและวอลเล่'));
+
 -- วิธีจ่ายเงินตอนซื้อเครื่องเข้าร้าน (เงินสด/โอน) และสลิปโอนเงิน (ถ้ามี)
 -- เก็บไว้เป็นหลักฐานการซื้อเผื่อสรรพากรขอดูย้อนหลัง — กรอกตอนเพิ่มสินค้า ไม่บังคับแนบสลิป
 alter table products add column if not exists purchase_payment_method text default 'เงินสด';

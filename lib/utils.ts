@@ -7,6 +7,7 @@ const OWNER_CODE_PREFIX: Record<ProductOwner, string> = {
   โบ๊ท: 'BO',
   โบว์: 'B',
   น้าเหน่ง: 'M',
+  โบ๊ทและวอลเล่: 'BV',
 }
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // ตัดตัวที่อ่านสับสน (0,O,1,I)
