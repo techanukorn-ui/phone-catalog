@@ -260,14 +260,22 @@ async function compressImage(file: File, { maxDimension = 1600, quality = 0.82 }
     if (!ctx) return file
     ctx.drawImage(img, 0, 0, targetW, targetH)
 
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', quality))
-    // เบราว์เซอร์บางตัวไม่รองรับ encode เป็น webp → ได้ null กลับมา ใช้ไฟล์เดิมแทน
+    let blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', quality))
+    let mimeType = 'image/webp'
+    let ext = 'webp'
+    // เบราว์เซอร์บางตัว (เช่น Safari/Chrome บน iOS รุ่นเก่ากว่า 16.4) encode เป็น webp ไม่ได้ → ได้ null กลับมา
+    // ลอง encode เป็น jpeg แทน ยังได้ย่อขนาด+บีบอัดอยู่ แม้จะไม่เล็กเท่า webp
+    if (!blob) {
+      blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality))
+      mimeType = 'image/jpeg'
+      ext = 'jpg'
+    }
     if (!blob) return file
     // ถ้าบีบอัดแล้วไม่เล็กลง (เช่นรูปเล็ก/บีบอัดมาแล้ว) ให้ใช้ไฟล์ต้นฉบับ
     if (blob.size >= file.size) return file
 
-    const newName = `${file.name.replace(/\.[^./]+$/, '')}.webp`
-    return new File([blob], newName, { type: 'image/webp' })
+    const newName = `${file.name.replace(/\.[^./]+$/, '')}.${ext}`
+    return new File([blob], newName, { type: mimeType })
   } catch {
     return file
   } finally {
