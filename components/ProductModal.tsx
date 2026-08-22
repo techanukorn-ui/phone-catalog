@@ -77,7 +77,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="animate-sheet-up flex max-h-[85dvh] w-full max-w-lg flex-col overflow-hidden overscroll-none rounded-t-card bg-panel [touch-action:pan-y] sm:max-h-[92dvh] sm:animate-pop-in sm:rounded-card"
+        className="animate-sheet-up flex h-full w-full flex-col overflow-hidden overscroll-none bg-panel [touch-action:pan-y] sm:h-auto sm:max-h-[92dvh] sm:max-w-lg sm:animate-pop-in sm:rounded-card"
       >
         <div className="relative shrink-0">
           <div
@@ -166,7 +166,7 @@ export default function ProductModal({ product, onClose }: { product: Product; o
           </span>
         </div>
 
-        <div className="tag-perforation overflow-x-hidden overflow-y-auto p-4">
+        <div className="tag-perforation overflow-x-hidden overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="break-words font-display text-xl font-semibold text-accent-name">
